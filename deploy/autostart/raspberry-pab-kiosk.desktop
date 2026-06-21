@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Raspberry-PAB Kiosk
+Comment=Fullscreen kiosk browser for Raspberry-PAB
+Exec=/home/pi/Raspberry-PAB/scripts/kiosk.sh
+Terminal=false
+X-GNOME-Autostart-enabled=true

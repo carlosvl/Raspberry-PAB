@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Raspberry-PAB Admin</title>
+    <link rel="stylesheet" href="/css/kiosk.css" />
+  </head>
+  <body>
+    <main class="admin">
+      <header class="admin__header">
+        <div>
+          <h1>Schedule Admin</h1>
+          <p>Manage offline starts and reminder rules.</p>
+        </div>
+        <a class="admin__link" href="/">Back to Kiosk</a>
+      </header>
+
+      <section class="admin__pin" id="pinPanel">
+        <label>
+          Admin PIN
+          <input id="pinInput" inputmode="numeric" type="password" />
+        </label>
+        <button id="savePin" type="button">Unlock</button>
+      </section>
+
+      <section class="admin__grid" id="adminPanels" hidden>
+        <article class="panel">
+          <h2>Participants</h2>
+          <form class="form" id="participantForm">
+            <input id="participantId" type="hidden" />
+            <label>
+              Name
+              <input id="participantName" required />
+            </label>
+            <label>
+              Date
+              <input id="participantDate" required type="date" />
+            </label>
+            <label>
+              Start Time
+              <input id="participantTime" required type="time" />
+            </label>
+            <button type="submit">Save Participant</button>
+            <button id="clearParticipant" type="button">Clear</button>
+          </form>
+          <div class="admin__list" id="participantList"></div>
+        </article>
+
+        <article class="panel">
+          <h2>Reminder Rules</h2>
+          <form class="form" id="ruleForm">
+            <input id="ruleId" type="hidden" />
+            <label>
+              Offset Minutes
+              <input id="ruleOffset" min="0" required type="number" />
+            </label>
+            <label>
+              Message Template
+              <input id="ruleMessage" placeholder="Warm Up {name}" required />
+            </label>
+            <label>
+              Repeat Every Minutes
+              <input id="ruleRepeat" min="1" type="number" />
+            </label>
+            <label class="checkbox">
+              <input id="ruleEnabled" checked type="checkbox" />
+              Enabled
+            </label>
+            <button type="submit">Save Rule</button>
+            <button id="clearRule" type="button">Clear</button>
+          </form>
+          <div class="admin__list" id="ruleList"></div>
+        </article>
+
+        <article class="panel panel--wide">
+          <h2>Import / Export</h2>
+          <div class="form">
+            <label>
+              Event Date
+              <input id="importDate" type="date" />
+            </label>
+            <label>
+              Paste Schedule JSON
+              <textarea id="importJson" rows="10"></textarea>
+            </label>
+            <div class="button-row">
+              <button id="importSchedule" type="button">Import JSON</button>
+              <button id="exportSchedule" type="button">Export Selected Date</button>
+            </div>
+          </div>
+          <pre class="admin__output" id="adminOutput"></pre>
+        </article>
+      </section>
+    </main>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>

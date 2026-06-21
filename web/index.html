@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Raspberry-PAB</title>
+    <link rel="stylesheet" href="/css/kiosk.css" />
+  </head>
+  <body>
+    <main class="kiosk">
+      <header class="kiosk__header" id="adminHotspot" title="Hold for admin">
+        <div>
+          <h1 class="kiosk__title">Raspberry-PAB</h1>
+          <p class="kiosk__subtitle" id="eventDate">Today</p>
+        </div>
+        <p class="kiosk__clock" id="clock">--:--:--</p>
+      </header>
+
+      <section class="kiosk__content">
+        <table class="schedule" aria-label="Start schedule">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Date</th>
+              <th>Start</th>
+              <th>Time to Start</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleBody">
+            <tr>
+              <td colspan="4">Loading schedule…</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="kiosk__status" id="status">Connecting…</p>
+      </section>
+    </main>
+
+    <section class="alert" id="alertOverlay" aria-live="assertive" hidden>
+      <div class="alert__card">
+        <p class="alert__eyebrow">Reminder</p>
+        <h2 class="alert__message" id="alertMessage"></h2>
+        <p class="alert__meta" id="alertMeta"></p>
+        <button class="alert__button" id="dismissAlert" type="button">Dismiss</button>
+      </div>
+    </section>
+
+    <script src="/js/kiosk.js"></script>
+  </body>
+</html>

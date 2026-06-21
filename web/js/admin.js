@@ -1,0 +1,241 @@
+const pinPanel = document.getElementById("pinPanel");
+const adminPanels = document.getElementById("adminPanels");
+const pinInput = document.getElementById("pinInput");
+const savePin = document.getElementById("savePin");
+const participantForm = document.getElementById("participantForm");
+const participantList = document.getElementById("participantList");
+const ruleForm = document.getElementById("ruleForm");
+const ruleList = document.getElementById("ruleList");
+const adminOutput = document.getElementById("adminOutput");
+
+const todayParam = new Date().toISOString().slice(0, 10);
+
+function adminPin() {
+  return sessionStorage.getItem("pabAdminPin") || "";
+}
+
+function headers(extra = {}) {
+  return {
+    "Content-Type": "application/json",
+    "X-Admin-Pin": adminPin(),
+    ...extra,
+  };
+}
+
+function setOutput(message) {
+  if (adminOutput) adminOutput.textContent = message;
+}
+
+async function api(path, options = {}) {
+  const response = await fetch(path, {
+    ...options,
+    headers: headers(options.headers || {}),
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || `Request failed: ${response.status}`);
+  }
+  if (response.status === 204) return null;
+  return response.json();
+}
+
+function unlock() {
+  if (!pinInput?.value) return;
+  sessionStorage.setItem("pabAdminPin", pinInput.value);
+  if (pinPanel) pinPanel.hidden = true;
+  if (adminPanels) adminPanels.hidden = false;
+  loadAll();
+}
+
+function clearParticipantForm() {
+  document.getElementById("participantId").value = "";
+  document.getElementById("participantName").value = "";
+  document.getElementById("participantDate").value = todayParam;
+  document.getElementById("participantTime").value = "";
+}
+
+function clearRuleForm() {
+  document.getElementById("ruleId").value = "";
+  document.getElementById("ruleOffset").value = "";
+  document.getElementById("ruleMessage").value = "";
+  document.getElementById("ruleRepeat").value = "";
+  document.getElementById("ruleEnabled").checked = true;
+}
+
+async function loadParticipants() {
+  const date = document.getElementById("participantDate").value || todayParam;
+  const participants = await api(`/api/participants?date=${date}`, {
+    headers: { "X-Admin-Pin": adminPin() },
+  });
+  if (!participantList) return;
+  participantList.innerHTML = participants
+    .map(
+      (item) => `
+        <div class="admin__item">
+          <strong>${item.name}</strong>
+          <span>${item.event_date} ${item.start_time}</span>
+          <button data-edit-participant="${item.id}" type="button">Edit</button>
+          <button data-delete-participant="${item.id}" type="button">Delete</button>
+        </div>
+      `,
+    )
+    .join("");
+
+  participantList.querySelectorAll("[data-edit-participant]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const item = participants.find(
+        (participant) => participant.id === Number(button.dataset.editParticipant),
+      );
+      if (!item) return;
+      document.getElementById("participantId").value = item.id;
+      document.getElementById("participantName").value = item.name;
+      document.getElementById("participantDate").value = item.event_date;
+      document.getElementById("participantTime").value = item.start_time.slice(0, 5);
+    });
+  });
+
+  participantList.querySelectorAll("[data-delete-participant]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await api(`/api/participants/${button.dataset.deleteParticipant}`, {
+        method: "DELETE",
+      });
+      await loadParticipants();
+    });
+  });
+}
+
+async function loadRules() {
+  const rules = await api("/api/reminder-rules", {
+    headers: { "X-Admin-Pin": adminPin() },
+  });
+  if (!ruleList) return;
+  ruleList.innerHTML = rules
+    .map(
+      (rule) => `
+        <div class="admin__item">
+          <strong>${rule.offset_minutes} min: ${rule.message_template}</strong>
+          <span>${rule.repeat_every_minutes ? `Repeats every ${rule.repeat_every_minutes} min` : "One time"} · ${rule.enabled ? "Enabled" : "Disabled"}</span>
+          <button data-edit-rule="${rule.id}" type="button">Edit</button>
+          <button data-delete-rule="${rule.id}" type="button">Delete</button>
+        </div>
+      `,
+    )
+    .join("");
+
+  ruleList.querySelectorAll("[data-edit-rule]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const rule = rules.find((item) => item.id === Number(button.dataset.editRule));
+      if (!rule) return;
+      document.getElementById("ruleId").value = rule.id;
+      document.getElementById("ruleOffset").value = rule.offset_minutes;
+      document.getElementById("ruleMessage").value = rule.message_template;
+      document.getElementById("ruleRepeat").value = rule.repeat_every_minutes || "";
+      document.getElementById("ruleEnabled").checked = rule.enabled;
+    });
+  });
+
+  ruleList.querySelectorAll("[data-delete-rule]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await api(`/api/reminder-rules/${button.dataset.deleteRule}`, {
+        method: "DELETE",
+      });
+      await loadRules();
+    });
+  });
+}
+
+async function loadAll() {
+  try {
+    await Promise.all([loadParticipants(), loadRules()]);
+    setOutput("Loaded.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+}
+
+participantForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const participantId = document.getElementById("participantId").value;
+  const payload = {
+    name: document.getElementById("participantName").value,
+    event_date: document.getElementById("participantDate").value,
+    start_time: document.getElementById("participantTime").value,
+  };
+  try {
+    await api(participantId ? `/api/participants/${participantId}` : "/api/participants", {
+      method: participantId ? "PUT" : "POST",
+      body: JSON.stringify(payload),
+    });
+    clearParticipantForm();
+    await loadParticipants();
+    setOutput("Participant saved.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+});
+
+ruleForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const ruleId = document.getElementById("ruleId").value;
+  const repeat = document.getElementById("ruleRepeat").value;
+  const payload = {
+    offset_minutes: Number(document.getElementById("ruleOffset").value),
+    message_template: document.getElementById("ruleMessage").value,
+    repeat_every_minutes: repeat ? Number(repeat) : null,
+    enabled: document.getElementById("ruleEnabled").checked,
+    sort_order: 0,
+  };
+  try {
+    await api(ruleId ? `/api/reminder-rules/${ruleId}` : "/api/reminder-rules", {
+      method: ruleId ? "PUT" : "POST",
+      body: JSON.stringify(payload),
+    });
+    clearRuleForm();
+    await loadRules();
+    setOutput("Reminder rule saved.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+});
+
+document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
+document.getElementById("clearRule")?.addEventListener("click", clearRuleForm);
+document.getElementById("participantDate")?.addEventListener("change", loadParticipants);
+savePin?.addEventListener("click", unlock);
+pinInput?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") unlock();
+});
+
+document.getElementById("importSchedule")?.addEventListener("click", async () => {
+  try {
+    const raw = document.getElementById("importJson").value;
+    await api("/api/import", {
+      method: "POST",
+      body: raw,
+    });
+    await loadAll();
+    setOutput("Imported schedule JSON.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+});
+
+document.getElementById("exportSchedule")?.addEventListener("click", async () => {
+  try {
+    const date = document.getElementById("importDate").value || todayParam;
+    const exported = await api(`/api/export?date=${date}`, {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    setOutput(JSON.stringify(exported, null, 2));
+  } catch (error) {
+    setOutput(error.message);
+  }
+});
+
+document.getElementById("participantDate").value = todayParam;
+document.getElementById("importDate").value = todayParam;
+if (adminPin()) {
+  if (pinPanel) pinPanel.hidden = true;
+  if (adminPanels) adminPanels.hidden = false;
+  loadAll();
+}
