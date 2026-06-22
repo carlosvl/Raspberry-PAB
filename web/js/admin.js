@@ -7,6 +7,7 @@ const participantList = document.getElementById("participantList");
 const ruleForm = document.getElementById("ruleForm");
 const ruleList = document.getElementById("ruleList");
 const adminOutput = document.getElementById("adminOutput");
+const remoteInfoEl = document.getElementById("remoteInfo");
 
 const todayParam = new Date().toISOString().slice(0, 10);
 
@@ -24,6 +25,32 @@ function headers(extra = {}) {
 
 function setOutput(message) {
   if (adminOutput) adminOutput.textContent = message;
+}
+
+function renderNetworkInfo(info) {
+  if (!remoteInfoEl) return;
+  const url = info.urls?.[0] || info.hotspot_url;
+  remoteInfoEl.textContent = url
+    ? `Remote: ${url}/admin or ${info.mdns_name}:${info.port}/admin`
+    : "Remote access unavailable";
+}
+
+async function loadNetworkInfo() {
+  try {
+    const response = await fetch("/api/network");
+    if (!response.ok) throw new Error("network request failed");
+    renderNetworkInfo(await response.json());
+  } catch {
+    if (remoteInfoEl) remoteInfoEl.textContent = "Remote access unavailable";
+  }
+}
+
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      // The admin UI can still run without app-shell caching.
+    });
+  }
 }
 
 function scrollToPanel(targetId) {
@@ -240,6 +267,8 @@ document.getElementById("exportSchedule")?.addEventListener("click", async () =>
 
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;
+registerServiceWorker();
+loadNetworkInfo();
 document.querySelectorAll("[data-scroll-target]").forEach((button) => {
   button.addEventListener("click", () => {
     scrollToPanel(button.dataset.scrollTarget);

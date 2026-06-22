@@ -1,0 +1,11 @@
+[Unit]
+Description=Check Raspberry-PAB fallback hotspot
+
+[Timer]
+OnBootSec=30sec
+OnUnitActiveSec=1min
+AccuracySec=10sec
+Unit=pab-autohotspot.service
+
+[Install]
+WantedBy=timers.target

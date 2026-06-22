@@ -4,11 +4,12 @@ Fullscreen **offline schedule and reminder kiosk** for **Raspberry Pi OS**. A lo
 
 ## How it works
 
-1. **Backend** — Python (FastAPI) stores schedules in local SQLite and serves `web/` on `http://127.0.0.1:8080`
+1. **Backend** — Python (FastAPI) stores schedules in local SQLite, serves the Pi kiosk on `http://127.0.0.1:8080`, and listens on the network for remote admin
 2. **Frontend** — HTML/CSS/JS in `web/`, fullscreen and touch-ready
 3. **Reminders** — named offset rules fire alerts before each start time
-4. **Kiosk shell** — Chromium launches via desktop autostart with `--kiosk`
-5. **Boot** — systemd starts the server; autologin + autostart opens the browser
+4. **Remote iOS admin** — Safari can open `/admin` over Wi-Fi and install it to the home screen as a PWA
+5. **Kiosk shell** — Chromium launches via desktop autostart with `--kiosk`
+6. **Boot** — systemd starts the server; autologin + autostart opens the browser
 
 See [docs/kiosk.md](docs/kiosk.md) for autologin, screen blanking, and troubleshooting.
 
@@ -26,7 +27,8 @@ Raspberry-PAB/
 │   └── config.py              # Env-based settings
 ├── data/schedule.example.json # Offline import example
 ├── deploy/
-│   ├── systemd/               # Web server service
+│   ├── systemd/               # Web server + fallback hotspot units
+│   ├── network/               # NetworkManager hotspot helper
 │   └── autostart/             # Chromium kiosk autostart
 ├── scripts/
 │   ├── install.sh             # Pi install (chromium, unclutter, services)
@@ -64,6 +66,24 @@ sudo systemctl enable --now raspberry-pab
 sudo reboot
 ```
 
+The installer also creates a `Raspberry-PAB` Wi-Fi fallback hotspot. If the Pi cannot connect to a known Wi-Fi network, it broadcasts that hotspot and serves the app at `http://10.42.0.1:8080/admin`.
+
+## Remote iOS admin
+
+When the Pi is on your normal Wi-Fi, connect the iPhone to the same Wi-Fi and open the remote URL shown on the kiosk screen, such as:
+
+```text
+http://192.168.4.72:8080/admin
+```
+
+If normal Wi-Fi is unavailable, connect the iPhone to the `Raspberry-PAB` hotspot (default password `RaspberryPAB123`) and open:
+
+```text
+http://10.42.0.1:8080/admin
+```
+
+In Safari, use **Share → Add to Home Screen** to install it like an app. Admin changes still require the PIN.
+
 ## Offline schedule workflow
 
 The app stores all schedules and reminder rules in SQLite under `PAB_DATA_DIR`, so it does not need internet access after installation.
@@ -98,15 +118,18 @@ For Carlos at 11:00, that example fires `Warm Up Carlos` at 10:30 and `Go to Sta
 
 ## Configuration
 
-| Variable        | Default                        | Description              |
-|-----------------|--------------------------------|--------------------------|
-| `PAB_HOST`      | `127.0.0.1`                    | Server bind address      |
-| `PAB_PORT`      | `8080`                         | Server port              |
-| `PAB_KIOSK_URL` | `http://127.0.0.1:8080`        | URL for Chromium         |
-| `PAB_WEB_DIR`   | `./web`                        | Static files directory   |
-| `PAB_LOG_LEVEL` | `INFO`                         | Logging level            |
-| `PAB_DATA_DIR`  | `~/.local/share/raspberry-pab` | App data path            |
-| `PAB_ADMIN_PIN` | `1234`                         | PIN for admin writes     |
+| Variable                | Default                        | Description                                  |
+|-------------------------|--------------------------------|----------------------------------------------|
+| `PAB_HOST`              | `127.0.0.1`                    | Local URL host used by Chromium              |
+| `PAB_BIND_HOST`         | `0.0.0.0`                      | Address uvicorn listens on for remote access |
+| `PAB_PORT`              | `8080`                         | Server port                                  |
+| `PAB_KIOSK_URL`         | `http://127.0.0.1:8080`        | URL opened by Chromium                       |
+| `PAB_WEB_DIR`           | `./web`                        | Static files directory                       |
+| `PAB_LOG_LEVEL`         | `INFO`                         | Logging level                                |
+| `PAB_DATA_DIR`          | `~/.local/share/raspberry-pab` | App data path                                |
+| `PAB_ADMIN_PIN`         | `1234`                         | PIN for admin writes                         |
+| `PAB_HOTSPOT_SSID`     | `Raspberry-PAB`                | Fallback hotspot name                        |
+| `PAB_HOTSPOT_PASSWORD` | `RaspberryPAB123`              | Fallback hotspot password                    |
 
 ## License
 

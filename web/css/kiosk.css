@@ -114,6 +114,19 @@ body.admin-page {
   color: #38bdf8;
 }
 
+.kiosk__remote,
+.admin__remote {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.admin__remote {
+  margin-top: 0.35rem;
+}
+
 .alert,
 .control-menu {
   position: fixed;
@@ -409,5 +422,212 @@ body.admin-page {
 
   .admin__item {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 540px), (max-height: 400px) {
+  html,
+  body {
+    font-size: 14px;
+  }
+
+  .kiosk {
+    gap: 0.5rem;
+    min-height: 100svh;
+    padding: 0.5rem;
+  }
+
+  .kiosk__header {
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .kiosk__title {
+    margin-bottom: 0.15rem;
+    font-size: 1.35rem;
+  }
+
+  .kiosk__subtitle {
+    font-size: 0.8rem;
+  }
+
+  .kiosk__clock {
+    font-size: 1.15rem;
+  }
+
+  .kiosk__content {
+    gap: 0.35rem;
+  }
+
+  .schedule {
+    border-radius: 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .schedule th,
+  .schedule td {
+    padding: 0.35rem 0.3rem;
+  }
+
+  .schedule th {
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+  }
+
+  .kiosk__status {
+    font-size: 0.72rem;
+  }
+
+  .kiosk__remote,
+  .admin__remote {
+    font-size: 0.68rem;
+  }
+
+  .alert,
+  .control-menu {
+    padding: 0.35rem;
+  }
+
+  .alert__card,
+  .control-menu__card {
+    width: min(96vw, 30rem);
+    border-width: 0.18rem;
+    border-radius: 1rem;
+    box-shadow: 0 1rem 3rem rgb(0 0 0 / 55%);
+  }
+
+  .control-menu {
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .control-menu__card {
+    max-height: none;
+    overflow: visible;
+    padding: 0.65rem;
+  }
+
+  .control-menu__eyebrow {
+    display: none;
+  }
+
+  .control-menu__card h2 {
+    margin-bottom: 0.55rem;
+    font-size: 1.1rem;
+  }
+
+  .control-menu__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .control-menu__button {
+    min-height: 3rem;
+    padding: 0.55rem 0.35rem;
+    border-radius: 0.65rem;
+    font-size: 0.95rem;
+    line-height: 1.1;
+  }
+
+  .alert__eyebrow {
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .alert__message {
+    font-size: 2.2rem;
+  }
+
+  .alert__meta {
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .alert__button {
+    margin-top: 0.85rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .admin {
+    padding: 0.6rem 0.6rem 4rem;
+  }
+
+  .admin__header {
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .admin__header h1 {
+    font-size: 1.25rem;
+  }
+
+  .admin__header p {
+    font-size: 0.8rem;
+  }
+
+  .admin__link {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .admin__nav {
+    gap: 0.35rem;
+    margin: 0 -0.25rem 0.75rem;
+    padding: 0.35rem 0.25rem;
+    border-radius: 0.7rem;
+  }
+
+  .admin__nav button,
+  .admin__nav a {
+    flex: 1 1 6rem;
+    padding: 0.55rem 0.35rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .panel {
+    scroll-margin-top: 4.25rem;
+  }
+
+  .admin__pin,
+  .panel {
+    padding: 0.8rem;
+    border-radius: 0.7rem;
+  }
+
+  .admin__grid,
+  .form,
+  .admin__list {
+    gap: 0.65rem;
+  }
+
+  .form input,
+  .form textarea,
+  .admin__pin input {
+    padding: 0.55rem 0.65rem;
+  }
+
+  .form button,
+  .admin__pin button,
+  .button-row button,
+  .admin__item button {
+    padding: 0.55rem 0.7rem;
+    border-radius: 0.55rem;
+    font-size: 0.9rem;
+  }
+
+  .button-row {
+    gap: 0.5rem;
+  }
+
+  .admin__item {
+    gap: 0.45rem;
+    padding: 0.65rem;
+  }
+
+  .admin__output {
+    min-height: 5rem;
+    padding: 0.65rem;
   }
 }

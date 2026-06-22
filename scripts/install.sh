@@ -21,7 +21,8 @@ echo "==> Installing system dependencies..."
 sudo apt-get update
 sudo apt-get install -y \
     python3 python3-venv python3-pip git \
-    chromium unclutter curl
+    chromium unclutter curl \
+    network-manager avahi-daemon
 
 cd "${PROJECT_ROOT}"
 
@@ -46,6 +47,42 @@ sed \
     deploy/systemd/raspberry-pab.service \
     | sudo tee /etc/systemd/system/raspberry-pab.service >/dev/null
 sudo systemctl daemon-reload
+
+echo "==> Configuring fallback Wi-Fi hotspot..."
+HOTSPOT_IFACE="${PAB_HOTSPOT_IFACE:-wlan0}"
+HOTSPOT_CONNECTION="${PAB_HOTSPOT_CONNECTION:-PAB-Hotspot}"
+HOTSPOT_SSID="${PAB_HOTSPOT_SSID:-Raspberry-PAB}"
+HOTSPOT_PASSWORD="${PAB_HOTSPOT_PASSWORD:-RaspberryPAB123}"
+if ! nmcli connection show "${HOTSPOT_CONNECTION}" >/dev/null 2>&1; then
+    sudo nmcli connection add \
+        type wifi \
+        ifname "${HOTSPOT_IFACE}" \
+        con-name "${HOTSPOT_CONNECTION}" \
+        autoconnect no \
+        ssid "${HOTSPOT_SSID}" \
+        802-11-wireless.mode ap \
+        ipv4.method shared \
+        ipv6.method ignore \
+        wifi-sec.key-mgmt wpa-psk \
+        wifi-sec.psk "${HOTSPOT_PASSWORD}"
+else
+    sudo nmcli connection modify "${HOTSPOT_CONNECTION}" \
+        connection.autoconnect no \
+        802-11-wireless.ssid "${HOTSPOT_SSID}" \
+        802-11-wireless.mode ap \
+        ipv4.method shared \
+        ipv6.method ignore \
+        wifi-sec.key-mgmt wpa-psk \
+        wifi-sec.psk "${HOTSPOT_PASSWORD}"
+fi
+
+sudo install -m 0755 deploy/network/pab-autohotspot.sh /usr/local/bin/pab-autohotspot
+sed "s|/home/pi/Raspberry-PAB|${PROJECT_ROOT}|g" \
+    deploy/systemd/pab-autohotspot.service \
+    | sudo tee /etc/systemd/system/pab-autohotspot.service >/dev/null
+sudo cp deploy/systemd/pab-autohotspot.timer /etc/systemd/system/pab-autohotspot.timer
+sudo systemctl daemon-reload
+sudo systemctl enable --now pab-autohotspot.timer
 
 echo "==> Installing desktop autostart (kiosk browser)..."
 AUTOSTART_DIR="${HOME}/.config/autostart"
@@ -73,5 +110,6 @@ echo ""
 echo "  1. Enable server:     sudo systemctl enable --now raspberry-pab"
 echo "  2. Reboot or log in:  sudo reboot"
 echo "  3. View server logs:  journalctl -u raspberry-pab -f"
+echo "  4. Hotspot fallback:  ${HOTSPOT_SSID} (password: ${HOTSPOT_PASSWORD})"
 echo ""
 echo "For full kiosk setup (autologin, disable screen blanking), see docs/kiosk.md"

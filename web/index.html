@@ -7,7 +7,11 @@
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#38bdf8" />
     <title>Raspberry-PAB</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/assets/icons/pab-icon-180.png" />
     <link rel="stylesheet" href="/css/kiosk.css" />
   </head>
   <body>
@@ -37,6 +41,7 @@
           </tbody>
         </table>
         <p class="kiosk__status" id="status">Connecting…</p>
+        <p class="kiosk__remote" id="remoteInfo">Remote access checking…</p>
       </section>
     </main>
 

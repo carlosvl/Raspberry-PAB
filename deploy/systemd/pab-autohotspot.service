@@ -1,0 +1,9 @@
+[Unit]
+Description=Raspberry-PAB fallback Wi-Fi hotspot
+After=NetworkManager.service
+Wants=NetworkManager.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/home/pi/Raspberry-PAB/.env
+ExecStart=/usr/local/bin/pab-autohotspot

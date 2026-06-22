@@ -2,6 +2,7 @@ const scheduleBody = document.getElementById("scheduleBody");
 const statusEl = document.getElementById("status");
 const clockEl = document.getElementById("clock");
 const eventDateEl = document.getElementById("eventDate");
+const remoteInfoEl = document.getElementById("remoteInfo");
 const alertOverlay = document.getElementById("alertOverlay");
 const alertMessage = document.getElementById("alertMessage");
 const alertMeta = document.getElementById("alertMeta");
@@ -55,6 +56,32 @@ function updateClock() {
 
 function setStatus(message) {
   if (statusEl) statusEl.textContent = message;
+}
+
+function renderNetworkInfo(info) {
+  if (!remoteInfoEl) return;
+  const url = info.urls?.[0] || info.hotspot_url;
+  remoteInfoEl.textContent = url
+    ? `Remote admin: ${url}/admin or ${info.mdns_name}:${info.port}/admin`
+    : "Remote admin unavailable";
+}
+
+async function loadNetworkInfo() {
+  try {
+    const response = await fetch("/api/network");
+    if (!response.ok) throw new Error("network request failed");
+    renderNetworkInfo(await response.json());
+  } catch {
+    if (remoteInfoEl) remoteInfoEl.textContent = "Remote admin unavailable";
+  }
+}
+
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      // Remote admin still works without offline shell caching.
+    });
+  }
 }
 
 function rowClass(item, nextId) {
@@ -181,8 +208,11 @@ controlMenu?.addEventListener("click", (event) => {
   if (event.target === controlMenu) hideControlMenu();
 });
 configureAdminHotspot();
+registerServiceWorker();
 updateClock();
+loadNetworkInfo();
 loadSchedule();
 connectAlertStream();
 setInterval(updateClock, 1000);
+setInterval(loadNetworkInfo, 60000);
 setInterval(loadSchedule, 1000);

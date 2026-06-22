@@ -8,6 +8,7 @@ from pathlib import Path
 
 _DEFAULT_DATA_DIR = Path.home() / ".local" / "share" / "raspberry-pab"
 _DEFAULT_HOST = "127.0.0.1"
+_DEFAULT_BIND_HOST = "0.0.0.0"
 _DEFAULT_PORT = 8080
 
 
@@ -27,6 +28,7 @@ class Settings:
     admin_pin: str = "1234"
     data_dir: Path = _DEFAULT_DATA_DIR
     host: str = _DEFAULT_HOST
+    bind_host: str = _DEFAULT_BIND_HOST
     port: int = _DEFAULT_PORT
     web_dir: Path = Path(_default_web_dir())
 
@@ -49,6 +51,7 @@ class Settings:
             admin_pin=os.getenv("PAB_ADMIN_PIN", cls.admin_pin),
             data_dir=data_dir,
             host=os.getenv("PAB_HOST", _DEFAULT_HOST),
+            bind_host=os.getenv("PAB_BIND_HOST", _DEFAULT_BIND_HOST),
             port=port,
             web_dir=web_dir,
         )

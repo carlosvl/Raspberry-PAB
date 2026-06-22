@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import socket
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -15,6 +16,29 @@ from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.scheduler import AlertBroker, ReminderScheduler
+
+
+def _local_ipv4_addresses() -> list[str]:
+    addresses: set[str] = set()
+    try:
+        for family, _, _, _, sockaddr in socket.getaddrinfo(socket.gethostname(), None):
+            if family == socket.AF_INET:
+                address = sockaddr[0]
+                if isinstance(address, str) and not address.startswith("127."):
+                    addresses.add(address)
+    except socket.gaierror:
+        pass
+
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(("8.8.8.8", 80))
+            address = sock.getsockname()[0]
+            if isinstance(address, str) and not address.startswith("127."):
+                addresses.add(address)
+    except OSError:
+        pass
+
+    return sorted(addresses)
 
 
 def create_app(settings: Settings) -> FastAPI:
@@ -53,6 +77,31 @@ def create_app(settings: Settings) -> FastAPI:
     @app.get("/admin")
     def admin() -> FileResponse:
         return FileResponse(web_dir / "admin.html")
+
+    @app.get("/manifest.webmanifest")
+    def manifest() -> FileResponse:
+        return FileResponse(
+            web_dir / "manifest.webmanifest",
+            media_type="application/manifest+json",
+        )
+
+    @app.get("/sw.js")
+    def service_worker() -> FileResponse:
+        return FileResponse(web_dir / "sw.js", media_type="text/javascript")
+
+    @app.get("/api/network")
+    def network_info() -> dict[str, object]:
+        hostname = socket.gethostname()
+        return {
+            "hostname": hostname,
+            "mdns_name": f"{hostname}.local",
+            "port": settings.port,
+            "urls": [
+                f"http://{address}:{settings.port}"
+                for address in _local_ipv4_addresses()
+            ],
+            "hotspot_url": f"http://10.42.0.1:{settings.port}",
+        }
 
     app.include_router(schedule_router)
     app.include_router(alerts_router)

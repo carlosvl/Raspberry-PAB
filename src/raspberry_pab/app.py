@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class Application:
-    """Kiosk backend: serves the fullscreen web UI on localhost."""
+    """Kiosk backend: serves the fullscreen web UI and remote admin."""
 
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or Settings.from_env()
@@ -26,14 +26,18 @@ class Application:
             logger.error("Web directory not found: %s", self.settings.web_dir)
             return 1
 
-        logger.info("Starting kiosk server: %s", self.settings.kiosk_url)
+        logger.info(
+            "Starting kiosk server: %s (bind %s)",
+            self.settings.kiosk_url,
+            self.settings.bind_host,
+        )
         logger.info("Web root: %s", self.settings.web_dir)
         logger.info("Data directory: %s", self.settings.data_dir)
 
         app = create_app(self.settings)
         uvicorn.run(
             app,
-            host=self.settings.host,
+            host=self.settings.bind_host,
             port=self.settings.port,
             log_level=self.settings.log_level.lower(),
         )
