@@ -26,6 +26,12 @@ function setOutput(message) {
   if (adminOutput) adminOutput.textContent = message;
 }
 
+function scrollToPanel(targetId) {
+  const panel = document.getElementById(targetId);
+  if (!panel) return;
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 async function api(path, options = {}) {
   const response = await fetch(path, {
     ...options,
@@ -234,6 +240,12 @@ document.getElementById("exportSchedule")?.addEventListener("click", async () =>
 
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;
+document.querySelectorAll("[data-scroll-target]").forEach((button) => {
+  button.addEventListener("click", () => {
+    scrollToPanel(button.dataset.scrollTarget);
+  });
+});
+
 if (adminPin()) {
   if (pinPanel) pinPanel.hidden = true;
   if (adminPanels) adminPanels.hidden = false;

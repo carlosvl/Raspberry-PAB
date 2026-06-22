@@ -18,6 +18,13 @@ body {
   -webkit-user-select: none;
 }
 
+body.admin-page {
+  overflow-y: auto;
+  touch-action: pan-y;
+  user-select: auto;
+  -webkit-user-select: auto;
+}
+
 .kiosk {
   display: flex;
   flex-direction: column;
@@ -212,8 +219,9 @@ body {
 
 .admin {
   min-height: 100vh;
-  padding: 2rem;
-  overflow: auto;
+  padding: 2rem 2rem 7rem;
+  overflow: visible;
+  touch-action: pan-y;
 }
 
 .admin__header {
@@ -235,8 +243,62 @@ body {
 }
 
 .admin__link {
+  display: inline-block;
+  padding: 0.85rem 1.1rem;
+  border-radius: 0.75rem;
+  background: #38bdf8;
+  color: #020617;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.admin__nav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 -0.5rem 1.5rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: 1rem;
+  background: rgb(15 23 42 / 94%);
+  backdrop-filter: blur(0.5rem);
+}
+
+.admin__nav button,
+.admin__nav a {
+  flex: 1 1 10rem;
+  padding: 1rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: #334155;
+  color: #f8fafc;
+  font: inherit;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+}
+
+.admin__nav a {
+  background: #38bdf8;
+  color: #020617;
+}
+
+.admin__output {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.panel {
+  scroll-margin-top: 7rem;
+}
+
+/*
+ * Legacy link style kept for non-button links inside admin content.
+ */
+.panel a {
   color: #38bdf8;
-  font-size: 1.2rem;
 }
 
 .admin__pin,

@@ -9,7 +9,7 @@
     <title>Raspberry-PAB Admin</title>
     <link rel="stylesheet" href="/css/kiosk.css" />
   </head>
-  <body>
+  <body class="admin-page">
     <main class="admin">
       <header class="admin__header">
         <div>
@@ -18,6 +18,19 @@
         </div>
         <a class="admin__link" href="/">Back to Kiosk</a>
       </header>
+
+      <nav class="admin__nav" aria-label="Admin sections">
+        <button data-scroll-target="participantsPanel" type="button">
+          Participants
+        </button>
+        <button data-scroll-target="rulesPanel" type="button">
+          Rules
+        </button>
+        <button data-scroll-target="importPanel" type="button">
+          Import / Export
+        </button>
+        <a href="/">Kiosk</a>
+      </nav>
 
       <section class="admin__pin" id="pinPanel">
         <label>
@@ -28,7 +41,7 @@
       </section>
 
       <section class="admin__grid" id="adminPanels" hidden>
-        <article class="panel">
+        <article class="panel" id="participantsPanel">
           <h2>Participants</h2>
           <form class="form" id="participantForm">
             <input id="participantId" type="hidden" />
@@ -50,7 +63,7 @@
           <div class="admin__list" id="participantList"></div>
         </article>
 
-        <article class="panel">
+        <article class="panel" id="rulesPanel">
           <h2>Reminder Rules</h2>
           <form class="form" id="ruleForm">
             <input id="ruleId" type="hidden" />
@@ -76,7 +89,7 @@
           <div class="admin__list" id="ruleList"></div>
         </article>
 
-        <article class="panel panel--wide">
+        <article class="panel panel--wide" id="importPanel">
           <h2>Import / Export</h2>
           <div class="form">
             <label>
