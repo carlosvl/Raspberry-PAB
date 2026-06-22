@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Raspberry-PAB Kiosk
+Comment=Launch Raspberry-PAB in fullscreen kiosk mode
+Exec=/home/pi/Raspberry-PAB/scripts/kiosk.sh
+Icon=chromium
+Terminal=false
+Categories=Utility;

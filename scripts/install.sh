@@ -54,6 +54,17 @@ sed "s|/home/pi/Raspberry-PAB|${PROJECT_ROOT}|g" \
     deploy/autostart/raspberry-pab-kiosk.desktop \
     > "${AUTOSTART_DIR}/raspberry-pab-kiosk.desktop"
 
+echo "==> Installing desktop launcher..."
+DESKTOP_DIR="${HOME}/Desktop"
+if [[ -d "${DESKTOP_DIR}" ]]; then
+    sed "s|/home/pi/Raspberry-PAB|${PROJECT_ROOT}|g" \
+        deploy/desktop/raspberry-pab-kiosk.desktop \
+        > "${DESKTOP_DIR}/raspberry-pab-kiosk.desktop"
+    chmod +x "${DESKTOP_DIR}/raspberry-pab-kiosk.desktop"
+    gio set "${DESKTOP_DIR}/raspberry-pab-kiosk.desktop" \
+        metadata::trusted true >/dev/null 2>&1 || true
+fi
+
 chmod +x scripts/kiosk.sh
 
 echo ""
