@@ -7,6 +7,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 INSTALL_DEV=false
+INSTALL_USER="$(id -un)"
+INSTALL_GROUP="$(id -gn)"
 
 for arg in "$@"; do
     case "$arg" in
@@ -37,7 +39,12 @@ else
 fi
 
 echo "==> Installing systemd service..."
-sudo cp deploy/systemd/raspberry-pab.service /etc/systemd/system/
+sed \
+    -e "s|User=pi|User=${INSTALL_USER}|g" \
+    -e "s|Group=pi|Group=${INSTALL_GROUP}|g" \
+    -e "s|/home/pi/Raspberry-PAB|${PROJECT_ROOT}|g" \
+    deploy/systemd/raspberry-pab.service \
+    | sudo tee /etc/systemd/system/raspberry-pab.service >/dev/null
 sudo systemctl daemon-reload
 
 echo "==> Installing desktop autostart (kiosk browser)..."
