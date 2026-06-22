@@ -118,6 +118,13 @@ body {
   z-index: 10;
 }
 
+.control-menu {
+  align-items: start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
 .alert[hidden],
 .control-menu[hidden] {
   display: none;
@@ -134,6 +141,13 @@ body {
   box-shadow: 0 2rem 6rem rgb(0 0 0 / 60%);
 }
 
+.control-menu__card {
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  padding: clamp(1.25rem, 3vw, 3rem);
+  touch-action: pan-y;
+}
+
 .alert__eyebrow,
 .control-menu__eyebrow {
   margin: 0 0 1rem;
@@ -144,8 +158,8 @@ body {
 }
 
 .control-menu__card h2 {
-  margin: 0 0 2rem;
-  font-size: clamp(2rem, 6vw, 4rem);
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.75rem, 5vw, 3rem);
 }
 
 .control-menu__actions {
@@ -156,13 +170,13 @@ body {
 .control-menu__button {
   display: block;
   width: 100%;
-  padding: 1.5rem 2rem;
+  padding: 1rem 1.5rem;
   border: 0;
   border-radius: 1rem;
   background: #38bdf8;
   color: #020617;
   font: inherit;
-  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-size: clamp(1.1rem, 2.5vw, 1.6rem);
   font-weight: 800;
   text-align: center;
   text-decoration: none;
