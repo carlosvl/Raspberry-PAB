@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.routes.alerts import router as alerts_router
+from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.scheduler import AlertBroker, ReminderScheduler
 
@@ -55,6 +56,7 @@ def create_app(settings: Settings) -> FastAPI:
 
     app.include_router(schedule_router)
     app.include_router(alerts_router)
+    app.include_router(kiosk_router)
 
     if web_dir.is_dir():
         for subdir in ("css", "js", "assets"):

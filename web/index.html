@@ -12,7 +12,7 @@
   </head>
   <body>
     <main class="kiosk">
-      <header class="kiosk__header" id="adminHotspot" title="Hold for admin">
+      <header class="kiosk__header" id="adminHotspot" title="Hold for controls">
         <div>
           <h1 class="kiosk__title">Raspberry-PAB</h1>
           <p class="kiosk__subtitle" id="eventDate">Today</p>
@@ -46,6 +46,25 @@
         <h2 class="alert__message" id="alertMessage"></h2>
         <p class="alert__meta" id="alertMeta"></p>
         <button class="alert__button" id="dismissAlert" type="button">Dismiss</button>
+      </div>
+    </section>
+
+    <section class="control-menu" id="controlMenu" aria-live="polite" hidden>
+      <div class="control-menu__card">
+        <p class="control-menu__eyebrow">Kiosk Controls</p>
+        <h2>What do you want to do?</h2>
+        <div class="control-menu__actions">
+          <a class="control-menu__button" href="/admin">Admin</a>
+          <button class="control-menu__button" id="reloadApp" type="button">
+            Reload App
+          </button>
+          <button class="control-menu__button" id="exitKiosk" type="button">
+            Exit Kiosk
+          </button>
+          <button class="control-menu__button control-menu__button--secondary" id="closeMenu" type="button">
+            Cancel
+          </button>
+        </div>
       </div>
     </section>
 

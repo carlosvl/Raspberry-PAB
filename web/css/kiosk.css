@@ -107,7 +107,8 @@ body {
   color: #38bdf8;
 }
 
-.alert {
+.alert,
+.control-menu {
   position: fixed;
   inset: 0;
   display: grid;
@@ -117,11 +118,13 @@ body {
   z-index: 10;
 }
 
-.alert[hidden] {
+.alert[hidden],
+.control-menu[hidden] {
   display: none;
 }
 
-.alert__card {
+.alert__card,
+.control-menu__card {
   width: min(90vw, 64rem);
   padding: clamp(2rem, 5vw, 5rem);
   border: 0.35rem solid #38bdf8;
@@ -131,12 +134,43 @@ body {
   box-shadow: 0 2rem 6rem rgb(0 0 0 / 60%);
 }
 
-.alert__eyebrow {
+.alert__eyebrow,
+.control-menu__eyebrow {
   margin: 0 0 1rem;
   color: #38bdf8;
   font-size: clamp(1rem, 2vw, 1.6rem);
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.control-menu__card h2 {
+  margin: 0 0 2rem;
+  font-size: clamp(2rem, 6vw, 4rem);
+}
+
+.control-menu__actions {
+  display: grid;
+  gap: 1rem;
+}
+
+.control-menu__button {
+  display: block;
+  width: 100%;
+  padding: 1.5rem 2rem;
+  border: 0;
+  border-radius: 1rem;
+  background: #38bdf8;
+  color: #020617;
+  font: inherit;
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+}
+
+.control-menu__button--secondary {
+  background: #334155;
+  color: #f8fafc;
 }
 
 .alert__message {

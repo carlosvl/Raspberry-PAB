@@ -86,3 +86,25 @@ def test_scheduler_publishes_active_alert(tmp_path: Path) -> None:
 
     assert response.status_code == 200
     assert response.json()["message"] == "Warm Up Carlos"
+
+
+def test_exit_browser_endpoint(monkeypatch, tmp_path: Path) -> None:
+    calls: list[list[str]] = []
+
+    def fake_popen(command: list[str], *, start_new_session: bool) -> object:
+        calls.append(command)
+        assert start_new_session
+        return object()
+
+    monkeypatch.setattr("raspberry_pab.routes.kiosk.subprocess.Popen", fake_popen)
+    settings = Settings(
+        admin_pin="9999",
+        data_dir=tmp_path / "data",
+        web_dir=make_web_dir(tmp_path),
+    )
+    with TestClient(create_app(settings)) as client:
+        response = client.post("/api/kiosk/exit-browser")
+
+    assert response.status_code == 200
+    assert response.json() == {"closing": True}
+    assert calls == [["sh", "-c", "pkill chromium || pkill chromium-browser || true"]]

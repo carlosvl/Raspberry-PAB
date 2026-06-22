@@ -7,6 +7,10 @@ const alertMessage = document.getElementById("alertMessage");
 const alertMeta = document.getElementById("alertMeta");
 const dismissAlert = document.getElementById("dismissAlert");
 const adminHotspot = document.getElementById("adminHotspot");
+const controlMenu = document.getElementById("controlMenu");
+const reloadApp = document.getElementById("reloadApp");
+const exitKiosk = document.getElementById("exitKiosk");
+const closeMenu = document.getElementById("closeMenu");
 
 const today = new Date();
 const todayParam = today.toISOString().slice(0, 10);
@@ -128,6 +132,23 @@ function hideAlert() {
   clearTimeout(alertTimer);
 }
 
+function showControlMenu() {
+  if (controlMenu) controlMenu.hidden = false;
+}
+
+function hideControlMenu() {
+  if (controlMenu) controlMenu.hidden = true;
+}
+
+async function closeKioskBrowser() {
+  setStatus("Closing kiosk browser…");
+  try {
+    await fetch("/api/kiosk/exit-browser", { method: "POST" });
+  } catch {
+    setStatus("Could not close browser");
+  }
+}
+
 function connectAlertStream() {
   const source = new EventSource("/api/alerts/stream");
   source.addEventListener("alert", (event) => {
@@ -144,9 +165,7 @@ function configureAdminHotspot() {
   if (!adminHotspot) return;
   const start = () => {
     clearTimeout(adminTimer);
-    adminTimer = setTimeout(() => {
-      window.location.href = "/admin";
-    }, 3000);
+    adminTimer = setTimeout(showControlMenu, 3000);
   };
   const cancel = () => clearTimeout(adminTimer);
   adminHotspot.addEventListener("pointerdown", start);
@@ -155,6 +174,12 @@ function configureAdminHotspot() {
 }
 
 dismissAlert?.addEventListener("click", hideAlert);
+closeMenu?.addEventListener("click", hideControlMenu);
+reloadApp?.addEventListener("click", () => window.location.reload());
+exitKiosk?.addEventListener("click", closeKioskBrowser);
+controlMenu?.addEventListener("click", (event) => {
+  if (event.target === controlMenu) hideControlMenu();
+});
 configureAdminHotspot();
 updateClock();
 loadSchedule();
