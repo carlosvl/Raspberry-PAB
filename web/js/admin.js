@@ -95,6 +95,19 @@ async function verifyPin(pin) {
   return response.ok;
 }
 
+async function openKeyboard() {
+  setPinMessage("Opening keyboard...");
+  try {
+    const response = await fetch("/api/kiosk/keyboard", { method: "POST" });
+    if (!response.ok) throw new Error("keyboard request failed");
+    setPinMessage("Keyboard opened.");
+    setOutput("Keyboard opened.");
+  } catch {
+    setPinMessage("Keyboard is not available on this display.");
+    setOutput("Keyboard is not available on this display.");
+  }
+}
+
 async function revealAdmin() {
   setAdminVisible(true);
   await Promise.all([loadNetworkInfo(), loadAll()]);
@@ -269,6 +282,9 @@ ruleForm?.addEventListener("submit", async (event) => {
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
 document.getElementById("clearRule")?.addEventListener("click", clearRuleForm);
 document.getElementById("participantDate")?.addEventListener("change", loadParticipants);
+document.querySelectorAll("[data-open-keyboard]").forEach((button) => {
+  button.addEventListener("click", openKeyboard);
+});
 savePin?.addEventListener("click", unlock);
 pinInput?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") unlock();

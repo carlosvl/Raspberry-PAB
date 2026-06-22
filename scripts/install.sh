@@ -24,6 +24,11 @@ sudo apt-get install -y \
     chromium unclutter curl \
     network-manager avahi-daemon
 
+echo "==> Installing optional on-screen keyboard packages..."
+for keyboard_package in wvkbd matchbox-keyboard onboard; do
+    sudo apt-get install -y "${keyboard_package}" >/dev/null 2>&1 || true
+done
+
 cd "${PROJECT_ROOT}"
 
 echo "==> Creating virtual environment..."
@@ -102,7 +107,7 @@ if [[ -d "${DESKTOP_DIR}" ]]; then
         metadata::trusted true >/dev/null 2>&1 || true
 fi
 
-chmod +x scripts/kiosk.sh
+chmod +x scripts/kiosk.sh scripts/touch-keyboard.sh
 
 echo ""
 echo "Kiosk installation complete."

@@ -70,6 +70,14 @@ def create_app(settings: Settings) -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok", "app": settings.app_name}
 
+    @app.get("/api/config")
+    def public_config() -> dict[str, str | int]:
+        return {
+            "app_name": settings.app_name,
+            "display_title": settings.display_title,
+            "port": settings.port,
+        }
+
     @app.get("/")
     def index() -> FileResponse:
         return FileResponse(web_dir / "index.html")

@@ -120,6 +120,7 @@ For Carlos at 11:00, that example fires `Warm Up Carlos` at 10:30 and `Go to Sta
 
 | Variable                | Default                        | Description                                  |
 |-------------------------|--------------------------------|----------------------------------------------|
+| `PAB_DISPLAY_TITLE`     | `Raspberry-PAB`                | Title shown on the kiosk display             |
 | `PAB_HOST`              | `127.0.0.1`                    | Local URL host used by Chromium              |
 | `PAB_BIND_HOST`         | `0.0.0.0`                      | Address uvicorn listens on for remote access |
 | `PAB_PORT`              | `8080`                         | Server port                                  |
@@ -130,6 +131,8 @@ For Carlos at 11:00, that example fires `Warm Up Carlos` at 10:30 and `Go to Sta
 | `PAB_ADMIN_PIN`         | `1234`                         | PIN for admin writes                         |
 | `PAB_HOTSPOT_SSID`     | `Raspberry-PAB`                | Fallback hotspot name                        |
 | `PAB_HOTSPOT_PASSWORD` | `RaspberryPAB123`              | Fallback hotspot password                    |
+
+On the Pi touchscreen, tap **Keyboard** on the admin PIN screen to open the installed OS on-screen keyboard. `scripts/install.sh` tries to install common keyboard packages (`wvkbd`, `matchbox-keyboard`, `onboard`) and `scripts/touch-keyboard.sh` launches whichever is available for the current desktop session.
 
 ## License
 

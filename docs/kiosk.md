@@ -99,6 +99,8 @@ The admin screen supports:
 - Optional repeating reminders, for example every 5 minutes from 15 minutes before start
 - JSON import/export for offline setup or backups
 
+On the Pi touchscreen, tap **Keyboard** on the admin PIN screen or admin header to open the OS on-screen keyboard. The installer tries to install `wvkbd`, `matchbox-keyboard`, or `onboard`; the app launches whichever is available for the active desktop session.
+
 Example import file: `data/schedule.example.json`.
 
 ## 5. Remote iOS app and fallback hotspot
@@ -144,6 +146,7 @@ Add API routes under `src/raspberry_pab/routes/` for buttons, sensors, or backen
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `PAB_DISPLAY_TITLE` | `Raspberry-PAB` | Title shown on the kiosk display |
 | `PAB_HOST` | `127.0.0.1` | Local URL host used by Chromium |
 | `PAB_BIND_HOST` | `0.0.0.0` | Address uvicorn listens on for remote access |
 | `PAB_PORT` | `8080` | Server port |

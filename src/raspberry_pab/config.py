@@ -24,6 +24,7 @@ class Settings:
     """Runtime settings for the kiosk application."""
 
     app_name: str = "Raspberry-PAB"
+    display_title: str = "Raspberry-PAB"
     log_level: str = "INFO"
     admin_pin: str = "1234"
     data_dir: Path = _DEFAULT_DATA_DIR
@@ -47,6 +48,10 @@ class Settings:
         port = int(os.getenv("PAB_PORT", str(_DEFAULT_PORT)))
         return cls(
             app_name=os.getenv("PAB_APP_NAME", cls.app_name),
+            display_title=os.getenv(
+                "PAB_DISPLAY_TITLE",
+                os.getenv("PAB_APP_NAME", cls.app_name),
+            ),
             log_level=os.getenv("PAB_LOG_LEVEL", cls.log_level),
             admin_pin=os.getenv("PAB_ADMIN_PIN", cls.admin_pin),
             data_dir=data_dir,

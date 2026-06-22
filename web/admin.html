@@ -22,7 +22,10 @@
           <p>Manage offline starts and reminder rules.</p>
           <p class="admin__remote" id="remoteInfo">Remote access checking…</p>
         </div>
-        <a class="admin__link" href="/">Back to Kiosk</a>
+        <div class="admin__header-actions">
+          <button class="admin__link" data-open-keyboard type="button">Keyboard</button>
+          <a class="admin__link" href="/">Back to Kiosk</a>
+        </div>
       </header>
 
       <nav class="admin__nav" id="adminNav" aria-label="Admin sections" hidden>
@@ -44,6 +47,7 @@
           <input id="pinInput" inputmode="numeric" type="password" />
         </label>
         <button id="savePin" type="button">Unlock</button>
+        <button data-open-keyboard type="button">Keyboard</button>
         <p class="admin__pin-message" id="pinMessage" aria-live="polite"></p>
       </section>
 

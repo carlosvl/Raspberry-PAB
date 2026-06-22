@@ -32,12 +32,14 @@ def settings(tmp_path: Path, web_dir: Path) -> Settings:
 
 def test_settings_from_env(monkeypatch, tmp_path: Path, web_dir: Path) -> None:
     monkeypatch.setenv("PAB_DATA_DIR", str(tmp_path / "custom"))
+    monkeypatch.setenv("PAB_DISPLAY_TITLE", "Start List")
     monkeypatch.setenv("PAB_LOG_LEVEL", "DEBUG")
     monkeypatch.setenv("PAB_BIND_HOST", "0.0.0.0")
     monkeypatch.setenv("PAB_PORT", "9090")
     monkeypatch.setenv("PAB_WEB_DIR", str(web_dir))
     settings = Settings.from_env()
     assert settings.data_dir == tmp_path / "custom"
+    assert settings.display_title == "Start List"
     assert settings.log_level == "DEBUG"
     assert settings.bind_host == "0.0.0.0"
     assert settings.port == 9090
@@ -53,6 +55,18 @@ def test_health_endpoint(settings: Settings) -> None:
     response = client.get("/api/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "app": settings.app_name}
+
+
+def test_public_config_endpoint(settings: Settings) -> None:
+    settings = replace(settings, display_title="Start List")
+    client = TestClient(create_app(settings))
+    response = client.get("/api/config")
+    assert response.status_code == 200
+    assert response.json() == {
+        "app_name": "Raspberry-PAB",
+        "display_title": "Start List",
+        "port": 8080,
+    }
 
 
 def test_index_served(settings: Settings) -> None:

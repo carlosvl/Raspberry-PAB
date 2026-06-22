@@ -1,5 +1,6 @@
 const scheduleBody = document.getElementById("scheduleBody");
 const statusEl = document.getElementById("status");
+const kioskTitleEl = document.getElementById("kioskTitle");
 const clockEl = document.getElementById("clock");
 const eventDateEl = document.getElementById("eventDate");
 const remoteInfoEl = document.getElementById("remoteInfo");
@@ -56,6 +57,20 @@ function updateClock() {
 
 function setStatus(message) {
   if (statusEl) statusEl.textContent = message;
+}
+
+async function loadAppConfig() {
+  try {
+    const response = await fetch("/api/config");
+    if (!response.ok) throw new Error("config request failed");
+    const config = await response.json();
+    if (kioskTitleEl && config.display_title) {
+      kioskTitleEl.textContent = config.display_title;
+      document.title = config.display_title;
+    }
+  } catch {
+    // The hard-coded title remains usable if config loading fails.
+  }
 }
 
 function renderNetworkInfo(info) {
@@ -209,6 +224,7 @@ controlMenu?.addEventListener("click", (event) => {
 });
 configureAdminHotspot();
 registerServiceWorker();
+loadAppConfig();
 updateClock();
 loadNetworkInfo();
 loadSchedule();

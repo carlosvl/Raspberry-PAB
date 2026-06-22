@@ -123,3 +123,31 @@ def test_exit_browser_endpoint(monkeypatch, tmp_path: Path) -> None:
     assert response.status_code == 200
     assert response.json() == {"closing": True}
     assert calls == [["sh", "-c", "pkill chromium || pkill chromium-browser || true"]]
+
+
+def test_keyboard_endpoint_launches_script(monkeypatch, tmp_path: Path) -> None:
+    calls: list[list[str]] = []
+    keyboard_script = tmp_path / "touch-keyboard.sh"
+    keyboard_script.write_text("#!/usr/bin/env sh\n")
+
+    def fake_popen(command: list[str], *, start_new_session: bool) -> object:
+        calls.append(command)
+        assert start_new_session
+        return object()
+
+    monkeypatch.setattr("raspberry_pab.routes.kiosk.subprocess.Popen", fake_popen)
+    monkeypatch.setattr(
+        "raspberry_pab.routes.kiosk._keyboard_script",
+        lambda: keyboard_script,
+    )
+    settings = Settings(
+        admin_pin="9999",
+        data_dir=tmp_path / "data",
+        web_dir=make_web_dir(tmp_path),
+    )
+    with TestClient(create_app(settings)) as client:
+        response = client.post("/api/kiosk/keyboard")
+
+    assert response.status_code == 200
+    assert response.json() == {"opening": True}
+    assert calls == [["sh", str(keyboard_script)]]
