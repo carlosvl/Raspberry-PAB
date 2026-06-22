@@ -38,6 +38,21 @@ def test_admin_pin_required_for_writes(tmp_path: Path) -> None:
     assert response.status_code == 401
 
 
+def test_admin_pin_verify_endpoint(tmp_path: Path) -> None:
+    settings = Settings(
+        admin_pin="9999",
+        data_dir=tmp_path / "data",
+        web_dir=make_web_dir(tmp_path),
+    )
+    with TestClient(create_app(settings)) as client:
+        denied = client.get("/api/admin/verify", headers={"X-Admin-Pin": "1111"})
+        allowed = client.get("/api/admin/verify", headers={"X-Admin-Pin": "9999"})
+
+    assert denied.status_code == 401
+    assert allowed.status_code == 200
+    assert allowed.json() == {"authenticated": True}
+
+
 def test_participants_endpoint_returns_countdown(tmp_path: Path) -> None:
     settings = Settings(
         admin_pin="9999",

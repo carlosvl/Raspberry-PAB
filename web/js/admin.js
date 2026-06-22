@@ -1,7 +1,10 @@
 const pinPanel = document.getElementById("pinPanel");
+const adminHeader = document.getElementById("adminHeader");
+const adminNav = document.getElementById("adminNav");
 const adminPanels = document.getElementById("adminPanels");
 const pinInput = document.getElementById("pinInput");
 const savePin = document.getElementById("savePin");
+const pinMessage = document.getElementById("pinMessage");
 const participantForm = document.getElementById("participantForm");
 const participantList = document.getElementById("participantList");
 const ruleForm = document.getElementById("ruleForm");
@@ -25,6 +28,17 @@ function headers(extra = {}) {
 
 function setOutput(message) {
   if (adminOutput) adminOutput.textContent = message;
+}
+
+function setPinMessage(message) {
+  if (pinMessage) pinMessage.textContent = message;
+}
+
+function setAdminVisible(visible) {
+  if (pinPanel) pinPanel.hidden = visible;
+  if (adminHeader) adminHeader.hidden = !visible;
+  if (adminNav) adminNav.hidden = !visible;
+  if (adminPanels) adminPanels.hidden = !visible;
 }
 
 function renderNetworkInfo(info) {
@@ -72,12 +86,33 @@ async function api(path, options = {}) {
   return response.json();
 }
 
-function unlock() {
-  if (!pinInput?.value) return;
-  sessionStorage.setItem("pabAdminPin", pinInput.value);
-  if (pinPanel) pinPanel.hidden = true;
-  if (adminPanels) adminPanels.hidden = false;
-  loadAll();
+async function verifyPin(pin) {
+  const response = await fetch("/api/admin/verify", {
+    headers: {
+      "X-Admin-Pin": pin,
+    },
+  });
+  return response.ok;
+}
+
+async function revealAdmin() {
+  setAdminVisible(true);
+  await Promise.all([loadNetworkInfo(), loadAll()]);
+}
+
+async function unlock() {
+  const pin = pinInput?.value || "";
+  if (!pin) return;
+  setPinMessage("Checking PIN...");
+  if (!(await verifyPin(pin))) {
+    sessionStorage.removeItem("pabAdminPin");
+    setAdminVisible(false);
+    setPinMessage("Invalid PIN.");
+    return;
+  }
+  sessionStorage.setItem("pabAdminPin", pin);
+  setPinMessage("");
+  await revealAdmin();
 }
 
 function clearParticipantForm() {
@@ -268,7 +303,6 @@ document.getElementById("exportSchedule")?.addEventListener("click", async () =>
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;
 registerServiceWorker();
-loadNetworkInfo();
 document.querySelectorAll("[data-scroll-target]").forEach((button) => {
   button.addEventListener("click", () => {
     scrollToPanel(button.dataset.scrollTarget);
@@ -276,7 +310,15 @@ document.querySelectorAll("[data-scroll-target]").forEach((button) => {
 });
 
 if (adminPin()) {
-  if (pinPanel) pinPanel.hidden = true;
-  if (adminPanels) adminPanels.hidden = false;
-  loadAll();
+  verifyPin(adminPin()).then((valid) => {
+    if (valid) {
+      revealAdmin();
+    } else {
+      sessionStorage.removeItem("pabAdminPin");
+      setAdminVisible(false);
+      setPinMessage("Enter admin PIN.");
+    }
+  });
+} else {
+  setAdminVisible(false);
 }

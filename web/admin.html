@@ -16,7 +16,7 @@
   </head>
   <body class="admin-page">
     <main class="admin">
-      <header class="admin__header">
+      <header class="admin__header" id="adminHeader" hidden>
         <div>
           <h1>Schedule Admin</h1>
           <p>Manage offline starts and reminder rules.</p>
@@ -25,7 +25,7 @@
         <a class="admin__link" href="/">Back to Kiosk</a>
       </header>
 
-      <nav class="admin__nav" aria-label="Admin sections">
+      <nav class="admin__nav" id="adminNav" aria-label="Admin sections" hidden>
         <button data-scroll-target="participantsPanel" type="button">
           Participants
         </button>
@@ -44,6 +44,7 @@
           <input id="pinInput" inputmode="numeric" type="password" />
         </label>
         <button id="savePin" type="button">Unlock</button>
+        <p class="admin__pin-message" id="pinMessage" aria-live="polite"></p>
       </section>
 
       <section class="admin__grid" id="adminPanels" hidden>

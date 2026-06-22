@@ -45,6 +45,11 @@ def require_admin_pin(
         )
 
 
+@router.get("/admin/verify", dependencies=[Depends(require_admin_pin)])
+def verify_admin_pin() -> dict[str, bool]:
+    return {"authenticated": True}
+
+
 @router.get("/participants", response_model=list[ParticipantStatus])
 def list_participants(
     request: Request,

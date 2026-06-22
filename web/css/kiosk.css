@@ -321,6 +321,17 @@ body.admin-page {
   background: #111c33;
 }
 
+.admin__pin {
+  max-width: 24rem;
+  margin: 15vh auto 0;
+}
+
+.admin__pin-message {
+  min-height: 1.25rem;
+  margin: 0.75rem 0 0;
+  color: #fbbf24;
+}
+
 .admin__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -594,6 +605,10 @@ body.admin-page {
   .panel {
     padding: 0.8rem;
     border-radius: 0.7rem;
+  }
+
+  .admin__pin {
+    margin-top: 1.5rem;
   }
 
   .admin__grid,
