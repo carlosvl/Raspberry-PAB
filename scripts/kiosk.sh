@@ -46,6 +46,10 @@ for candidate in chromium chromium-browser; do
     fi
 done
 
+if [[ -x "/usr/lib/chromium/chromium" ]]; then
+    CHROMIUM="/usr/lib/chromium/chromium"
+fi
+
 if [[ -z "${CHROMIUM}" ]]; then
     echo "Chromium not found. Install with: sudo apt install chromium" >&2
     exit 1
@@ -60,7 +64,13 @@ KIOSK_PROFILE_DIR="${PAB_CHROMIUM_USER_DATA_DIR:-${XDG_RUNTIME_DIR:-/tmp}/raspbe
 mkdir -p "${KIOSK_PROFILE_DIR}"
 
 exec "${CHROMIUM}" \
+    --password-store=basic \
+    --disable-gpu \
+    --disable-gpu-rasterization \
     --kiosk \
+    --start-fullscreen \
+    --window-size=1920,1080 \
+    --window-position=0,0 \
     --user-data-dir="${KIOSK_PROFILE_DIR}" \
     --noerrdialogs \
     --disable-infobars \
