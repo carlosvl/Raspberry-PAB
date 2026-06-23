@@ -82,6 +82,11 @@ class ScheduleStore:
                     FOREIGN KEY (rule_id)
                         REFERENCES reminder_rules (id) ON DELETE CASCADE
                 );
+
+                CREATE TABLE IF NOT EXISTS app_settings (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                );
                 """
             )
             count = conn.execute("SELECT COUNT(*) FROM reminder_rules").fetchone()[0]
@@ -316,6 +321,31 @@ class ScheduleStore:
             participants=participants,
             reminder_rules=rules,
         )
+
+    def get_setting(self, key: str) -> str | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT value FROM app_settings WHERE key = ?",
+                (key,),
+            ).fetchone()
+        return str(row["value"]) if row is not None else None
+
+    def set_setting(self, key: str, value: str) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO app_settings (key, value)
+                VALUES (?, ?)
+                ON CONFLICT(key) DO UPDATE SET value = excluded.value
+                """,
+                (key, value),
+            )
+            conn.commit()
+
+    def delete_setting(self, key: str) -> None:
+        with self._connect() as conn:
+            conn.execute("DELETE FROM app_settings WHERE key = ?", (key,))
+            conn.commit()
 
     def record_fired_alert(self, alert: Alert) -> bool:
         with self._connect() as conn:

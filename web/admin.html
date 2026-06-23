@@ -22,13 +22,13 @@
           <p>Manage offline starts and reminder rules.</p>
           <p class="admin__remote" id="remoteInfo">Remote access checking…</p>
         </div>
-        <div class="admin__header-actions">
-          <button class="admin__link" data-open-keyboard type="button">Keyboard</button>
-          <a class="admin__link" href="/">Back to Kiosk</a>
-        </div>
+        <a class="admin__link" href="/">Back to Kiosk</a>
       </header>
 
       <nav class="admin__nav" id="adminNav" aria-label="Admin sections" hidden>
+        <button data-scroll-target="brandingPanel" type="button">
+          Branding
+        </button>
         <button data-scroll-target="participantsPanel" type="button">
           Participants
         </button>
@@ -44,14 +44,50 @@
       <section class="admin__pin" id="pinPanel">
         <label>
           Admin PIN
-          <input id="pinInput" inputmode="numeric" type="password" />
+          <input id="pinInput" inputmode="numeric" readonly type="password" />
         </label>
+        <div class="pin-pad" aria-label="Admin PIN keypad">
+          <button data-pin-digit="1" type="button">1</button>
+          <button data-pin-digit="2" type="button">2</button>
+          <button data-pin-digit="3" type="button">3</button>
+          <button data-pin-digit="4" type="button">4</button>
+          <button data-pin-digit="5" type="button">5</button>
+          <button data-pin-digit="6" type="button">6</button>
+          <button data-pin-digit="7" type="button">7</button>
+          <button data-pin-digit="8" type="button">8</button>
+          <button data-pin-digit="9" type="button">9</button>
+          <button data-pin-clear type="button">Clear</button>
+          <button data-pin-digit="0" type="button">0</button>
+          <button data-pin-delete type="button">Back</button>
+        </div>
         <button id="savePin" type="button">Unlock</button>
-        <button data-open-keyboard type="button">Keyboard</button>
         <p class="admin__pin-message" id="pinMessage" aria-live="polite"></p>
       </section>
 
       <section class="admin__grid" id="adminPanels" hidden>
+        <article class="panel panel--wide" id="brandingPanel">
+          <h2>Kiosk Branding</h2>
+          <form class="form" id="brandingForm">
+            <label>
+              Display Title
+              <input id="brandingTitle" maxlength="120" required />
+            </label>
+            <button type="submit">Save Title</button>
+          </form>
+          <div class="branding__logo">
+            <img alt="Current logo preview" class="branding__preview" id="logoPreview" hidden />
+            <p class="branding__hint" id="logoStatus">No logo uploaded.</p>
+            <label>
+              Logo (PNG, max 512 KB)
+              <input accept="image/png" id="logoUpload" type="file" />
+            </label>
+            <div class="button-row">
+              <button id="uploadLogo" type="button">Upload Logo</button>
+              <button id="removeLogo" type="button">Remove Logo</button>
+            </div>
+          </div>
+        </article>
+
         <article class="panel" id="participantsPanel">
           <h2>Participants</h2>
           <form class="form" id="participantForm">

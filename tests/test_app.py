@@ -65,6 +65,7 @@ def test_public_config_endpoint(settings: Settings) -> None:
     assert response.json() == {
         "app_name": "Raspberry-PAB",
         "display_title": "Start List",
+        "logo_url": None,
         "port": 8080,
     }
 

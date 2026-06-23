@@ -41,6 +41,10 @@ class Settings:
     def db_path(self) -> Path:
         return self.data_dir / "schedule.db"
 
+    @property
+    def logo_path(self) -> Path:
+        return self.data_dir / "logo.png"
+
     @classmethod
     def from_env(cls) -> Settings:
         data_dir = Path(os.getenv("PAB_DATA_DIR", str(_DEFAULT_DATA_DIR)))

@@ -1,6 +1,7 @@
 const scheduleBody = document.getElementById("scheduleBody");
 const statusEl = document.getElementById("status");
 const kioskTitleEl = document.getElementById("kioskTitle");
+const kioskLogoEl = document.getElementById("kioskLogo");
 const clockEl = document.getElementById("clock");
 const eventDateEl = document.getElementById("eventDate");
 const remoteInfoEl = document.getElementById("remoteInfo");
@@ -67,6 +68,15 @@ async function loadAppConfig() {
     if (kioskTitleEl && config.display_title) {
       kioskTitleEl.textContent = config.display_title;
       document.title = config.display_title;
+    }
+    if (kioskLogoEl) {
+      if (config.logo_url) {
+        kioskLogoEl.src = config.logo_url;
+        kioskLogoEl.hidden = false;
+      } else {
+        kioskLogoEl.removeAttribute("src");
+        kioskLogoEl.hidden = true;
+      }
     }
   } catch {
     // The hard-coded title remains usable if config loading fails.

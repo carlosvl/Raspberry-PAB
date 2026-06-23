@@ -72,6 +72,16 @@ class ScheduleExport(ScheduleImport):
     pass
 
 
+class BrandingUpdate(BaseModel):
+    display_title: str = Field(min_length=1, max_length=120)
+
+
+class BrandingResponse(BaseModel):
+    display_title: str
+    has_logo: bool
+    logo_url: str | None = None
+
+
 class Alert(BaseModel):
     id: str
     participant_id: int

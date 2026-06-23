@@ -14,6 +14,27 @@ const remoteInfoEl = document.getElementById("remoteInfo");
 
 const todayParam = new Date().toISOString().slice(0, 10);
 
+// #region agent log
+function debugLog(runId, hypothesisId, message, data = {}) {
+  fetch("http://127.0.0.1:7579/ingest/df9ae8df-74cd-433c-86f3-f963364c6715", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "5f026f",
+    },
+    body: JSON.stringify({
+      sessionId: "5f026f",
+      runId,
+      hypothesisId,
+      location: "web/js/admin.js",
+      message,
+      data,
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+}
+// #endregion
+
 function adminPin() {
   return sessionStorage.getItem("pabAdminPin") || "";
 }
@@ -95,14 +116,59 @@ async function verifyPin(pin) {
   return response.ok;
 }
 
+function updatePin(value) {
+  if (!pinInput) return;
+  pinInput.value = value;
+  // #region agent log
+  debugLog("pin-pad-verification", "H9", "pin value updated from keypad", {
+    length: value.length,
+  });
+  // #endregion
+}
+
+function appendPinDigit(digit) {
+  const nextValue = `${pinInput?.value || ""}${digit}`.slice(0, 12);
+  updatePin(nextValue);
+  setPinMessage("");
+}
+
+function deletePinDigit() {
+  updatePin((pinInput?.value || "").slice(0, -1));
+}
+
+function clearPinDigits() {
+  updatePin("");
+  setPinMessage("");
+}
+
 async function openKeyboard() {
+  // #region agent log
+  debugLog("keyboard-initial", "H1,H2", "keyboard button handler entered", {
+    buttonCount: document.querySelectorAll("[data-open-keyboard]").length,
+    hasPinPanel: Boolean(pinPanel),
+    hasAdminPanels: Boolean(adminPanels),
+    locationPath: window.location.pathname,
+  });
+  // #endregion
   setPinMessage("Opening keyboard...");
   try {
     const response = await fetch("/api/kiosk/keyboard", { method: "POST" });
+    // #region agent log
+    debugLog("keyboard-initial", "H2", "keyboard API response received", {
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+    });
+    // #endregion
     if (!response.ok) throw new Error("keyboard request failed");
     setPinMessage("Keyboard opened.");
     setOutput("Keyboard opened.");
-  } catch {
+  } catch (error) {
+    // #region agent log
+    debugLog("keyboard-initial", "H2", "keyboard API request failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // #endregion
     setPinMessage("Keyboard is not available on this display.");
     setOutput("Keyboard is not available on this display.");
   }
@@ -227,8 +293,99 @@ async function loadRules() {
 
 async function loadAll() {
   try {
-    await Promise.all([loadParticipants(), loadRules()]);
+    await Promise.all([loadBranding(), loadParticipants(), loadRules()]);
     setOutput("Loaded.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+}
+
+function renderBranding(branding) {
+  const titleInput = document.getElementById("brandingTitle");
+  const preview = document.getElementById("logoPreview");
+  const status = document.getElementById("logoStatus");
+  if (titleInput) titleInput.value = branding.display_title || "";
+  if (preview && status) {
+    if (branding.logo_url) {
+      preview.src = branding.logo_url;
+      preview.hidden = false;
+      status.textContent = "Logo appears in the top-left corner of the kiosk.";
+    } else {
+      preview.hidden = true;
+      preview.removeAttribute("src");
+      status.textContent = "No logo uploaded.";
+    }
+  }
+}
+
+async function loadBranding() {
+  const branding = await api("/api/admin/branding");
+  renderBranding(branding);
+}
+
+async function saveBrandingTitle(event) {
+  event.preventDefault();
+  const title = document.getElementById("brandingTitle")?.value?.trim();
+  if (!title) return;
+  try {
+    const branding = await api("/api/admin/branding", {
+      method: "PUT",
+      body: JSON.stringify({ display_title: title }),
+    });
+    renderBranding(branding);
+    setOutput("Display title saved.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+}
+
+async function uploadLogoFile() {
+  const input = document.getElementById("logoUpload");
+  const file = input?.files?.[0];
+  if (!file) {
+    setOutput("Choose a PNG file first.");
+    return;
+  }
+  if (file.type !== "image/png") {
+    setOutput("Logo must be a PNG file.");
+    return;
+  }
+  const formData = new FormData();
+  formData.append("file", file);
+  try {
+    const response = await fetch("/api/admin/branding/logo", {
+      method: "POST",
+      headers: {
+        "X-Admin-Pin": adminPin(),
+      },
+      body: formData,
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(body || `Upload failed: ${response.status}`);
+    }
+    renderBranding(await response.json());
+    if (input) input.value = "";
+    setOutput("Logo uploaded.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+}
+
+async function removeLogoFile() {
+  try {
+    const response = await fetch("/api/admin/branding/logo", {
+      method: "DELETE",
+      headers: {
+        "X-Admin-Pin": adminPin(),
+      },
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(body || `Remove failed: ${response.status}`);
+    }
+    await loadBranding();
+    setOutput("Logo removed.");
   } catch (error) {
     setOutput(error.message);
   }
@@ -279,9 +436,19 @@ ruleForm?.addEventListener("submit", async (event) => {
   }
 });
 
+document.getElementById("brandingForm")?.addEventListener("submit", saveBrandingTitle);
+document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
+document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
 document.getElementById("clearRule")?.addEventListener("click", clearRuleForm);
 document.getElementById("participantDate")?.addEventListener("change", loadParticipants);
+document.querySelectorAll("[data-pin-digit]").forEach((button) => {
+  button.addEventListener("click", () => {
+    appendPinDigit(button.dataset.pinDigit || "");
+  });
+});
+document.querySelector("[data-pin-delete]")?.addEventListener("click", deletePinDigit);
+document.querySelector("[data-pin-clear]")?.addEventListener("click", clearPinDigits);
 document.querySelectorAll("[data-open-keyboard]").forEach((button) => {
   button.addEventListener("click", openKeyboard);
 });
@@ -319,6 +486,14 @@ document.getElementById("exportSchedule")?.addEventListener("click", async () =>
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;
 registerServiceWorker();
+// #region agent log
+debugLog("keyboard-initial", "H1", "admin script initialized", {
+  keyboardButtonCount: document.querySelectorAll("[data-open-keyboard]").length,
+  hasPinPanel: Boolean(pinPanel),
+  hasPinInput: Boolean(pinInput),
+  serviceWorkerAvailable: "serviceWorker" in navigator,
+});
+// #endregion
 document.querySelectorAll("[data-scroll-target]").forEach((button) => {
   button.addEventListener("click", () => {
     scrollToPanel(button.dataset.scrollTarget);

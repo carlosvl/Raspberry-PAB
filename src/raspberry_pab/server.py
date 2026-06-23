@@ -13,9 +13,11 @@ from fastapi.staticfiles import StaticFiles
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.routes.alerts import router as alerts_router
+from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.scheduler import AlertBroker, ReminderScheduler
+from raspberry_pab.branding import effective_display_title, logo_url
 
 
 def _local_ipv4_addresses() -> list[str]:
@@ -71,10 +73,11 @@ def create_app(settings: Settings) -> FastAPI:
         return {"status": "ok", "app": settings.app_name}
 
     @app.get("/api/config")
-    def public_config() -> dict[str, str | int]:
+    def public_config() -> dict[str, str | int | None]:
         return {
             "app_name": settings.app_name,
-            "display_title": settings.display_title,
+            "display_title": effective_display_title(settings, store),
+            "logo_url": logo_url(settings, store),
             "port": settings.port,
         }
 
@@ -112,6 +115,7 @@ def create_app(settings: Settings) -> FastAPI:
         }
 
     app.include_router(schedule_router)
+    app.include_router(branding_router)
     app.include_router(alerts_router)
     app.include_router(kiosk_router)
 
