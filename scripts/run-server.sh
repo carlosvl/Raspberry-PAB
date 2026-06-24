@@ -5,6 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+SERVER_BIN="${PROJECT_ROOT}/.venv/bin/raspberry-pab"
 
 if [[ -f "${PROJECT_ROOT}/.env" ]]; then
     set -a
@@ -23,4 +24,15 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
-exec "${PROJECT_ROOT}/.venv/bin/raspberry-pab"
+if command -v systemd-inhibit >/dev/null 2>&1; then
+    if systemd-inhibit \
+        --what=idle:sleep:handle-lid-switch:handle-suspend-key:handle-hibernate-key \
+        --who=Raspberry-PAB \
+        --why="Schedule kiosk must stay online" \
+        --mode=block \
+        "${SERVER_BIN}"; then
+        exit 0
+    fi
+fi
+
+exec "${SERVER_BIN}"

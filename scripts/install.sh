@@ -60,6 +60,12 @@ ${INSTALL_USER} ALL=(ALL) NOPASSWD: /bin/systemctl restart raspberry-pab
 EOF
 sudo chmod 440 /etc/sudoers.d/raspberry-pab-restart
 
+echo "==> Allowing sleep inhibition for the kiosk service user..."
+sed "s|@INSTALL_USER@|${INSTALL_USER}|g" \
+    deploy/polkit/49-raspberry-pab-inhibit.rules \
+    | sudo tee /etc/polkit-1/rules.d/49-raspberry-pab-inhibit.rules >/dev/null
+sudo chmod 644 /etc/polkit-1/rules.d/49-raspberry-pab-inhibit.rules
+
 echo "==> Disabling OS screen blanking..."
 sudo raspi-config nonint do_blanking 1 >/dev/null 2>&1 || true
 
