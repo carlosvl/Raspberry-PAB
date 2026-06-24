@@ -14,27 +14,6 @@ const remoteInfoEl = document.getElementById("remoteInfo");
 
 const todayParam = new Date().toISOString().slice(0, 10);
 
-// #region agent log
-function debugLog(runId, hypothesisId, message, data = {}) {
-  fetch("http://127.0.0.1:7579/ingest/df9ae8df-74cd-433c-86f3-f963364c6715", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "5f026f",
-    },
-    body: JSON.stringify({
-      sessionId: "5f026f",
-      runId,
-      hypothesisId,
-      location: "web/js/admin.js",
-      message,
-      data,
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-}
-// #endregion
-
 function adminPin() {
   return sessionStorage.getItem("pabAdminPin") || "";
 }
@@ -119,11 +98,6 @@ async function verifyPin(pin) {
 function updatePin(value) {
   if (!pinInput) return;
   pinInput.value = value;
-  // #region agent log
-  debugLog("pin-pad-verification", "H9", "pin value updated from keypad", {
-    length: value.length,
-  });
-  // #endregion
 }
 
 function appendPinDigit(digit) {
@@ -142,33 +116,13 @@ function clearPinDigits() {
 }
 
 async function openKeyboard() {
-  // #region agent log
-  debugLog("keyboard-initial", "H1,H2", "keyboard button handler entered", {
-    buttonCount: document.querySelectorAll("[data-open-keyboard]").length,
-    hasPinPanel: Boolean(pinPanel),
-    hasAdminPanels: Boolean(adminPanels),
-    locationPath: window.location.pathname,
-  });
-  // #endregion
   setPinMessage("Opening keyboard...");
   try {
     const response = await fetch("/api/kiosk/keyboard", { method: "POST" });
-    // #region agent log
-    debugLog("keyboard-initial", "H2", "keyboard API response received", {
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText,
-    });
-    // #endregion
     if (!response.ok) throw new Error("keyboard request failed");
     setPinMessage("Keyboard opened.");
     setOutput("Keyboard opened.");
   } catch (error) {
-    // #region agent log
-    debugLog("keyboard-initial", "H2", "keyboard API request failed", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    // #endregion
     setPinMessage("Keyboard is not available on this display.");
     setOutput("Keyboard is not available on this display.");
   }
@@ -486,14 +440,6 @@ document.getElementById("exportSchedule")?.addEventListener("click", async () =>
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;
 registerServiceWorker();
-// #region agent log
-debugLog("keyboard-initial", "H1", "admin script initialized", {
-  keyboardButtonCount: document.querySelectorAll("[data-open-keyboard]").length,
-  hasPinPanel: Boolean(pinPanel),
-  hasPinInput: Boolean(pinInput),
-  serviceWorkerAvailable: "serviceWorker" in navigator,
-});
-// #endregion
 document.querySelectorAll("[data-scroll-target]").forEach((button) => {
   button.addEventListener("click", () => {
     scrollToPanel(button.dataset.scrollTarget);

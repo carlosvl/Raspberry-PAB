@@ -109,7 +109,7 @@ def test_exit_browser_endpoint(monkeypatch, tmp_path: Path) -> None:
     def fake_popen(command: list[str], *, start_new_session: bool) -> object:
         calls.append(command)
         assert start_new_session
-        return object()
+        return type("Process", (), {"pid": 1234})()
 
     monkeypatch.setattr("raspberry_pab.routes.kiosk.subprocess.Popen", fake_popen)
     settings = Settings(
@@ -133,7 +133,7 @@ def test_keyboard_endpoint_launches_script(monkeypatch, tmp_path: Path) -> None:
     def fake_popen(command: list[str], *, start_new_session: bool) -> object:
         calls.append(command)
         assert start_new_session
-        return object()
+        return type("Process", (), {"pid": 1234})()
 
     monkeypatch.setattr("raspberry_pab.routes.kiosk.subprocess.Popen", fake_popen)
     monkeypatch.setattr(
@@ -150,4 +150,4 @@ def test_keyboard_endpoint_launches_script(monkeypatch, tmp_path: Path) -> None:
 
     assert response.status_code == 200
     assert response.json() == {"opening": True}
-    assert calls == [["sh", str(keyboard_script)]]
+    assert calls == [["bash", str(keyboard_script)]]

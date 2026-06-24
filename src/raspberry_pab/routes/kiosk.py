@@ -44,5 +44,5 @@ def open_keyboard(request: Request) -> dict[str, bool]:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Touch keyboard launcher is not installed",
         )
-    subprocess.Popen(["sh", str(script)], start_new_session=True)
+    subprocess.Popen(["bash", str(script)], start_new_session=True)
     return {"opening": True}
