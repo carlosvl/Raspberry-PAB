@@ -53,6 +53,12 @@ sed \
     | sudo tee /etc/systemd/system/raspberry-pab.service >/dev/null
 sudo systemctl daemon-reload
 
+echo "==> Allowing passwordless service restart from admin UI..."
+sudo tee /etc/sudoers.d/raspberry-pab-restart >/dev/null <<EOF
+${INSTALL_USER} ALL=(ALL) NOPASSWD: /bin/systemctl restart raspberry-pab
+EOF
+sudo chmod 440 /etc/sudoers.d/raspberry-pab-restart
+
 echo "==> Configuring fallback Wi-Fi hotspot..."
 HOTSPOT_IFACE="${PAB_HOTSPOT_IFACE:-wlan0}"
 HOTSPOT_CONNECTION="${PAB_HOTSPOT_CONNECTION:-PAB-Hotspot}"

@@ -10,7 +10,9 @@ const participantList = document.getElementById("participantList");
 const ruleForm = document.getElementById("ruleForm");
 const ruleList = document.getElementById("ruleList");
 const adminOutput = document.getElementById("adminOutput");
+const adminFooter = document.getElementById("adminFooter");
 const remoteInfoEl = document.getElementById("remoteInfo");
+const restartServiceButton = document.getElementById("restartService");
 
 const todayParam = new Date().toISOString().slice(0, 10);
 
@@ -39,14 +41,15 @@ function setAdminVisible(visible) {
   if (adminHeader) adminHeader.hidden = !visible;
   if (adminNav) adminNav.hidden = !visible;
   if (adminPanels) adminPanels.hidden = !visible;
+  if (adminFooter) adminFooter.hidden = !visible;
 }
 
 function renderNetworkInfo(info) {
   if (!remoteInfoEl) return;
   const url = info.urls?.[0] || info.hotspot_url;
   remoteInfoEl.textContent = url
-    ? `Remote: ${url}/admin or ${info.mdns_name}:${info.port}/admin`
-    : "Remote access unavailable";
+    ? `Remote admin: ${url}/admin or ${info.mdns_name}:${info.port}/admin`
+    : "Remote admin unavailable";
 }
 
 async function loadNetworkInfo() {
@@ -55,7 +58,7 @@ async function loadNetworkInfo() {
     if (!response.ok) throw new Error("network request failed");
     renderNetworkInfo(await response.json());
   } catch {
-    if (remoteInfoEl) remoteInfoEl.textContent = "Remote access unavailable";
+    if (remoteInfoEl) remoteInfoEl.textContent = "Remote admin unavailable";
   }
 }
 
@@ -125,6 +128,46 @@ async function openKeyboard() {
   } catch (error) {
     setPinMessage("Keyboard is not available on this display.");
     setOutput("Keyboard is not available on this display.");
+  }
+}
+
+async function restartService() {
+  if (
+    !window.confirm(
+      "Restart the Raspberry-PAB service? The page may disconnect briefly.",
+    )
+  ) {
+    return;
+  }
+
+  setOutput("Restarting service...");
+  if (restartServiceButton) restartServiceButton.disabled = true;
+  try {
+    await api("/api/kiosk/restart-service", { method: "POST" });
+  } catch {
+    // The connection often drops while systemd restarts the app.
+  }
+
+  setOutput("Waiting for service to come back...");
+  try {
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      try {
+        const response = await fetch("/api/health");
+        if (response.ok) {
+          setOutput("Service restarted.");
+          await loadAll();
+          return;
+        }
+      } catch {
+        // Service is still restarting.
+      }
+    }
+    setOutput("Restart requested. Reload the page if the admin UI does not recover.");
+  } finally {
+    if (restartServiceButton) restartServiceButton.disabled = false;
   }
 }
 
@@ -436,6 +479,8 @@ document.getElementById("exportSchedule")?.addEventListener("click", async () =>
     setOutput(error.message);
   }
 });
+
+restartServiceButton?.addEventListener("click", restartService);
 
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;

@@ -20,7 +20,6 @@
         <div>
           <h1>Schedule Admin</h1>
           <p>Manage offline starts and reminder rules.</p>
-          <p class="admin__remote" id="remoteInfo">Remote access checking…</p>
         </div>
         <a class="admin__link" href="/">Back to Kiosk</a>
       </header>
@@ -155,6 +154,11 @@
           <pre class="admin__output" id="adminOutput"></pre>
         </article>
       </section>
+
+      <footer class="admin__footer" id="adminFooter" hidden>
+        <p class="admin__remote" id="remoteInfo">Remote admin checking…</p>
+        <button id="restartService" type="button">Restart Service</button>
+      </footer>
     </main>
     <script src="/js/admin.js"></script>
   </body>

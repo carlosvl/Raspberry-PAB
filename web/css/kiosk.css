@@ -141,6 +141,30 @@ body.admin-page {
   margin-top: 0.35rem;
 }
 
+.admin__footer {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: #111c33;
+}
+
+.admin__footer button {
+  justify-self: start;
+  padding: 0.85rem 1.1rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: #334155;
+  color: #f8fafc;
+  font: inherit;
+  font-weight: 800;
+}
+
+.admin__footer button:disabled {
+  opacity: 0.6;
+}
+
 .alert,
 .control-menu {
   position: fixed;
@@ -708,6 +732,20 @@ body.admin-page {
   .form,
   .admin__list {
     gap: 0.65rem;
+  }
+
+  .admin__footer {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    border-radius: 0.7rem;
+    gap: 0.65rem;
+  }
+
+  .admin__footer button {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9rem;
   }
 
   .form input,

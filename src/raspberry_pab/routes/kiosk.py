@@ -5,9 +5,13 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+
+from raspberry_pab.routes.schedule import require_admin_pin
 
 router = APIRouter(prefix="/api/kiosk", tags=["kiosk"])
+
+SERVICE_NAME = "raspberry-pab"
 
 
 def _require_local_client(request: Request) -> None:
@@ -46,3 +50,13 @@ def open_keyboard(request: Request) -> dict[str, bool]:
         )
     subprocess.Popen(["bash", str(script)], start_new_session=True)
     return {"opening": True}
+
+
+@router.post("/restart-service", dependencies=[Depends(require_admin_pin)])
+def restart_service() -> dict[str, bool]:
+    """Restart the Raspberry-PAB systemd service."""
+    subprocess.Popen(
+        ["sudo", "-n", "systemctl", "restart", SERVICE_NAME],
+        start_new_session=True,
+    )
+    return {"restarting": True}

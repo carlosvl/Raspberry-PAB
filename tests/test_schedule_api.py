@@ -151,3 +151,40 @@ def test_keyboard_endpoint_launches_script(monkeypatch, tmp_path: Path) -> None:
     assert response.status_code == 200
     assert response.json() == {"opening": True}
     assert calls == [["bash", str(keyboard_script)]]
+
+
+def test_restart_service_requires_admin_pin(tmp_path: Path) -> None:
+    settings = Settings(
+        admin_pin="9999",
+        data_dir=tmp_path / "data",
+        web_dir=make_web_dir(tmp_path),
+    )
+    with TestClient(create_app(settings)) as client:
+        response = client.post("/api/kiosk/restart-service")
+
+    assert response.status_code == 401
+
+
+def test_restart_service_launches_systemctl(monkeypatch, tmp_path: Path) -> None:
+    calls: list[list[str]] = []
+
+    def fake_popen(command: list[str], *, start_new_session: bool) -> object:
+        calls.append(command)
+        assert start_new_session
+        return type("Process", (), {"pid": 1234})()
+
+    monkeypatch.setattr("raspberry_pab.routes.kiosk.subprocess.Popen", fake_popen)
+    settings = Settings(
+        admin_pin="9999",
+        data_dir=tmp_path / "data",
+        web_dir=make_web_dir(tmp_path),
+    )
+    with TestClient(create_app(settings)) as client:
+        response = client.post(
+            "/api/kiosk/restart-service",
+            headers={"X-Admin-Pin": "9999"},
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {"restarting": True}
+    assert calls == [["sudo", "-n", "systemctl", "restart", "raspberry-pab"]]
