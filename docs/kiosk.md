@@ -33,30 +33,29 @@ Go to **System Options → Boot / Auto Login → Desktop Autologin**.
 
 The kiosk browser only starts when a graphical session is active.
 
-## 2. Disable screen blanking
+## 2. Screen blanking and sleep
 
-Add to `/etc/xdg/labwc/autostart` (Wayland / Bookworm default):
+`scripts/install.sh` disables Raspberry Pi OS screen blanking and the `raspberry-pab` systemd unit blocks idle/system sleep while the app is running.
+
+While the service is active it:
+
+- wraps the server with `systemd-inhibit` so the OS does not suspend or idle-sleep
+- runs `scripts/keep-awake.sh` in the background to disable DPMS/screen blanking on `:0` and `:1`
+
+The kiosk browser launchers (`scripts/kiosk.sh` and `scripts/kiosk-touch.sh`) also call `keep-awake.sh` when Chromium starts.
+
+If you need to tune the refresh interval, set `PAB_KEEP_AWAKE_INTERVAL` (seconds, default `45`) in `.env`.
+
+For manual setup on an existing Pi without re-running the installer:
 
 ```bash
-wlr-randr --output HDMI-A-1 --mode 1920x1080   # adjust if needed
+sudo raspi-config nonint do_blanking 1
+sudo apt install x11-xserver-utils
+./scripts/keep-awake.sh apply
+sudo systemctl restart raspberry-pab
 ```
 
-To prevent the display from sleeping, create `/etc/systemd/system/disable-screen-blanking.service`:
-
-```ini
-[Unit]
-Description=Disable screen blanking
-After=graphical.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/setterm --blank 0 --powerdown 0
-
-[Install]
-WantedBy=graphical.target
-```
-
-Or use `xset` on X11 sessions:
+On X11 sessions you can also run:
 
 ```bash
 xset s off

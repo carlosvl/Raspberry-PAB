@@ -22,7 +22,8 @@ sudo apt-get update
 sudo apt-get install -y \
     python3 python3-venv python3-pip git \
     chromium unclutter curl \
-    network-manager avahi-daemon
+    network-manager avahi-daemon \
+    x11-xserver-utils
 
 echo "==> Installing optional on-screen keyboard packages..."
 for keyboard_package in wvkbd matchbox-keyboard onboard; do
@@ -58,6 +59,9 @@ sudo tee /etc/sudoers.d/raspberry-pab-restart >/dev/null <<EOF
 ${INSTALL_USER} ALL=(ALL) NOPASSWD: /bin/systemctl restart raspberry-pab
 EOF
 sudo chmod 440 /etc/sudoers.d/raspberry-pab-restart
+
+echo "==> Disabling OS screen blanking..."
+sudo raspi-config nonint do_blanking 1 >/dev/null 2>&1 || true
 
 echo "==> Configuring fallback Wi-Fi hotspot..."
 HOTSPOT_IFACE="${PAB_HOTSPOT_IFACE:-wlan0}"
@@ -113,7 +117,7 @@ if [[ -d "${DESKTOP_DIR}" ]]; then
         metadata::trusted true >/dev/null 2>&1 || true
 fi
 
-chmod +x scripts/kiosk.sh scripts/touch-keyboard.sh
+chmod +x scripts/kiosk.sh scripts/touch-keyboard.sh scripts/keep-awake.sh scripts/run-server.sh
 
 echo ""
 echo "Kiosk installation complete."

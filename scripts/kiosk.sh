@@ -55,6 +55,8 @@ if [[ -z "${CHROMIUM}" ]]; then
     exit 1
 fi
 
+"${SCRIPT_DIR}/keep-awake.sh" apply
+
 # Hide idle cursor after 0.5s (optional, installed by install.sh)
 if [[ -n "${DISPLAY:-}" ]] && command -v unclutter >/dev/null 2>&1; then
     unclutter -idle 0.5 -root &
