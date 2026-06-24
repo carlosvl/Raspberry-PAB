@@ -43,7 +43,7 @@ make install-dev
 make run
 ```
 
-Open http://127.0.0.1:8080 in your browser. Hold the top-right kiosk header for three seconds to open `/admin`, then use the admin PIN from `.env` (`1234` by default).
+Open http://127.0.0.1:8080 in your browser. Tap the kiosk logo or title three times to open `/admin`, then use the admin PIN from `.env` (`1234` by default).
 
 ```bash
 make test

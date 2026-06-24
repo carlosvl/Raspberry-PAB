@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
+from raspberry_pab.models import BrandingResponse
 
 DISPLAY_TITLE_KEY = "display_title"
 LOGO_UPDATED_AT_KEY = "logo_updated_at"
@@ -34,9 +35,9 @@ def logo_url(settings: Settings, store: ScheduleStore) -> str | None:
     return f"/api/branding/logo?v={version}"
 
 
-def branding_response(settings: Settings, store: ScheduleStore) -> dict[str, str | bool | None]:
-    return {
-        "display_title": effective_display_title(settings, store),
-        "has_logo": has_logo(settings),
-        "logo_url": logo_url(settings, store),
-    }
+def branding_response(settings: Settings, store: ScheduleStore) -> BrandingResponse:
+    return BrandingResponse(
+        display_title=effective_display_title(settings, store),
+        has_logo=has_logo(settings),
+        logo_url=logo_url(settings, store),
+    )

@@ -6,6 +6,13 @@ from datetime import date, datetime, time, timedelta
 
 from raspberry_pab.models import Alert, Participant, ParticipantStatus, ReminderRule
 
+BOARD_DROP_AFTER_SECONDS = 600
+
+
+def show_participant_on_board(countdown_seconds: int) -> bool:
+    """Hide participants from the kiosk board 10 minutes after their start."""
+    return countdown_seconds > -BOARD_DROP_AFTER_SECONDS
+
 
 def participant_start_at(event_date: date, start_time: time) -> datetime:
     return datetime.combine(event_date, start_time)

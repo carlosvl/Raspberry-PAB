@@ -20,7 +20,7 @@ from raspberry_pab.models import (
     ScheduleExport,
     ScheduleImport,
 )
-from raspberry_pab.reminders import participant_status
+from raspberry_pab.reminders import participant_status, show_participant_on_board
 
 router = APIRouter(prefix="/api", tags=["schedule"])
 
@@ -57,10 +57,12 @@ def list_participants(
 ) -> list[ParticipantStatus]:
     event_date = date_filter or date.today()
     now = datetime.now()
-    return [
-        participant_status(participant, now)
-        for participant in get_store(request).list_participants(event_date)
-    ]
+    results: list[ParticipantStatus] = []
+    for participant in get_store(request).list_participants(event_date):
+        status = participant_status(participant, now)
+        if show_participant_on_board(status.countdown_seconds):
+            results.append(status)
+    return results
 
 
 @router.post(

@@ -7,6 +7,7 @@ from raspberry_pab.reminders import (
     build_due_alerts,
     compute_fire_times,
     render_message,
+    show_participant_on_board,
 )
 
 
@@ -64,3 +65,11 @@ def test_build_due_alerts_returns_matching_fire_slot() -> None:
     )
     assert len(alerts) == 1
     assert alerts[0].message == "Warm Up Carlos"
+
+
+def test_show_participant_on_board_until_ten_minutes_after_start() -> None:
+    assert show_participant_on_board(300) is True
+    assert show_participant_on_board(0) is True
+    assert show_participant_on_board(-599) is True
+    assert show_participant_on_board(-600) is False
+    assert show_participant_on_board(-900) is False

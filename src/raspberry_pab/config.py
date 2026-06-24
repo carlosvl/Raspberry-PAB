@@ -19,6 +19,13 @@ def _default_web_dir() -> Path:
     return Path(__file__).resolve().parents[3] / "web"
 
 
+def _env_bool(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
 @dataclass(frozen=True)
 class Settings:
     """Runtime settings for the kiosk application."""
@@ -32,6 +39,9 @@ class Settings:
     bind_host: str = _DEFAULT_BIND_HOST
     port: int = _DEFAULT_PORT
     web_dir: Path = Path(_default_web_dir())
+    led_enabled: bool = False
+    led_address: str = ""
+    led_name: str = "MELKL-OT21 CB"
 
     @property
     def kiosk_url(self) -> str:
@@ -63,4 +73,7 @@ class Settings:
             bind_host=os.getenv("PAB_BIND_HOST", _DEFAULT_BIND_HOST),
             port=port,
             web_dir=web_dir,
+            led_enabled=_env_bool("PAB_LED_ENABLED", cls.led_enabled),
+            led_address=os.getenv("PAB_LED_ADDRESS", cls.led_address),
+            led_name=os.getenv("PAB_LED_NAME", cls.led_name),
         )

@@ -105,6 +105,11 @@ body.admin-page {
   text-transform: uppercase;
 }
 
+.schedule__name {
+  color: #ffffff;
+  font-weight: 700;
+}
+
 .schedule__countdown {
   font-variant-numeric: tabular-nums;
   font-weight: 800;
@@ -501,6 +506,13 @@ body.admin-page {
   padding: 1rem;
   border-radius: 0.75rem;
   background: rgb(2 6 23 / 65%);
+}
+
+.admin__item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
 .admin__item span {

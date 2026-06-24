@@ -89,6 +89,7 @@ class ScheduleStore:
                 );
                 """
             )
+            self._migrate_rule_led_columns(conn)
             count = conn.execute("SELECT COUNT(*) FROM reminder_rules").fetchone()[0]
             if count == 0:
                 self._create_rules(conn, DEFAULT_RULES)
@@ -186,7 +187,9 @@ class ScheduleStore:
     def list_rules(self, *, enabled_only: bool = False) -> list[ReminderRule]:
         query = """
             SELECT id, offset_minutes, message_template, repeat_every_minutes,
-                   enabled, sort_order
+                   enabled, sort_order, led_enabled, led_red, led_green, led_blue,
+                   led_flash_interval_ms, led_flash_duration_seconds,
+                   led_chase_duration_seconds
             FROM reminder_rules
         """
         if enabled_only:
@@ -201,7 +204,9 @@ class ScheduleStore:
             row = conn.execute(
                 """
                 SELECT id, offset_minutes, message_template, repeat_every_minutes,
-                       enabled, sort_order
+                       enabled, sort_order, led_enabled, led_red, led_green, led_blue,
+                       led_flash_interval_ms, led_flash_duration_seconds,
+                   led_chase_duration_seconds
                 FROM reminder_rules
                 WHERE id = ?
                 """,
@@ -249,13 +254,43 @@ class ScheduleStore:
                 if update.sort_order is not None
                 else existing.sort_order
             ),
+            led_enabled=(
+                update.led_enabled
+                if update.led_enabled is not None
+                else existing.led_enabled
+            ),
+            led_red=update.led_red if update.led_red is not None else existing.led_red,
+            led_green=(
+                update.led_green if update.led_green is not None else existing.led_green
+            ),
+            led_blue=(
+                update.led_blue if update.led_blue is not None else existing.led_blue
+            ),
+            led_flash_interval_ms=(
+                update.led_flash_interval_ms
+                if update.led_flash_interval_ms is not None
+                else existing.led_flash_interval_ms
+            ),
+            led_flash_duration_seconds=(
+                update.led_flash_duration_seconds
+                if update.led_flash_duration_seconds is not None
+                else existing.led_flash_duration_seconds
+            ),
+            led_chase_duration_seconds=(
+                update.led_chase_duration_seconds
+                if update.led_chase_duration_seconds is not None
+                else existing.led_chase_duration_seconds
+            ),
         )
         with self._connect() as conn:
             conn.execute(
                 """
                 UPDATE reminder_rules
                 SET offset_minutes = ?, message_template = ?,
-                    repeat_every_minutes = ?, enabled = ?, sort_order = ?
+                    repeat_every_minutes = ?, enabled = ?, sort_order = ?,
+                    led_enabled = ?, led_red = ?, led_green = ?, led_blue = ?,
+                    led_flash_interval_ms = ?, led_flash_duration_seconds = ?,
+                    led_chase_duration_seconds = ?
                 WHERE id = ?
                 """,
                 (
@@ -264,6 +299,13 @@ class ScheduleStore:
                     merged.repeat_every_minutes,
                     int(merged.enabled),
                     merged.sort_order,
+                    int(merged.led_enabled),
+                    merged.led_red,
+                    merged.led_green,
+                    merged.led_blue,
+                    merged.led_flash_interval_ms,
+                    merged.led_flash_duration_seconds,
+                    merged.led_chase_duration_seconds,
                     rule_id,
                 ),
             )
@@ -313,6 +355,13 @@ class ScheduleStore:
                 repeat_every_minutes=rule.repeat_every_minutes,
                 enabled=rule.enabled,
                 sort_order=rule.sort_order,
+                led_enabled=rule.led_enabled,
+                led_red=rule.led_red,
+                led_green=rule.led_green,
+                led_blue=rule.led_blue,
+                led_flash_interval_ms=rule.led_flash_interval_ms,
+                led_flash_duration_seconds=rule.led_flash_duration_seconds,
+                led_chase_duration_seconds=rule.led_chase_duration_seconds,
             )
             for rule in self.list_rules()
         ]
@@ -376,6 +425,23 @@ class ScheduleStore:
             conn.close()
 
     @staticmethod
+    def _migrate_rule_led_columns(conn: sqlite3.Connection) -> None:
+        columns = (
+            ("led_enabled", "INTEGER NOT NULL DEFAULT 0"),
+            ("led_red", "INTEGER NOT NULL DEFAULT 255"),
+            ("led_green", "INTEGER NOT NULL DEFAULT 200"),
+            ("led_blue", "INTEGER NOT NULL DEFAULT 0"),
+            ("led_flash_interval_ms", "INTEGER NOT NULL DEFAULT 500"),
+            ("led_flash_duration_seconds", "INTEGER NOT NULL DEFAULT 10"),
+            ("led_chase_duration_seconds", "INTEGER NOT NULL DEFAULT 10"),
+        )
+        for name, spec in columns:
+            try:
+                conn.execute(f"ALTER TABLE reminder_rules ADD COLUMN {name} {spec}")
+            except sqlite3.OperationalError:
+                continue
+
+    @staticmethod
     def _create_rules(
         conn: sqlite3.Connection, rules: Iterable[ReminderRuleCreate]
     ) -> sqlite3.Cursor:
@@ -385,8 +451,10 @@ class ScheduleStore:
                 """
                 INSERT INTO reminder_rules
                     (offset_minutes, message_template, repeat_every_minutes,
-                     enabled, sort_order)
-                VALUES (?, ?, ?, ?, ?)
+                     enabled, sort_order, led_enabled, led_red, led_green, led_blue,
+                     led_flash_interval_ms, led_flash_duration_seconds,
+                     led_chase_duration_seconds)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     rule.offset_minutes,
@@ -394,6 +462,13 @@ class ScheduleStore:
                     rule.repeat_every_minutes,
                     int(rule.enabled),
                     rule.sort_order,
+                    int(rule.led_enabled),
+                    rule.led_red,
+                    rule.led_green,
+                    rule.led_blue,
+                    rule.led_flash_interval_ms,
+                    rule.led_flash_duration_seconds,
+                    rule.led_chase_duration_seconds,
                 ),
             )
         return cursor
@@ -417,4 +492,11 @@ class ScheduleStore:
             repeat_every_minutes=int(repeat) if repeat is not None else None,
             enabled=bool(row["enabled"]),
             sort_order=int(row["sort_order"]),
+            led_enabled=bool(row["led_enabled"]),
+            led_red=int(row["led_red"]),
+            led_green=int(row["led_green"]),
+            led_blue=int(row["led_blue"]),
+            led_flash_interval_ms=int(row["led_flash_interval_ms"]),
+            led_flash_duration_seconds=int(row["led_flash_duration_seconds"]),
+            led_chase_duration_seconds=int(row["led_chase_duration_seconds"]),
         )

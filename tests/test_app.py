@@ -59,8 +59,8 @@ def test_health_endpoint(settings: Settings) -> None:
 
 def test_public_config_endpoint(settings: Settings) -> None:
     settings = replace(settings, display_title="Start List")
-    client = TestClient(create_app(settings))
-    response = client.get("/api/config")
+    with TestClient(create_app(settings)) as client:
+        response = client.get("/api/config")
     assert response.status_code == 200
     assert response.json() == {
         "app_name": "Raspberry-PAB",

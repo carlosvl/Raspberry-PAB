@@ -77,7 +77,7 @@ After reboot:
 
 ## 4. Manage the schedule
 
-Open `/admin` from the kiosk by holding the top-right header area for three seconds, or browse directly to:
+Open `/admin` from the kiosk by tapping the logo or title three times, or browse directly to:
 
 ```text
 http://127.0.0.1:8080/admin
@@ -141,6 +141,33 @@ Edit files under `web/`:
 
 Add API routes under `src/raspberry_pab/routes/` for buttons, sensors, or backend data.
 
+## 6.1 BLE LED strip alerts
+
+Raspberry-PAB can flash a **Lotus Lamp X / MELK** BLE LED strip when reminder rules fire.
+
+1. Add device settings to `.env` on the Pi:
+
+```bash
+PAB_LED_ENABLED=true
+PAB_LED_ADDRESS=BE:28:79:00:06:CB
+PAB_LED_NAME="MELKL-OT21 CB"
+```
+
+2. In `/admin` → **Rules**, enable **Flash LED strip** per rule and set:
+   - **LED color**
+   - **Flash interval (ms)** — lower values flash faster
+   - **Flash duration (seconds)** — defaults to 10 seconds to match the kiosk alert overlay
+   - **Chase duration (seconds)** — after flashing, runs the strip back and forth (default 10s; set to 0 to skip)
+   - Use **Test LED strip** to preview the current color and timing without waiting for a reminder
+
+3. Close the Lotus Lamp X iPhone app while the kiosk runs — the controller accepts only one BLE connection at a time.
+
+4. Smoke-test BLE from the project venv:
+
+```bash
+.venv/bin/python scripts/test-lotus-lamp.py
+```
+
 ## 7. Configuration
 
 | Variable | Default | Description |
@@ -155,6 +182,9 @@ Add API routes under `src/raspberry_pab/routes/` for buttons, sensors, or backen
 | `PAB_ADMIN_PIN` | `1234` | PIN for admin writes |
 | `PAB_HOTSPOT_SSID` | `Raspberry-PAB` | Fallback hotspot name |
 | `PAB_HOTSPOT_PASSWORD` | `RaspberryPAB123` | Fallback hotspot password |
+| `PAB_LED_ENABLED` | `false` | Enable BLE LED flashing on alerts |
+| `PAB_LED_ADDRESS` | *(empty)* | BLE MAC address of the LED controller |
+| `PAB_LED_NAME` | `MELKL-OT21 CB` | BLE advertised device name |
 
 ## Troubleshooting
 

@@ -38,6 +38,8 @@ Thumbs.db
 *.log
 logs/
 run/
+tmp-deploy/
+.cursor/
 
 # Packaging
 *.deb

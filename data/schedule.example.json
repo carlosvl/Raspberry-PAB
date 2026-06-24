@@ -13,12 +13,26 @@
   "reminder_rules": [
     {
       "offset_minutes": 30,
-      "message_template": "Warm Up {name}"
+      "message_template": "Warm Up {name}",
+      "led_enabled": true,
+      "led_red": 255,
+      "led_green": 200,
+      "led_blue": 0,
+      "led_flash_interval_ms": 500,
+      "led_flash_duration_seconds": 10,
+      "led_chase_duration_seconds": 10
     },
     {
       "offset_minutes": 15,
       "message_template": "Go to Start Line",
-      "repeat_every_minutes": 5
+      "repeat_every_minutes": 5,
+      "led_enabled": true,
+      "led_red": 255,
+      "led_green": 0,
+      "led_blue": 0,
+      "led_flash_interval_ms": 250,
+      "led_flash_duration_seconds": 10,
+      "led_chase_duration_seconds": 10
     }
   ]
 }

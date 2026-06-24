@@ -2,14 +2,12 @@ const scheduleBody = document.getElementById("scheduleBody");
 const statusEl = document.getElementById("status");
 const kioskTitleEl = document.getElementById("kioskTitle");
 const kioskLogoEl = document.getElementById("kioskLogo");
-const clockEl = document.getElementById("clock");
 const eventDateEl = document.getElementById("eventDate");
 const remoteInfoEl = document.getElementById("remoteInfo");
 const alertOverlay = document.getElementById("alertOverlay");
 const alertMessage = document.getElementById("alertMessage");
 const alertMeta = document.getElementById("alertMeta");
 const dismissAlert = document.getElementById("dismissAlert");
-const adminHotspot = document.getElementById("adminHotspot");
 const controlMenu = document.getElementById("controlMenu");
 const reloadApp = document.getElementById("reloadApp");
 const exitKiosk = document.getElementById("exitKiosk");
@@ -17,8 +15,21 @@ const closeMenu = document.getElementById("closeMenu");
 
 const today = new Date();
 const todayParam = today.toISOString().slice(0, 10);
+const ADMIN_TAP_COUNT = 3;
+const ADMIN_TAP_WINDOW_MS = 1500;
+const CONTROL_MENU_HOLD_MS = 3000;
 let alertTimer = null;
-let adminTimer = null;
+let controlMenuTimer = null;
+let adminTapCount = 0;
+let adminTapResetTimer = null;
+
+function resolveClockEl() {
+  return (
+    document.getElementById("controlHotspot") ||
+    document.getElementById("clock") ||
+    document.querySelector(".kiosk__clock")
+  );
+}
 
 function formatDate(dateString) {
   const date = new Date(`${dateString}T00:00:00`);
@@ -34,6 +45,7 @@ function formatTime(timeString) {
   return new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
     minute: "2-digit",
+    hour12: true,
   }).format(date);
 }
 
@@ -50,9 +62,15 @@ function formatCountdown(seconds) {
 }
 
 function updateClock() {
-  if (!clockEl || !eventDateEl) return;
+  const clock = resolveClockEl();
+  if (!clock || !eventDateEl) return;
   const now = new Date();
-  clockEl.textContent = now.toLocaleTimeString();
+  clock.textContent = now.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
   eventDateEl.textContent = formatDate(todayParam);
 }
 
@@ -130,7 +148,7 @@ function renderSchedule(items) {
     .map(
       (item) => `
         <tr class="${rowClass(item, nextId)}">
-          <td>${item.name}</td>
+          <td class="schedule__name">${item.name}</td>
           <td>${formatDate(item.event_date)}</td>
           <td>${formatTime(item.start_time)}</td>
           <td class="schedule__countdown">${formatCountdown(item.countdown_seconds)}</td>
@@ -146,7 +164,12 @@ async function loadSchedule() {
     if (!response.ok) throw new Error("schedule request failed");
     const items = await response.json();
     renderSchedule(items);
-    setStatus(`Last updated ${new Date().toLocaleTimeString()}`);
+    setStatus(`Last updated ${new Date().toLocaleTimeString(undefined, {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    })}`);
   } catch {
     setStatus("Server unavailable");
   }
@@ -213,16 +236,44 @@ function connectAlertStream() {
   };
 }
 
-function configureAdminHotspot() {
-  if (!adminHotspot) return;
+function resolveAdminBrandTrigger() {
+  return (
+    document.getElementById("adminBrandTrigger") ||
+    document.querySelector(".kiosk__brand")
+  );
+}
+
+function registerAdminTap() {
+  adminTapCount += 1;
+  clearTimeout(adminTapResetTimer);
+  if (adminTapCount >= ADMIN_TAP_COUNT) {
+    adminTapCount = 0;
+    window.location.href = "/admin";
+    return;
+  }
+  adminTapResetTimer = setTimeout(() => {
+    adminTapCount = 0;
+  }, ADMIN_TAP_WINDOW_MS);
+}
+
+function configureAdminBrandTrigger() {
+  const adminBrandTrigger = resolveAdminBrandTrigger();
+  if (!adminBrandTrigger) return;
+
+  adminBrandTrigger.addEventListener("click", registerAdminTap);
+}
+
+function configureControlHotspot() {
+  const hotspot = resolveClockEl();
+  if (!hotspot) return;
   const start = () => {
-    clearTimeout(adminTimer);
-    adminTimer = setTimeout(showControlMenu, 3000);
+    clearTimeout(controlMenuTimer);
+    controlMenuTimer = setTimeout(showControlMenu, CONTROL_MENU_HOLD_MS);
   };
-  const cancel = () => clearTimeout(adminTimer);
-  adminHotspot.addEventListener("pointerdown", start);
-  adminHotspot.addEventListener("pointerup", cancel);
-  adminHotspot.addEventListener("pointerleave", cancel);
+  const cancel = () => clearTimeout(controlMenuTimer);
+  hotspot.addEventListener("pointerdown", start);
+  hotspot.addEventListener("pointerup", cancel);
+  hotspot.addEventListener("pointerleave", cancel);
 }
 
 dismissAlert?.addEventListener("click", hideAlert);
@@ -232,7 +283,8 @@ exitKiosk?.addEventListener("click", closeKioskBrowser);
 controlMenu?.addEventListener("click", (event) => {
   if (event.target === controlMenu) hideControlMenu();
 });
-configureAdminHotspot();
+configureAdminBrandTrigger();
+configureControlHotspot();
 registerServiceWorker();
 loadAppConfig();
 updateClock();

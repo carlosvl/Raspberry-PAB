@@ -13,6 +13,8 @@ Environment=PYTHONPATH=/home/pi/Raspberry-PAB/src
 ExecStart=/home/pi/Raspberry-PAB/scripts/run-server.sh
 Restart=on-failure
 RestartSec=5
+TimeoutStopSec=10
+KillMode=control-group
 
 [Install]
 WantedBy=multi-user.target

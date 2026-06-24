@@ -42,6 +42,12 @@ def test_import_export_round_trip(tmp_path: Path) -> None:
             ReminderRuleCreate(
                 offset_minutes=30,
                 message_template="Warm Up {name}",
+                led_enabled=True,
+                led_red=255,
+                led_green=128,
+                led_blue=0,
+                led_flash_interval_ms=250,
+                led_flash_duration_seconds=8,
             )
         ],
     )
@@ -52,3 +58,25 @@ def test_import_export_round_trip(tmp_path: Path) -> None:
     assert exported.event_date == schedule.event_date
     assert exported.participants == schedule.participants
     assert exported.reminder_rules == schedule.reminder_rules
+
+
+def test_rule_led_fields_persist(tmp_path: Path) -> None:
+    store = ScheduleStore(tmp_path / "schedule.db")
+    store.initialize()
+    created = store.create_rule(
+        ReminderRuleCreate(
+            offset_minutes=10,
+            message_template="LED Test {name}",
+            led_enabled=True,
+            led_red=10,
+            led_green=20,
+            led_blue=30,
+            led_flash_interval_ms=400,
+            led_flash_duration_seconds=12,
+            led_chase_duration_seconds=6,
+        )
+    )
+    loaded = store.get_rule(created.id)
+    assert loaded == created
+    assert loaded is not None
+    assert loaded.led_chase_duration_seconds == 6

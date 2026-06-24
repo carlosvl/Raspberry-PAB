@@ -3,6 +3,7 @@
 from datetime import datetime
 from pathlib import Path
 from typing import cast
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -69,7 +70,12 @@ def test_participants_endpoint_returns_countdown(tmp_path: Path) -> None:
                 "start_time": "11:00",
             },
         )
-        response = client.get("/api/participants?date=2026-06-21")
+        with patch(
+            "raspberry_pab.routes.schedule.datetime",
+            wraps=datetime,
+        ) as mock_datetime:
+            mock_datetime.now.return_value = datetime(2026, 6, 21, 10, 0)
+            response = client.get("/api/participants?date=2026-06-21")
 
     assert created.status_code == 200
     assert response.status_code == 200
@@ -101,6 +107,43 @@ def test_scheduler_publishes_active_alert(tmp_path: Path) -> None:
 
     assert response.status_code == 200
     assert response.json()["message"] == "Warm Up Carlos"
+
+
+def test_reminder_rule_led_fields_round_trip(tmp_path: Path) -> None:
+    settings = Settings(
+        admin_pin="9999",
+        data_dir=tmp_path / "data",
+        web_dir=make_web_dir(tmp_path),
+    )
+    payload = {
+        "offset_minutes": 20,
+        "message_template": "LED Alert {name}",
+        "repeat_every_minutes": None,
+        "enabled": True,
+        "sort_order": 0,
+        "led_enabled": True,
+        "led_red": 255,
+        "led_green": 64,
+        "led_blue": 32,
+        "led_flash_interval_ms": 300,
+        "led_flash_duration_seconds": 15,
+    }
+    with TestClient(create_app(settings)) as client:
+        created = client.post(
+            "/api/reminder-rules",
+            headers={"X-Admin-Pin": "9999"},
+            json=payload,
+        )
+        listed = client.get("/api/reminder-rules")
+
+    assert created.status_code == 200
+    body = created.json()
+    assert body["led_enabled"] is True
+    assert body["led_red"] == 255
+    assert body["led_flash_interval_ms"] == 300
+    assert listed.status_code == 200
+    saved = next(rule for rule in listed.json() if rule["id"] == body["id"])
+    assert saved["led_flash_duration_seconds"] == 15
 
 
 def test_exit_browser_endpoint(monkeypatch, tmp_path: Path) -> None:

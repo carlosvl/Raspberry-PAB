@@ -16,15 +16,15 @@
   </head>
   <body>
     <main class="kiosk">
-      <header class="kiosk__header" id="adminHotspot" title="Hold for controls">
-        <div class="kiosk__brand">
+      <header class="kiosk__header">
+        <div class="kiosk__brand" id="adminBrandTrigger">
           <img alt="" class="kiosk__logo" hidden id="kioskLogo" />
           <div>
             <h1 class="kiosk__title" id="kioskTitle">Raspberry-PAB</h1>
             <p class="kiosk__subtitle" id="eventDate">Today</p>
           </div>
         </div>
-        <p class="kiosk__clock" id="clock">--:--:--</p>
+        <p class="kiosk__clock" id="controlHotspot" title="Hold for controls">--:--:--</p>
       </header>
 
       <section class="kiosk__content">
@@ -62,7 +62,6 @@
         <p class="control-menu__eyebrow">Kiosk Controls</p>
         <h2>What do you want to do?</h2>
         <div class="control-menu__actions">
-          <a class="control-menu__button" href="/admin">Admin</a>
           <button class="control-menu__button" id="reloadApp" type="button">
             Reload App
           </button>

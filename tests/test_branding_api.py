@@ -29,7 +29,8 @@ def client(tmp_path: Path) -> TestClient:
     (web_dir / "manifest.webmanifest").write_text("{}")
     (web_dir / "sw.js").write_text("")
     settings = Settings(data_dir=tmp_path / "data", web_dir=web_dir, admin_pin="9999")
-    return TestClient(create_app(settings))
+    with TestClient(create_app(settings)) as test_client:
+        yield test_client
 
 
 def test_public_config_uses_saved_title(client: TestClient) -> None:

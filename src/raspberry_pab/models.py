@@ -39,6 +39,13 @@ class ReminderRuleBase(BaseModel):
     repeat_every_minutes: int | None = Field(default=None, ge=1)
     enabled: bool = True
     sort_order: int = 0
+    led_enabled: bool = False
+    led_red: int = Field(default=255, ge=0, le=255)
+    led_green: int = Field(default=200, ge=0, le=255)
+    led_blue: int = Field(default=0, ge=0, le=255)
+    led_flash_interval_ms: int = Field(default=500, ge=100, le=5000)
+    led_flash_duration_seconds: int = Field(default=10, ge=1, le=120)
+    led_chase_duration_seconds: int = Field(default=10, ge=0, le=120)
 
 
 class ReminderRuleCreate(ReminderRuleBase):
@@ -51,10 +58,26 @@ class ReminderRuleUpdate(BaseModel):
     repeat_every_minutes: int | None = Field(default=None, ge=1)
     enabled: bool | None = None
     sort_order: int | None = None
+    led_enabled: bool | None = None
+    led_red: int | None = Field(default=None, ge=0, le=255)
+    led_green: int | None = Field(default=None, ge=0, le=255)
+    led_blue: int | None = Field(default=None, ge=0, le=255)
+    led_flash_interval_ms: int | None = Field(default=None, ge=100, le=5000)
+    led_flash_duration_seconds: int | None = Field(default=None, ge=1, le=120)
+    led_chase_duration_seconds: int | None = Field(default=None, ge=0, le=120)
 
 
 class ReminderRule(ReminderRuleBase):
     id: int
+
+
+class LedStripTest(BaseModel):
+    led_red: int = Field(ge=0, le=255)
+    led_green: int = Field(ge=0, le=255)
+    led_blue: int = Field(ge=0, le=255)
+    led_flash_interval_ms: int = Field(default=500, ge=100, le=5000)
+    led_flash_duration_seconds: int = Field(default=3, ge=1, le=120)
+    led_chase_duration_seconds: int = Field(default=10, ge=0, le=120)
 
 
 class ScheduleParticipantImport(BaseModel):

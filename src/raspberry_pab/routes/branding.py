@@ -15,8 +15,6 @@ from raspberry_pab.branding import (
     PNG_SIGNATURE,
     branding_response,
 )
-from raspberry_pab.config import Settings
-from raspberry_pab.db import ScheduleStore
 from raspberry_pab.models import BrandingResponse, BrandingUpdate
 from raspberry_pab.routes.schedule import get_settings, get_store, require_admin_pin
 
@@ -28,7 +26,10 @@ def serve_logo(request: Request) -> FileResponse:
     settings = get_settings(request)
     logo_path = settings.logo_path
     if not logo_path.is_file():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Logo not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Logo not found",
+        )
     return FileResponse(logo_path, media_type="image/png")
 
 
@@ -40,8 +41,7 @@ def serve_logo(request: Request) -> FileResponse:
 def get_branding(request: Request) -> BrandingResponse:
     settings = get_settings(request)
     store = get_store(request)
-    payload = branding_response(settings, store)
-    return BrandingResponse(**payload)
+    return branding_response(settings, store)
 
 
 @router.put(
@@ -53,8 +53,7 @@ def update_branding(request: Request, update: BrandingUpdate) -> BrandingRespons
     settings = get_settings(request)
     store = get_store(request)
     store.set_setting(DISPLAY_TITLE_KEY, update.display_title.strip())
-    payload = branding_response(settings, store)
-    return BrandingResponse(**payload)
+    return branding_response(settings, store)
 
 
 @router.post(
@@ -93,8 +92,7 @@ async def upload_logo(
     os.replace(temp_path, settings.logo_path)
     store.set_setting(LOGO_UPDATED_AT_KEY, str(int(settings.logo_path.stat().st_mtime)))
 
-    payload = branding_response(settings, store)
-    return BrandingResponse(**payload)
+    return branding_response(settings, store)
 
 
 @router.delete(

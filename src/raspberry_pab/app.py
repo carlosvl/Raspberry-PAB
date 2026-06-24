@@ -40,5 +40,6 @@ class Application:
             host=self.settings.bind_host,
             port=self.settings.port,
             log_level=self.settings.log_level.lower(),
+            timeout_graceful_shutdown=5,
         )
         return 0

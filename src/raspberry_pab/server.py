@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
+import logging
 import socket
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -10,14 +13,18 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from raspberry_pab.branding import effective_display_title, logo_url
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
+from raspberry_pab.led_controller import LedController
 from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
+from raspberry_pab.routes.led import router as led_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.scheduler import AlertBroker, ReminderScheduler
-from raspberry_pab.branding import effective_display_title, logo_url
+
+logger = logging.getLogger(__name__)
 
 
 def _local_ipv4_addresses() -> list[str]:
@@ -48,13 +55,41 @@ def create_app(settings: Settings) -> FastAPI:
     store = ScheduleStore(settings.db_path)
     broker = AlertBroker()
     scheduler = ReminderScheduler(store, broker)
+    led_controller = LedController(settings)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         store.initialize()
+        stop_event = asyncio.Event()
+
+        async def led_listener() -> None:
+            async with broker.subscribe() as queue:
+                while not stop_event.is_set():
+                    try:
+                        alert = await asyncio.wait_for(queue.get(), timeout=0.5)
+                    except TimeoutError:
+                        continue
+                    rule = store.get_rule(alert.rule_id)
+                    if rule is None:
+                        continue
+                    try:
+                        await led_controller.flash(rule)
+                    except Exception:
+                        logger.exception(
+                            "LED listener failed for alert %s", alert.id
+                        )
+
+        led_task = asyncio.create_task(led_listener(), name="led-alert-listener")
         scheduler.start()
-        yield
-        await scheduler.stop()
+        try:
+            yield
+        finally:
+            stop_event.set()
+            led_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await led_task
+            await led_controller.shutdown()
+            await scheduler.stop()
 
     app = FastAPI(
         title=settings.app_name,
@@ -66,6 +101,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.schedule_store = store
     app.state.alert_broker = broker
     app.state.reminder_scheduler = scheduler
+    app.state.led_controller = led_controller
     web_dir = settings.web_dir
 
     @app.get("/api/health")
@@ -118,6 +154,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(branding_router)
     app.include_router(alerts_router)
     app.include_router(kiosk_router)
+    app.include_router(led_router)
 
     if web_dir.is_dir():
         for subdir in ("css", "js", "assets"):
