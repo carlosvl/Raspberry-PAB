@@ -57,9 +57,11 @@ fi
 
 "${SCRIPT_DIR}/keep-awake.sh" apply
 
-# Hide idle cursor after 0.5s (optional, installed by install.sh)
-if [[ -n "${DISPLAY:-}" ]] && command -v unclutter >/dev/null 2>&1; then
+# Keep cursor visible for trackpad control (opt-in hide via PAB_HIDE_CURSOR=1).
+if [[ "${PAB_HIDE_CURSOR:-0}" == "1" ]] && [[ -n "${DISPLAY:-}" ]] && command -v unclutter >/dev/null 2>&1; then
     unclutter -idle 0.5 -root &
+else
+    pkill -x unclutter 2>/dev/null || true
 fi
 
 KIOSK_PROFILE_DIR="${PAB_CHROMIUM_USER_DATA_DIR:-${XDG_RUNTIME_DIR:-/tmp}/raspberry-pab-kiosk-chromium}"

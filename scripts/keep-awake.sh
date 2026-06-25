@@ -40,6 +40,24 @@ _disable_display_sleep() {
     DISPLAY="${display}" xset s noblank >/dev/null 2>&1 || true
 }
 
+_ensure_touch_trackpad() {
+    local conf="${HOME}/.config/raspberry-pab/touch-map.conf"
+    [[ -f "${conf}" ]] || return 0
+
+    # shellcheck disable=SC1090
+    source "${conf}"
+    [[ "${PAB_TOUCH_MAP:-mirror}" == "trackpad" ]] || return 0
+    pgrep -f 'touch-trackpad.py' >/dev/null 2>&1 && return 0
+
+    local script="${HOME}/bin/touch-trackpad.py"
+    [[ -x "${script}" ]] || return 0
+
+    pkill -f 'touch-trackpad.py' 2>/dev/null || true
+    export DISPLAY="${DISPLAY:-:0}"
+    nohup "${script}" >>/tmp/touch-trackpad.log 2>&1 &
+    echo "$(date -Iseconds) restarted touch-trackpad (was missing)" >>/tmp/touch-watchdog.log
+}
+
 apply_keep_awake() {
     local display
 
@@ -51,6 +69,8 @@ apply_keep_awake() {
     if command -v setterm >/dev/null 2>&1; then
         setterm -blank 0 -powerdown 0 >/dev/null 2>&1 || true
     fi
+
+    _ensure_touch_trackpad
 }
 
 daemon_keep_awake() {

@@ -18,6 +18,36 @@ body {
   -webkit-user-select: none;
 }
 
+button,
+.admin__link,
+.admin__nav a,
+.control-menu__button,
+.alert__button {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.1s ease,
+    filter 0.1s ease,
+    background-color 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.is-pressed,
+button:active:not(:disabled),
+.admin__link:active,
+.admin__nav a:active,
+.control-menu__button:active,
+.alert__button:active {
+  transform: scale(0.96);
+  filter: brightness(0.88);
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 28%);
+}
+
 body.admin-page {
   overflow-y: auto;
   touch-action: pan-y;
@@ -403,9 +433,13 @@ body.admin-page {
   font-weight: 800;
 }
 
-.pin-pad button:active {
+.pin-pad button:active,
+.pin-pad button.is-pressed {
   background: #38bdf8;
   color: #020617;
+  transform: scale(0.96);
+  filter: none;
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 28%);
 }
 
 .admin__grid {

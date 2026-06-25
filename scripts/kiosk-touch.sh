@@ -46,7 +46,11 @@ fi
 
 "${SCRIPT_DIR}/keep-awake.sh" apply
 
-command -v unclutter >/dev/null 2>&1 && unclutter -idle 0.5 -root &
+if [[ "${PAB_HIDE_CURSOR:-0}" == "1" ]] && command -v unclutter >/dev/null 2>&1; then
+    unclutter -idle 0.5 -root &
+else
+    pkill -x unclutter 2>/dev/null || true
+fi
 
 PROFILE="${PAB_TOUCH_CHROMIUM_DIR:-${XDG_RUNTIME_DIR:-/tmp}/raspberry-pab-touch-chromium}"
 mkdir -p "${PROFILE}"

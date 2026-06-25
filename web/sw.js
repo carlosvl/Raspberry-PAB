@@ -3,6 +3,7 @@ const APP_SHELL = [
   "/",
   "/admin",
   "/css/kiosk.css",
+  "/js/button-feedback.js",
   "/js/kiosk.js",
   "/js/admin.js",
   "/manifest.webmanifest",
@@ -11,7 +12,7 @@ const APP_SHELL = [
   "/assets/icons/pab-icon-512.png",
 ];
 
-const NETWORK_FIRST_PATHS = new Set(["/", "/admin", "/js/kiosk.js", "/js/admin.js"]);
+const NETWORK_FIRST_PATHS = new Set(["/", "/admin", "/js/kiosk.js", "/js/admin.js", "/js/button-feedback.js"]);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));

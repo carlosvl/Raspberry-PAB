@@ -14,6 +14,14 @@ if [[ -f "${PROJECT_ROOT}/.env" ]]; then
     set +a
 fi
 
+_start_touch_input() {
+    local script="${HOME}/bin/setup-touch-input.sh"
+    if [[ -f "${script}" ]]; then
+        DISPLAY="${DISPLAY:-:0}" bash "${script}" >/dev/null 2>&1 &
+    fi
+}
+
+_start_touch_input
 "${SCRIPT_DIR}/keep-awake.sh" apply
 "${SCRIPT_DIR}/keep-awake.sh" daemon &
 KEEP_AWAKE_PID=$!
