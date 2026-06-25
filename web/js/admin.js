@@ -398,8 +398,48 @@ async function loadRules() {
 
 async function loadAll() {
   try {
-    await Promise.all([loadBranding(), loadParticipants(), loadRules()]);
+    await Promise.all([loadBranding(), loadTouchConfig(), loadParticipants(), loadRules()]);
     setOutput("Loaded.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+}
+
+function renderTouchConfig(config) {
+  const modeInfo = document.getElementById("touchModeInfo");
+  const tapSlop = document.getElementById("touchTapSlop");
+  const dragStart = document.getElementById("touchDragStart");
+  const multiTapSeconds = document.getElementById("touchMultiTapSeconds");
+  const sensitivity = document.getElementById("touchSensitivity");
+  if (modeInfo) {
+    modeInfo.textContent = `Mode: ${config.touch_map} · LCD: ${config.touch_lcd}`;
+  }
+  if (tapSlop) tapSlop.value = String(config.tap_slop);
+  if (dragStart) dragStart.value = String(config.drag_start);
+  if (multiTapSeconds) multiTapSeconds.value = String(config.multi_tap_seconds);
+  if (sensitivity) sensitivity.value = String(config.sensitivity);
+}
+
+async function loadTouchConfig() {
+  const config = await api("/api/admin/touch");
+  renderTouchConfig(config);
+}
+
+async function saveTouchConfig(event) {
+  event.preventDefault();
+  const payload = {
+    tap_slop: Number(document.getElementById("touchTapSlop")?.value),
+    drag_start: Number(document.getElementById("touchDragStart")?.value),
+    multi_tap_seconds: Number(document.getElementById("touchMultiTapSeconds")?.value),
+    sensitivity: Number(document.getElementById("touchSensitivity")?.value),
+  };
+  try {
+    const config = await api("/api/admin/touch", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+    renderTouchConfig(config);
+    setOutput("Touch settings saved and applied.");
   } catch (error) {
     setOutput(error.message);
   }
@@ -543,6 +583,7 @@ ruleForm?.addEventListener("submit", async (event) => {
 });
 
 document.getElementById("brandingForm")?.addEventListener("submit", saveBrandingTitle);
+document.getElementById("touchForm")?.addEventListener("submit", saveTouchConfig);
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);

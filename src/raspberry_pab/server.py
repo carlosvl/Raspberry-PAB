@@ -22,6 +22,7 @@ from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.led import router as led_router
 from raspberry_pab.routes.schedule import router as schedule_router
+from raspberry_pab.routes.touch import router as touch_router
 from raspberry_pab.scheduler import AlertBroker, ReminderScheduler
 
 logger = logging.getLogger(__name__)
@@ -152,6 +153,7 @@ def create_app(settings: Settings) -> FastAPI:
 
     app.include_router(schedule_router)
     app.include_router(branding_router)
+    app.include_router(touch_router)
     app.include_router(alerts_router)
     app.include_router(kiosk_router)
     app.include_router(led_router)

@@ -28,6 +28,9 @@
         <button data-scroll-target="brandingPanel" type="button">
           Branding
         </button>
+        <button data-scroll-target="touchPanel" type="button">
+          Touch
+        </button>
         <button data-scroll-target="participantsPanel" type="button">
           Participants
         </button>
@@ -85,6 +88,34 @@
               <button id="removeLogo" type="button">Remove Logo</button>
             </div>
           </div>
+        </article>
+
+        <article class="panel panel--wide" id="touchPanel">
+          <h2>Touch Tuning</h2>
+          <p class="branding__hint" id="touchModeInfo">Trackpad mode</p>
+          <form class="form" id="touchForm">
+            <label>
+              Tap slop
+              <input id="touchTapSlop" min="1" max="40" required type="number" />
+              <span class="branding__hint">Still tiny jump on tap? Raise this (try 10–14).</span>
+            </label>
+            <label>
+              Drag start
+              <input id="touchDragStart" min="1" max="60" required type="number" />
+              <span class="branding__hint">Tap sometimes becomes drag? Raise this (try 16–20).</span>
+            </label>
+            <label>
+              Multi-tap window (seconds)
+              <input id="touchMultiTapSeconds" min="0.15" max="1" required step="0.05" type="number" />
+              <span class="branding__hint">Double-tap too hard: raise (try 0.55). Too easy: lower (try 0.35).</span>
+            </label>
+            <label>
+              Sensitivity
+              <input id="touchSensitivity" min="0.1" max="2" required step="0.1" type="number" />
+              <span class="branding__hint">Overall pad speed. 1.0 = full pad width crosses full HDMI width.</span>
+            </label>
+            <button type="submit">Save Touch Settings</button>
+          </form>
         </article>
 
         <article class="panel" id="participantsPanel">

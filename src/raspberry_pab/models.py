@@ -105,6 +105,22 @@ class BrandingResponse(BaseModel):
     logo_url: str | None = None
 
 
+class TouchConfigUpdate(BaseModel):
+    tap_slop: int = Field(default=8, ge=1, le=40)
+    drag_start: int = Field(default=12, ge=1, le=60)
+    multi_tap_seconds: float = Field(default=0.45, ge=0.15, le=1.0)
+    sensitivity: float = Field(default=0.5, ge=0.1, le=2.0)
+
+
+class TouchConfigResponse(BaseModel):
+    touch_map: str
+    touch_lcd: str
+    tap_slop: int
+    drag_start: int
+    multi_tap_seconds: float
+    sensitivity: float
+
+
 class Alert(BaseModel):
     id: str
     participant_id: int
