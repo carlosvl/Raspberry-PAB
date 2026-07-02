@@ -80,3 +80,25 @@ def test_rule_led_fields_persist(tmp_path: Path) -> None:
     assert loaded == created
     assert loaded is not None
     assert loaded.led_chase_duration_seconds == 6
+
+
+def test_rule_buzzer_fields_persist(tmp_path: Path) -> None:
+    store = ScheduleStore(tmp_path / "schedule.db")
+    store.initialize()
+    created = store.create_rule(
+        ReminderRuleCreate(
+            offset_minutes=10,
+            message_template="Buzzer {name}",
+            buzzer_enabled=True,
+            buzzer_pitch_hz=3000,
+            buzzer_volume=60,
+            buzzer_count=5,
+            buzzer_beep_ms=250,
+            buzzer_gap_ms=100,
+        )
+    )
+    loaded = store.get_rule(created.id)
+    assert loaded is not None
+    assert loaded.buzzer_enabled is True
+    assert loaded.buzzer_pitch_hz == 3000
+    assert loaded.buzzer_count == 5

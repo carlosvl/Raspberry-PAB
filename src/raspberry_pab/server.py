@@ -14,11 +14,13 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from raspberry_pab.branding import effective_display_title, logo_url
+from raspberry_pab.buzzer_controller import BuzzerController
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.led_controller import LedController
 from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.branding import router as branding_router
+from raspberry_pab.routes.buzzer import router as buzzer_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.led import router as led_router
 from raspberry_pab.routes.schedule import router as schedule_router
@@ -57,13 +59,14 @@ def create_app(settings: Settings) -> FastAPI:
     broker = AlertBroker()
     scheduler = ReminderScheduler(store, broker)
     led_controller = LedController(settings)
+    buzzer_controller = BuzzerController(settings)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         store.initialize()
         stop_event = asyncio.Event()
 
-        async def led_listener() -> None:
+        async def hardware_listener() -> None:
             async with broker.subscribe() as queue:
                 while not stop_event.is_set():
                     try:
@@ -79,17 +82,26 @@ def create_app(settings: Settings) -> FastAPI:
                         logger.exception(
                             "LED listener failed for alert %s", alert.id
                         )
+                    try:
+                        await buzzer_controller.beep(rule)
+                    except Exception:
+                        logger.exception(
+                            "Buzzer listener failed for alert %s", alert.id
+                        )
 
-        led_task = asyncio.create_task(led_listener(), name="led-alert-listener")
+        hardware_task = asyncio.create_task(
+            hardware_listener(), name="hardware-alert-listener"
+        )
         scheduler.start()
         try:
             yield
         finally:
             stop_event.set()
-            led_task.cancel()
+            hardware_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
-                await led_task
+                await hardware_task
             await led_controller.shutdown()
+            await buzzer_controller.shutdown()
             await scheduler.stop()
 
     app = FastAPI(
@@ -103,6 +115,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.alert_broker = broker
     app.state.reminder_scheduler = scheduler
     app.state.led_controller = led_controller
+    app.state.buzzer_controller = buzzer_controller
     web_dir = settings.web_dir
 
     @app.get("/api/health")
@@ -157,6 +170,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(alerts_router)
     app.include_router(kiosk_router)
     app.include_router(led_router)
+    app.include_router(buzzer_router)
 
     if web_dir.is_dir():
         for subdir in ("css", "js", "assets"):

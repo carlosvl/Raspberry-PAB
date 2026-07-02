@@ -90,6 +90,7 @@ class ScheduleStore:
                 """
             )
             self._migrate_rule_led_columns(conn)
+            self._migrate_rule_buzzer_columns(conn)
             count = conn.execute("SELECT COUNT(*) FROM reminder_rules").fetchone()[0]
             if count == 0:
                 self._create_rules(conn, DEFAULT_RULES)
@@ -189,7 +190,9 @@ class ScheduleStore:
             SELECT id, offset_minutes, message_template, repeat_every_minutes,
                    enabled, sort_order, led_enabled, led_red, led_green, led_blue,
                    led_flash_interval_ms, led_flash_duration_seconds,
-                   led_chase_duration_seconds
+                   led_chase_duration_seconds,
+                   buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
+                   buzzer_count, buzzer_beep_ms, buzzer_gap_ms
             FROM reminder_rules
         """
         if enabled_only:
@@ -206,7 +209,9 @@ class ScheduleStore:
                 SELECT id, offset_minutes, message_template, repeat_every_minutes,
                        enabled, sort_order, led_enabled, led_red, led_green, led_blue,
                        led_flash_interval_ms, led_flash_duration_seconds,
-                   led_chase_duration_seconds
+                   led_chase_duration_seconds,
+                   buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
+                   buzzer_count, buzzer_beep_ms, buzzer_gap_ms
                 FROM reminder_rules
                 WHERE id = ?
                 """,
@@ -281,6 +286,36 @@ class ScheduleStore:
                 if update.led_chase_duration_seconds is not None
                 else existing.led_chase_duration_seconds
             ),
+            buzzer_enabled=(
+                update.buzzer_enabled
+                if update.buzzer_enabled is not None
+                else existing.buzzer_enabled
+            ),
+            buzzer_pitch_hz=(
+                update.buzzer_pitch_hz
+                if update.buzzer_pitch_hz is not None
+                else existing.buzzer_pitch_hz
+            ),
+            buzzer_volume=(
+                update.buzzer_volume
+                if update.buzzer_volume is not None
+                else existing.buzzer_volume
+            ),
+            buzzer_count=(
+                update.buzzer_count
+                if update.buzzer_count is not None
+                else existing.buzzer_count
+            ),
+            buzzer_beep_ms=(
+                update.buzzer_beep_ms
+                if update.buzzer_beep_ms is not None
+                else existing.buzzer_beep_ms
+            ),
+            buzzer_gap_ms=(
+                update.buzzer_gap_ms
+                if update.buzzer_gap_ms is not None
+                else existing.buzzer_gap_ms
+            ),
         )
         with self._connect() as conn:
             conn.execute(
@@ -290,7 +325,9 @@ class ScheduleStore:
                     repeat_every_minutes = ?, enabled = ?, sort_order = ?,
                     led_enabled = ?, led_red = ?, led_green = ?, led_blue = ?,
                     led_flash_interval_ms = ?, led_flash_duration_seconds = ?,
-                    led_chase_duration_seconds = ?
+                    led_chase_duration_seconds = ?,
+                    buzzer_enabled = ?, buzzer_pitch_hz = ?, buzzer_volume = ?,
+                    buzzer_count = ?, buzzer_beep_ms = ?, buzzer_gap_ms = ?
                 WHERE id = ?
                 """,
                 (
@@ -306,6 +343,12 @@ class ScheduleStore:
                     merged.led_flash_interval_ms,
                     merged.led_flash_duration_seconds,
                     merged.led_chase_duration_seconds,
+                    int(merged.buzzer_enabled),
+                    merged.buzzer_pitch_hz,
+                    merged.buzzer_volume,
+                    merged.buzzer_count,
+                    merged.buzzer_beep_ms,
+                    merged.buzzer_gap_ms,
                     rule_id,
                 ),
             )
@@ -362,6 +405,12 @@ class ScheduleStore:
                 led_flash_interval_ms=rule.led_flash_interval_ms,
                 led_flash_duration_seconds=rule.led_flash_duration_seconds,
                 led_chase_duration_seconds=rule.led_chase_duration_seconds,
+                buzzer_enabled=rule.buzzer_enabled,
+                buzzer_pitch_hz=rule.buzzer_pitch_hz,
+                buzzer_volume=rule.buzzer_volume,
+                buzzer_count=rule.buzzer_count,
+                buzzer_beep_ms=rule.buzzer_beep_ms,
+                buzzer_gap_ms=rule.buzzer_gap_ms,
             )
             for rule in self.list_rules()
         ]
@@ -442,6 +491,22 @@ class ScheduleStore:
                 continue
 
     @staticmethod
+    def _migrate_rule_buzzer_columns(conn: sqlite3.Connection) -> None:
+        columns = (
+            ("buzzer_enabled", "INTEGER NOT NULL DEFAULT 0"),
+            ("buzzer_pitch_hz", "INTEGER NOT NULL DEFAULT 2500"),
+            ("buzzer_volume", "INTEGER NOT NULL DEFAULT 80"),
+            ("buzzer_count", "INTEGER NOT NULL DEFAULT 3"),
+            ("buzzer_beep_ms", "INTEGER NOT NULL DEFAULT 200"),
+            ("buzzer_gap_ms", "INTEGER NOT NULL DEFAULT 150"),
+        )
+        for name, spec in columns:
+            try:
+                conn.execute(f"ALTER TABLE reminder_rules ADD COLUMN {name} {spec}")
+            except sqlite3.OperationalError:
+                continue
+
+    @staticmethod
     def _create_rules(
         conn: sqlite3.Connection, rules: Iterable[ReminderRuleCreate]
     ) -> sqlite3.Cursor:
@@ -453,8 +518,10 @@ class ScheduleStore:
                     (offset_minutes, message_template, repeat_every_minutes,
                      enabled, sort_order, led_enabled, led_red, led_green, led_blue,
                      led_flash_interval_ms, led_flash_duration_seconds,
-                     led_chase_duration_seconds)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     led_chase_duration_seconds,
+                     buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
+                     buzzer_count, buzzer_beep_ms, buzzer_gap_ms)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     rule.offset_minutes,
@@ -469,6 +536,12 @@ class ScheduleStore:
                     rule.led_flash_interval_ms,
                     rule.led_flash_duration_seconds,
                     rule.led_chase_duration_seconds,
+                    int(rule.buzzer_enabled),
+                    rule.buzzer_pitch_hz,
+                    rule.buzzer_volume,
+                    rule.buzzer_count,
+                    rule.buzzer_beep_ms,
+                    rule.buzzer_gap_ms,
                 ),
             )
         return cursor
@@ -499,4 +572,10 @@ class ScheduleStore:
             led_flash_interval_ms=int(row["led_flash_interval_ms"]),
             led_flash_duration_seconds=int(row["led_flash_duration_seconds"]),
             led_chase_duration_seconds=int(row["led_chase_duration_seconds"]),
+            buzzer_enabled=bool(row["buzzer_enabled"]),
+            buzzer_pitch_hz=int(row["buzzer_pitch_hz"]),
+            buzzer_volume=int(row["buzzer_volume"]),
+            buzzer_count=int(row["buzzer_count"]),
+            buzzer_beep_ms=int(row["buzzer_beep_ms"]),
+            buzzer_gap_ms=int(row["buzzer_gap_ms"]),
         )

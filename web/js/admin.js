@@ -97,6 +97,12 @@ function populateRuleForm(rule) {
     setFieldValue("ruleLedInterval", String(rule.led_flash_interval_ms ?? 500));
     setFieldValue("ruleLedDuration", String(rule.led_flash_duration_seconds ?? 10));
     setFieldValue("ruleLedChaseDuration", String(rule.led_chase_duration_seconds ?? 10));
+    setFieldChecked("ruleBuzzerEnabled", rule.buzzer_enabled);
+    setFieldValue("ruleBuzzerPitch", String(rule.buzzer_pitch_hz ?? 2500));
+    setFieldValue("ruleBuzzerVolume", String(rule.buzzer_volume ?? 80));
+    setFieldValue("ruleBuzzerCount", String(rule.buzzer_count ?? 3));
+    setFieldValue("ruleBuzzerBeepMs", String(rule.buzzer_beep_ms ?? 200));
+    setFieldValue("ruleBuzzerGapMs", String(rule.buzzer_gap_ms ?? 150));
     ruleForm?.scrollIntoView({ behavior: "smooth", block: "start" });
     setOutput(`Editing rule: ${rule.message_template}`);
   } catch (error) {
@@ -120,6 +126,25 @@ function readRuleLedSettings() {
     led_flash_duration_seconds: readRuleNumber("ruleLedDuration", 10),
     led_chase_duration_seconds: readRuleNumber("ruleLedChaseDuration", 10),
   };
+}
+
+function readRuleBuzzerSettings() {
+  const buzzerEnabledEl = document.getElementById("ruleBuzzerEnabled");
+  return {
+    buzzer_enabled: buzzerEnabledEl.checked,
+    buzzer_pitch_hz: readRuleNumber("ruleBuzzerPitch", 2500),
+    buzzer_volume: readRuleNumber("ruleBuzzerVolume", 80),
+    buzzer_count: readRuleNumber("ruleBuzzerCount", 3),
+    buzzer_beep_ms: readRuleNumber("ruleBuzzerBeepMs", 200),
+    buzzer_gap_ms: readRuleNumber("ruleBuzzerGapMs", 150),
+  };
+}
+
+function ruleBuzzerSummary(rule) {
+  if (!rule.buzzer_enabled) {
+    return "";
+  }
+  return ` · Buzzer ${rule.buzzer_count}x @ ${rule.buzzer_pitch_hz}Hz`;
 }
 
 function ruleLedSummary(rule) {
@@ -326,6 +351,12 @@ function clearRuleForm() {
   document.getElementById("ruleLedInterval").value = "500";
   document.getElementById("ruleLedDuration").value = "10";
   document.getElementById("ruleLedChaseDuration").value = "10";
+  document.getElementById("ruleBuzzerEnabled").checked = false;
+  document.getElementById("ruleBuzzerPitch").value = "2500";
+  document.getElementById("ruleBuzzerVolume").value = "80";
+  document.getElementById("ruleBuzzerCount").value = "3";
+  document.getElementById("ruleBuzzerBeepMs").value = "200";
+  document.getElementById("ruleBuzzerGapMs").value = "150";
 }
 
 async function loadParticipants() {
@@ -386,7 +417,7 @@ async function loadRules() {
         <div class="admin__item">
           <div class="admin__item-main">
             <strong>${escapeHtml(rule.offset_minutes)} min: ${escapeHtml(rule.message_template)}</strong>
-            <span>${rule.repeat_every_minutes ? `Repeats every ${escapeHtml(rule.repeat_every_minutes)} min` : "One time"} · ${rule.enabled ? "Enabled" : "Disabled"}${escapeHtml(ruleLedSummary(rule))}</span>
+            <span>${rule.repeat_every_minutes ? `Repeats every ${escapeHtml(rule.repeat_every_minutes)} min` : "One time"} · ${rule.enabled ? "Enabled" : "Disabled"}${escapeHtml(ruleLedSummary(rule))}${escapeHtml(ruleBuzzerSummary(rule))}</span>
           </div>
           <button data-edit-rule="${rule.id}" type="button">Edit</button>
           <button data-delete-rule="${rule.id}" type="button">Delete</button>
@@ -568,6 +599,7 @@ ruleForm?.addEventListener("submit", async (event) => {
     enabled: document.getElementById("ruleEnabled").checked,
     sort_order: 0,
     ...readRuleLedSettings(),
+    ...readRuleBuzzerSettings(),
   };
   try {
     await api(ruleId ? `/api/reminder-rules/${ruleId}` : "/api/reminder-rules", {
@@ -588,6 +620,28 @@ document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile)
 document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
 document.getElementById("clearRule")?.addEventListener("click", clearRuleForm);
+document.getElementById("testRuleBuzzer")?.addEventListener("click", async () => {
+  let buzzerSettings;
+  try {
+    buzzerSettings = readRuleBuzzerSettings();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+    return;
+  }
+  setOutput("Testing buzzer...");
+  try {
+    await api("/api/admin/buzzer/test", {
+      method: "POST",
+      body: JSON.stringify(buzzerSettings),
+    });
+    setOutput(
+      `Buzzer test started (${buzzerSettings.buzzer_count} beeps @ ${buzzerSettings.buzzer_pitch_hz}Hz)`,
+    );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
 document.getElementById("testRuleLed")?.addEventListener("click", async () => {
   const ledSettings = readRuleLedSettings();
   setOutput("Testing LED strip...");

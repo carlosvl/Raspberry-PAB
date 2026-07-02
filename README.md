@@ -131,6 +131,10 @@ For Carlos at 11:00, that example fires `Warm Up Carlos` at 10:30 and `Go to Sta
 | `PAB_ADMIN_PIN`         | `1234`                         | PIN for admin writes                         |
 | `PAB_HOTSPOT_SSID`     | `Raspberry-PAB`                | Fallback hotspot name                        |
 | `PAB_HOTSPOT_PASSWORD` | `RaspberryPAB123`              | Fallback hotspot password                    |
+| `PAB_BUZZER_ENABLED`   | `false`                        | Enable Arduino buzzer on reminder alerts     |
+| `PAB_BUZZER_PORT`      | *(empty)*                      | Serial port for Arduino Nano                 |
+| `PAB_BUZZER_MODE`      | `active`                       | `active` or `passive` buzzer module          |
+| `PAB_BUZZER_BAUD`      | `115200`                       | Serial baud rate                             |
 
 On the Pi touchscreen, tap **Keyboard** on the admin PIN screen to open the installed OS on-screen keyboard. `scripts/install.sh` tries to install common keyboard packages (`wvkbd`, `matchbox-keyboard`, `onboard`) and `scripts/touch-keyboard.sh` launches whichever is available for the current desktop session.
 

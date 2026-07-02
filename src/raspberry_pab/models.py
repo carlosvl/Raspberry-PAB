@@ -46,6 +46,12 @@ class ReminderRuleBase(BaseModel):
     led_flash_interval_ms: int = Field(default=500, ge=100, le=5000)
     led_flash_duration_seconds: int = Field(default=10, ge=1, le=120)
     led_chase_duration_seconds: int = Field(default=10, ge=0, le=120)
+    buzzer_enabled: bool = False
+    buzzer_pitch_hz: int = Field(default=2500, ge=100, le=10000)
+    buzzer_volume: int = Field(default=80, ge=0, le=100)
+    buzzer_count: int = Field(default=3, ge=1, le=50)
+    buzzer_beep_ms: int = Field(default=200, ge=10, le=5000)
+    buzzer_gap_ms: int = Field(default=150, ge=0, le=5000)
 
 
 class ReminderRuleCreate(ReminderRuleBase):
@@ -65,10 +71,24 @@ class ReminderRuleUpdate(BaseModel):
     led_flash_interval_ms: int | None = Field(default=None, ge=100, le=5000)
     led_flash_duration_seconds: int | None = Field(default=None, ge=1, le=120)
     led_chase_duration_seconds: int | None = Field(default=None, ge=0, le=120)
+    buzzer_enabled: bool | None = None
+    buzzer_pitch_hz: int | None = Field(default=None, ge=100, le=10000)
+    buzzer_volume: int | None = Field(default=None, ge=0, le=100)
+    buzzer_count: int | None = Field(default=None, ge=1, le=50)
+    buzzer_beep_ms: int | None = Field(default=None, ge=10, le=5000)
+    buzzer_gap_ms: int | None = Field(default=None, ge=0, le=5000)
 
 
 class ReminderRule(ReminderRuleBase):
     id: int
+
+
+class BuzzerTest(BaseModel):
+    buzzer_pitch_hz: int = Field(default=2500, ge=100, le=10000)
+    buzzer_volume: int = Field(default=80, ge=0, le=100)
+    buzzer_count: int = Field(default=3, ge=1, le=50)
+    buzzer_beep_ms: int = Field(default=200, ge=10, le=5000)
+    buzzer_gap_ms: int = Field(default=150, ge=0, le=5000)
 
 
 class LedStripTest(BaseModel):

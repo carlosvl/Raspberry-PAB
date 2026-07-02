@@ -42,6 +42,10 @@ class Settings:
     led_enabled: bool = False
     led_address: str = ""
     led_name: str = "MELKL-OT21 CB"
+    buzzer_enabled: bool = False
+    buzzer_port: str = ""
+    buzzer_mode: str = "active"
+    buzzer_baud: int = 115200
 
     @property
     def kiosk_url(self) -> str:
@@ -76,4 +80,8 @@ class Settings:
             led_enabled=_env_bool("PAB_LED_ENABLED", cls.led_enabled),
             led_address=os.getenv("PAB_LED_ADDRESS", cls.led_address),
             led_name=os.getenv("PAB_LED_NAME", cls.led_name),
+            buzzer_enabled=_env_bool("PAB_BUZZER_ENABLED", cls.buzzer_enabled),
+            buzzer_port=os.getenv("PAB_BUZZER_PORT", cls.buzzer_port),
+            buzzer_mode=os.getenv("PAB_BUZZER_MODE", cls.buzzer_mode),
+            buzzer_baud=int(os.getenv("PAB_BUZZER_BAUD", str(cls.buzzer_baud))),
         )
