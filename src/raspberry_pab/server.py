@@ -23,6 +23,7 @@ from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.buzzer import router as buzzer_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.led import router as led_router
+from raspberry_pab.routes.race_results import router as race_results_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.routes.touch import router as touch_router
 from raspberry_pab.scheduler import AlertBroker, ReminderScheduler
@@ -171,6 +172,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(kiosk_router)
     app.include_router(led_router)
     app.include_router(buzzer_router)
+    app.include_router(race_results_router)
 
     if web_dir.is_dir():
         for subdir in ("css", "js", "assets"):

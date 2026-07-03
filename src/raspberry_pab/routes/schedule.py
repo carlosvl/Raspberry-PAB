@@ -57,9 +57,23 @@ def list_participants(
 ) -> list[ParticipantStatus]:
     event_date = date_filter or date.today()
     now = datetime.now()
+    store = get_store(request)
+    results_map = store.get_participant_results_map(event_date)
     results: list[ParticipantStatus] = []
-    for participant in get_store(request).list_participants(event_date):
+    for participant in store.list_participants(event_date):
         status = participant_status(participant, now)
+        match = results_map.get(participant.id)
+        if match is not None:
+            status = status.model_copy(
+                update={
+                    "finish_place": match.place,
+                    "finish_time": match.total_time,
+                    "result_status": match.result_status,
+                    "result_category": match.category_label,
+                    "result_team": match.team_name,
+                    "results_url": match.results_url,
+                }
+            )
         if show_participant_on_board(status.countdown_seconds):
             results.append(status)
     return results

@@ -105,6 +105,14 @@ Use `/admin` to add participants and rules, or import JSON with this shape:
 
 For Carlos at 11:00, that example fires `Warm Up Carlos` at 10:30 and `Go to Start Line` at 10:45, 10:50, and 10:55.
 
+## Race results
+
+The admin **Race Results** panel syncs the [Precision Race MCA index](https://www.precisionrace.com/mca) and scrapes [ITS YOUR RACE](https://www.itsyourrace.com/) result pages for a selected race day. Participants are matched by calendar date and fuzzy name, then finish place/time appear on the kiosk board.
+
+1. Open Admin → **Race Results**
+2. Click **Sync MCA index**
+3. Choose the race date and click **Sync results for date**
+
 ## Development commands
 
 | Command            | Description                         |

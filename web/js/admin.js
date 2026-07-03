@@ -427,9 +427,48 @@ async function loadRules() {
     .join("");
 }
 
+async function loadRaceResults() {
+  const raceResultsList = document.getElementById("raceResultsList");
+  const dateInput = document.getElementById("raceResultsDate");
+  if (!raceResultsList || !dateInput) return;
+  const date = dateInput.value || todayParam;
+  const rows = await api(`/api/admin/race-results?date=${date}`, {
+    headers: { "X-Admin-Pin": adminPin() },
+  });
+  if (rows.length === 0) {
+    raceResultsList.innerHTML = "<p>No participants for this date.</p>";
+    return;
+  }
+  raceResultsList.innerHTML = rows
+    .map((row) => {
+      const result =
+        row.match_state === "matched"
+          ? `P${row.place} · ${escapeHtml(row.total_time || "")} · ${escapeHtml(row.category_label || "")}`
+          : row.match_state;
+      const link = row.results_url
+        ? `<a href="${escapeHtml(row.results_url)}" target="_blank" rel="noreferrer">IYR</a>`
+        : "";
+      return `
+        <div class="admin__item">
+          <div class="admin__item-main">
+            <strong>${escapeHtml(row.participant_name)}</strong>
+            <span>${escapeHtml(row.start_time.slice(0, 5))} · ${escapeHtml(result)} · ${escapeHtml(row.venue_label || "No venue")} ${link}</span>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
 async function loadAll() {
   try {
-    await Promise.all([loadBranding(), loadTouchConfig(), loadParticipants(), loadRules()]);
+    await Promise.all([
+      loadBranding(),
+      loadTouchConfig(),
+      loadParticipants(),
+      loadRules(),
+      loadRaceResults(),
+    ]);
     setOutput("Loaded.");
   } catch (error) {
     setOutput(error.message);
@@ -677,6 +716,36 @@ pinInput?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") unlock();
 });
 
+document.getElementById("syncRaceIndex")?.addEventListener("click", async () => {
+  setOutput("Syncing MCA index...");
+  try {
+    const events = await api("/api/admin/race-results/sync-index", {
+      method: "POST",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    setOutput(`Synced ${events.length} MCA race events.`);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("syncRaceResults")?.addEventListener("click", async () => {
+  const date = document.getElementById("raceResultsDate")?.value || todayParam;
+  setOutput(`Syncing race results for ${date}...`);
+  try {
+    const summary = await api(`/api/admin/race-results/sync-date?date=${date}`, {
+      method: "POST",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    await loadRaceResults();
+    setOutput(
+      `Matched ${summary.matched}, unmatched ${summary.unmatched}, ambiguous ${summary.ambiguous}, sessions ${summary.sessions_synced}.`,
+    );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
 document.getElementById("importSchedule")?.addEventListener("click", async () => {
   try {
     const raw = document.getElementById("importJson").value;
@@ -707,6 +776,7 @@ restartServiceButton?.addEventListener("click", restartService);
 
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;
+document.getElementById("raceResultsDate").value = todayParam;
 
 ruleList?.addEventListener("click", async (event) => {
   const editButton = event.target.closest("[data-edit-rule]");

@@ -133,6 +133,15 @@ function rowClass(item, nextId) {
   return classes.join(" ");
 }
 
+function formatResult(item) {
+  if (item.finish_place != null) {
+    const time = item.finish_time ? ` · ${item.finish_time}` : "";
+    const category = item.result_category ? ` · ${item.result_category}` : "";
+    return `P${item.finish_place}${time}${category}`;
+  }
+  return formatCountdown(item.countdown_seconds);
+}
+
 function renderSchedule(items) {
   if (!scheduleBody) return;
 
@@ -151,7 +160,7 @@ function renderSchedule(items) {
           <td class="schedule__name">${item.name}</td>
           <td>${formatDate(item.event_date)}</td>
           <td>${formatTime(item.start_time)}</td>
-          <td class="schedule__countdown">${formatCountdown(item.countdown_seconds)}</td>
+          <td class="schedule__countdown">${formatResult(item)}</td>
         </tr>
       `,
     )

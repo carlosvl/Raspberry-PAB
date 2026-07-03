@@ -31,6 +31,91 @@ class ParticipantStatus(Participant):
     start_at: datetime
     countdown_seconds: int
     status: str
+    finish_place: int | None = None
+    finish_time: str | None = None
+    result_status: str | None = None
+    result_category: str | None = None
+    result_team: str | None = None
+    results_url: str | None = None
+
+
+class RaceEvent(BaseModel):
+    id: int
+    season_year: int
+    race_number: str
+    venue_label: str
+    date_saturday: date
+    date_sunday: date
+    iyr_series_id: str
+    iyr_base_url: str
+    source_url: str
+    scraped_at: datetime
+
+
+class IyrRaceSession(BaseModel):
+    id: int
+    race_event_id: int
+    iyr_eid: str
+    category_label: str
+    race_date: date
+    results_url: str
+    results_status: str
+    scraped_at: datetime
+
+
+class RaceResult(BaseModel):
+    id: int
+    participant_id: int
+    iyr_session_id: int
+    place: int
+    bib: str | None = None
+    team_name: str | None = None
+    laps: int | None = None
+    total_time: str | None = None
+    total_distance: str | None = None
+    raw_name: str
+    match_confidence: float
+    match_method: str
+    result_status: str
+    fetched_at: datetime
+
+
+class ParticipantResultMatchRecord(BaseModel):
+    participant_id: int
+    participant_name: str
+    event_date: date
+    start_time: time
+    place: int | None = None
+    total_time: str | None = None
+    team_name: str | None = None
+    category_label: str | None = None
+    venue_label: str | None = None
+    match_method: str | None = None
+    match_confidence: float | None = None
+    result_status: str | None = None
+    results_url: str | None = None
+    match_state: str
+
+
+class RaceResultsSyncSummary(BaseModel):
+    event_date: date
+    matched: int
+    unmatched: int
+    ambiguous: int
+    sessions_synced: int
+
+
+class ManualRaceResultLink(BaseModel):
+    participant_id: int
+    iyr_session_id: int
+    place: int = Field(ge=1)
+    bib: str | None = None
+    team_name: str | None = None
+    laps: int | None = Field(default=None, ge=0)
+    total_time: str | None = None
+    total_distance: str | None = None
+    raw_name: str = Field(min_length=1, max_length=120)
+    result_status: str = "official"
 
 
 class ReminderRuleBase(BaseModel):

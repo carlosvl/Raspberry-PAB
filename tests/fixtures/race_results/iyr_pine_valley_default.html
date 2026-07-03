@@ -1,0 +1,1257 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="description" /><meta name="author" /><meta name="google-site-verification" content="l3iJD8enYU434h1nNM1YI2-loi-1TpXi8mX8fB9CWZo" /><link rel="shortcut icon" href="/favicon.ico" /><link href="/content/assets/css/styles.css?v=3" rel="stylesheet" type="text/css" /><link href="//fonts.googleapis.com/css?family=Open+Sans:300,400italic,400,700" rel="stylesheet" type="text/css" />
+
+    <style>
+        .event-map { margin:15px; padding:0; border:1px solid #cccccc; }
+        .map-iframe { border-width:0; }
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+    <script src="/content/assets/js/bootstrap.js"></script>
+    <!-- the word rotator -->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    
+    <title>Race Results - MCA 2025 Race 8 Pine Valley - ITS YOUR RACE</title>
+
+    <style type="text/css">
+        h1 { margin: 0 0 10px 0;}
+        h2 { margin: 0; font-size:14px; }
+        .page-header { float: left; width: 62%; }
+        .page-ad { float: right; width: 340px; height: 150px; margin-bottom:10px;}
+        .page-header-right { width: 100%; margin-top:10px; }
+        .cameraIcon { width: 45px; height: 32px; }
+        .wrapper1{width: 300px; height: 20px; border: none 0px RED; overflow-x: scroll; overflow-y:hidden;}
+        .div1 {width:1000px; height: 20px; }
+        #resultsTable { font-size:12px; }
+        #resultsTable th{text-align:left; background-color:#0088CC; border-bottom:1px solid #272727; border-top:0px solid #5A7AA6; color:#FFFFFF; font-size:12px; vertical-align:middle; padding:5px 10px 0 0;}
+        #resultsTable td{padding:5px 0 5px 0; border-bottom:1px solid #efe9e2; text-align:left; width:auto;}
+            #resultsTable th a { color: #FFFFFF; }
+        #resultsTable #Tr1.no-bottom-border td { border-bottom-width:0; }
+        #resultsTable #Tr1:hover{background-color:#272727; color:#FFFFFF; cursor:pointer !important;}
+        #resultsTable #Tr1:hover #btnUploadTime { color:#000; }
+        #resultsTable td:hover{cursor:pointer;}
+        #resultsTable .blank{min-width:5px;}
+        #resultsTable .blank20{min-width:30px;}
+        #resultsTable .event{min-width:60px;}
+        #resultsTable .bib{min-width:75px;}
+        #resultsTable .name{min-width:220px; text-align:left;}
+        #resultsTable .location{min-width:150px; text-align:left;}
+        #resultsTable .placeOverall{min-width:50px; text-align:left;}
+        #resultsTable .sex{min-width:50px; text-align:center;}
+        #resultsTable .sexPlace{min-width:90px; text-align:center;}
+        #resultsTable .age{min-width:50px; text-align:center;}
+        #resultsTable .agePlace{min-width:90px; text-align:center;}
+        #resultsTable .starttime{min-width:100px;}
+        #resultsTable .clocktime{min-width:100px;}
+        #resultsTable .chiptime{min-width:100px;}
+        #resultsTable .pace{min-width:80px;}
+        #resultsTable .splittime { min-width: 70px; padding-right:20px; text-align:right; }
+        #resultsTable .enduroSplit { min-width: 90px; }
+        #resultsTable .finishtime { min-width: 100px; }
+        #resultsTable .lastSeenAt{ min-width: 130px; }
+        #resultsTable .teamName{ min-width: 175px; }
+        #resultsTable .splitTimeHeader { text-align: center; }
+        #resultsTable .splitPlaceHeader { min-width: 100px; text-align: center; }
+        #resultsTable .splitPlace { text-align: center; }
+        #resultsTable .totaltime{min-width:110px;}
+        #resultsTable .totalScore{min-width:50px;}
+        #resultsTable .totalRank{min-width:50px;}
+        #resultsTable .lapCount{min-width:80px; text-align:center;}
+        #resultsTable .lapStartTime{min-width:110px;}
+        #resultsTable .lapTotalTime{min-width:110px;}
+        #resultsTable .lapTotalDistance{min-width:110px;}
+        #resultsTable .laptime{min-width:110px;}
+        #resultsTable .numActivities{min-width:110px; text-align:center;}
+        #resultsTable .totalDistance{min-width:110px; text-align:center;}
+        #resultsTable .totalTime{min-width:110px; text-align:center;}
+        #resultsTable img { width: 40px; height: auto; margin: 0 5px 0 0; float: left;}
+        .filters label{ color:#0088CC; }
+        .clear-search { display:inline-block; padding-left:12px; font-weight:normal; }
+        #resultsTable img.ad {
+            width: auto;
+            height: auto;
+            margin: 10px;
+            float: none;
+        }
+        .results-top-ad { margin:15px 0 15px 0; text-align:center; }
+        #results { float:left; width:100%; }
+        #results-right-ad { margin:0; float:right; width:0; }
+        #ad1 { margin-top:20px;}
+        ul.rwControlButtons[style] {
+            width: auto !important;
+        }
+        #group-gauge {
+	        max-width: 70px;
+	        margin: 0 auto;
+        }
+        .highcharts-background {
+            background-color:#efefef !important;
+        }
+        .results-unofficial {
+            text-transform: uppercase; /* Makes text uppercase */
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+    
+    
+    
+    <script src="/js/arg-1.2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            //$('select#ddlRaces').selectmenu({ width: 150 });
+            //$('select#ddlGender').selectmenu({ width: 150 });
+            //$('select#ddlAgeGroups').selectmenu({ width: 150 });
+
+            $('.wrapper1').width($('.roundView').width());
+            $('.div1').width($('#resultsTable').width());
+
+            $(".wrapper1").scroll(function () {
+                $(".roundView")
+                    .scrollLeft($(".wrapper1").scrollLeft());
+            });
+            $(".roundView").scroll(function () {
+                $(".wrapper1")
+                    .scrollLeft($(".roundView").scrollLeft());
+            });
+
+            $('#btnSearch').bind('click', function (e) {
+                var term = $('#txtSearchTerm').val();
+
+                if (term.length == 0) {
+                    alert('Please enter something to search for in the search field.');
+                    e.preventDefault();
+                }
+                else {
+                    var url = window.location.pathname + '?id=' + GetArgument(Arg('id')) + '&y=' + GetArgument(Arg('y')) + '&eid=' + GetArgument(Arg('eid')) + '&srch=' + term + '&g=' + GetArgument(Arg('g')) + '&amin=' + GetArgument(Arg('amin')) + '&amax=' + GetArgument(Arg('amax'));
+                    //alert(url);
+                    window.location = url;
+                    e.preventDefault();
+
+                }
+            });
+
+            $('a.top100').bind('click', function (e) {
+                window.radopen(this.href, "winTop100");
+                e.preventDefault();
+            });
+
+            $('#txtSearchTerm').keypress(function (e) {
+                var key = e.which;
+                if (key == 13)  // the enter key code
+                {
+                    var url = window.location.pathname + '?id=' + GetArgument(Arg('id')) + '&y=' + GetArgument(Arg('y')) + '&eid=' + GetArgument(Arg('eid')) + '&srch=' + $(this).val() + '&g=' + GetArgument(Arg('g')) + '&amin=' + GetArgument(Arg('amin')) + '&amax=' + GetArgument(Arg('amax'));
+                    //alert(url);
+                    window.location = url;
+                    e.preventDefault();
+                }
+            });
+
+            $('.filters select').change(function (e) {
+                var id = $(this).attr('id');
+                ShowResults(id);
+                e.preventDefault();
+            });
+
+            $('#ddlPage').change(function (e) {
+                e.preventDefault();
+                var url = window.location.pathname + '?id=' + GetArgument(Arg('id')) + '&y=' + GetArgument(Arg('y')) + '&eid=' + GetArgument(Arg('eid')) + '&srch=' + GetArgument(Arg('srch')) + '&g=' + GetArgument(Arg('g')) + '&amin=' + GetArgument(Arg('amin')) + '&amax=' + GetArgument(Arg('amax')) + '&pg=' + $(this).val();
+                window.location.href = url;
+            });
+
+            $('#lnkClearSearch').click(function (e) {
+                e.preventDefault();
+                var url = window.location.pathname + '?id=' + GetArgument(Arg('id')) + '&y=' + GetArgument(Arg('y')) + '&eid=' + GetArgument(Arg('eid')) + '&srch=&g=' + GetArgument(Arg('g')) + '&amin=' + GetArgument(Arg('amin')) + '&amax=' + GetArgument(Arg('amax')) + '&pg=1';
+                window.location.href = url;
+            });
+
+            $('.btnUploadTime').click(function (e) {
+                e.preventDefault();
+                var id = $(this).attr('data-id');
+                ShowUploadPopup(id);
+                return false;
+            });
+
+            $('.btnAddActivity').click(function (e) {
+                e.preventDefault();
+                var id = $(this).attr('data-id');
+                ShowActivityPopup(id);
+                return false;
+            });
+        });
+
+        function RefreshParentPage()//function in parent page
+        {
+            document.location.reload();
+        }
+
+        function GetArgument(value) {
+            return (value == undefined ? '' : value);
+        }
+
+        function ShowResults(id) {
+            var siteId = $('#hdnSiteId').val();
+            var year = $('#ddlYear').val();
+
+            if (id == 'ddlYear') {
+                var url = 'Results.aspx?id=' + siteId + '&y=' + year;
+                //alert(url);
+                window.location.href = url;
+            }
+            else {
+                var eventId = $('#ddlRace').val();
+                var gender = $('#ddlGender').val();
+                var age = $('#ddlAgeGroup').val();
+
+                var url = 'Results.aspx?id=' + siteId + '&y=' + year + '&eid=' + eventId + '&g=' + gender + '&' + age;
+                //alert(url);
+                window.location.href = url;
+            }
+        }
+
+        function ShowPage(id) {
+            var eventType = $('#hdnEventType').val();
+
+            $("#myModal ").modal(show = true);
+
+            var url = "/ResultsDetailsNew.aspx?id=" + id;
+
+            if (eventType == 'tri') {
+                url = "/ResultsDetailsTriathlon.aspx?id=" + id;
+            }
+
+            $.get(url, function (data) {
+                $("#myModal ").html(data);
+
+            });
+
+            //return false;
+        }
+
+        function ShowPage2(id, bib) {
+            var eventId = $('#hdnEventId').val();
+            var eventType = $('#hdnEventType').val();
+            var siteId = $('#hdnSiteId').val()
+            var year = $('#hdnYear').val()
+
+            var url = "/Results/" + siteId + '/' + year + '/' + eventId + '/' + bib;
+            //alert(url);
+
+            if (eventType == 'tri---') {
+                url = "/ResultsDetailsTriathlon.aspx?id=" + id;
+                $("#myModal ").modal(show = true);
+
+                $.get(url, function (data) {
+                    $("#myModal ").html(data);
+                });
+            }
+            else {
+                window.location = url;
+            }
+
+
+            //return false;
+        }
+
+        function ShowPage3(eventParticipantId) {
+            var eventId = $('#hdnEventId').val();
+            var eventType = $('#hdnEventType').val();
+            var siteId = $('#hdnSiteId').val()
+            var year = $('#hdnYear').val()
+
+            var url = "/Results/" + siteId + '/' + year + '/' + eventId + '/' + eventParticipantId;
+            //alert(url);
+        }
+
+        function ShowTeamMember(eventId, bib) {
+            var siteId = $('#hdnSiteId').val()
+            var year = $('#hdnYear').val()
+
+            var url = "/Results/" + siteId + '/' + year + '/' + eventId + '/' + bib;
+            //alert(url);
+
+            window.location = url;
+        }
+    
+        function ShowUploadPopup(participantId) {
+            window.radopen("/UploadTime.aspx?id=" + participantId, "winUploadTime");
+        }
+
+        function ShowActivityPopup(participantId) {
+            window.radopen("/ChallengeAddActivity.aspx?id=" + participantId, "winAddActivity");
+        }
+    </script>
+    <script type="text/javascript" src="//code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript" src="//code.highcharts.com/highcharts-more.js"></script>
+    <script type="text/javascript" src="//code.highcharts.com/modules/solid-gauge.js"></script>
+    <script type="text/javascript" src="/js/results-challenge.js")"></script>
+<link href="/WebResource.axd?d=NfjaWEkS3UfcVcXpCtbBTrSE8IhAK4T-6puqkbrdzhtrxaaflmuUu5uPL3qzG1n3YJuIz4iBcRghtz73gKX5YkfIu-mhoAk6Tycn0VcDQ_VuTwYAJ8B1jNAEPWwmIyZIEDO7Iw2&amp;t=637881501730111606" type="text/css" rel="stylesheet" class="Telerik_stylesheet" /><link href="/WebResource.axd?d=OHe9eZiekme4vhu9xcbAW8KRd_zXkYI6pvRNyfm_iYuEHbyPjaL0SBe__2OgPLGl4AEKM5-1L88F-z5LHrinR2upi8LrijTODFzXX-vMyRZKY4_WAZL65kQlSjxed5vdf2btYjyq1xemuCkHZHGIKqORL6c1&amp;t=637881501730111606" type="text/css" rel="stylesheet" class="Telerik_stylesheet" /><title>
+
+</title></head>
+<body>
+
+<form name="form1" method="post" action="./results.aspx?id=16915" id="form1">
+<div>
+<input type="hidden" name="RadScriptManager1_TSM" id="RadScriptManager1_TSM" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKMTY1NTI1MTM0MA9kFgJmD2QWBAIBD2QWAgIMD2QWBAIBDxYCHgRUZXh0BTpSYWNlIFJlc3VsdHMgLSBNQ0EgMjAyNSBSYWNlIDggUGluZSBWYWxsZXkgLSBJVFMgWU9VUiBSQUNFZAIDDxYCHgdWaXNpYmxlaGQCAw9kFgYCBQ9kFgQCAQ8WAh8BZxYEAgEPZBYCZg8WAh8BaBYEAgEPFgIfAAUHRW5nbGlzaGQCAw8WAh8BaGQCAg8WAh8BaBYCZg8WAh8BaBYEAgEPFgIfAAUHRW5nbGlzaGQCAw8WAh8BaGQCAw9kFgQCAQ9kFgJmDxYCHwFoFgICAw8WAh8BaGQCAg9kFgJmDxYCHwFoFgICAw8WAh8BaGQCBw9kFhhmD2QWKmYPFgIfAAU5PGxpbmsgaHJlZj0iL0N1c3RvbUNzcy5hc2h4P2lkPTE2OTE1IiByZWw9InN0eWxlc2hlZXQiIC8+ZAICD2QWAmYPFgIfAAWPHDxzY3JpcHQgdHlwZT0idGV4dC9qYXZhc2NyaXB0IiBzcmM9Ii9qcy9peXItcG9zdGhvZy1hbmFseXRpY3MuanM/dj02MzkxMzUwODYzMjkxMjMxMjImc3Y9MjAyNi0wNC0yOS0xIj48L3NjcmlwdD48c2NyaXB0IHR5cGU9InRleHQvamF2YXNjcmlwdCI+d2luZG93Ll9faXlyUG9zdEhvZ01hbmFnZWQ9dHJ1ZTshZnVuY3Rpb24odCxlKXt2YXIgbyxuLHAscjtlLl9fU1Z8fCh3aW5kb3cucG9zdGhvZyYmd2luZG93LnBvc3Rob2cuX19sb2FkZWQpfHwod2luZG93LnBvc3Rob2c9ZSxlLl9pPVtdLGUuaW5pdD1mdW5jdGlvbihpLHMsYSl7ZnVuY3Rpb24gZyh0MSxlMSl7dmFyIG8xPWUxLnNwbGl0KCcuJyk7Mj09bzEubGVuZ3RoJiYodDE9dDFbbzFbMF1dLGUxPW8xWzFdKSx0MVtlMV09ZnVuY3Rpb24oKXt0MS5wdXNoKFtlMV0uY29uY2F0KEFycmF5LnByb3RvdHlwZS5zbGljZS5jYWxsKGFyZ3VtZW50cywwKSkpfX0ocD10LmNyZWF0ZUVsZW1lbnQoJ3NjcmlwdCcpKS50eXBlPSd0ZXh0L2phdmFzY3JpcHQnLHAuY3Jvc3NPcmlnaW49J2Fub255bW91cycscC5hc3luYz0hMCxwLnNyYz1zLmFwaV9ob3N0LnJlcGxhY2UoJy5pLnBvc3Rob2cuY29tJywnLWFzc2V0cy5pLnBvc3Rob2cuY29tJykrJy9zdGF0aWMvYXJyYXkuanMnLChyPXQuZ2V0RWxlbWVudHNCeVRhZ05hbWUoJ3NjcmlwdCcpWzBdKS5wYXJlbnROb2RlLmluc2VydEJlZm9yZShwLHIpO3ZhciB1PWU7Zm9yKHZvaWQgMCE9PWE/dT1lW2FdPVtdOmE9J3Bvc3Rob2cnLHUucGVvcGxlPXUucGVvcGxlfHxbXSx1LnRvU3RyaW5nPWZ1bmN0aW9uKHQyKXt2YXIgZTI9J3Bvc3Rob2cnO3JldHVybidwb3N0aG9nJyE9PWEmJihlMis9Jy4nK2EpLHQyfHwoZTIrPScgKHN0dWIpJyksZTJ9LHUucGVvcGxlLnRvU3RyaW5nPWZ1bmN0aW9uKCl7cmV0dXJuIHUudG9TdHJpbmcoMSkrJy5wZW9wbGUgKHN0dWIpJ30sbz0naW5pdCBEciBxciBDaSBCciBaciBQciBjYXB0dXJlIGNhbGN1bGF0ZUV2ZW50UHJvcGVydGllcyBVciByZWdpc3RlciByZWdpc3Rlcl9vbmNlIHJlZ2lzdGVyX2Zvcl9zZXNzaW9uIHVucmVnaXN0ZXIgdW5yZWdpc3Rlcl9mb3Jfc2Vzc2lvbiBYciBnZXRGZWF0dXJlRmxhZyBnZXRGZWF0dXJlRmxhZ1BheWxvYWQgZ2V0RmVhdHVyZUZsYWdSZXN1bHQgaXNGZWF0dXJlRW5hYmxlZCByZWxvYWRGZWF0dXJlRmxhZ3MgdXBkYXRlRmxhZ3MgdXBkYXRlRWFybHlBY2Nlc3NGZWF0dXJlRW5yb2xsbWVudCBnZXRFYXJseUFjY2Vzc0ZlYXR1cmVzIG9uIG9uRmVhdHVyZUZsYWdzIG9uU3VydmV5c0xvYWRlZCBvblNlc3Npb25JZCBnZXRTdXJ2ZXlzIGdldEFjdGl2ZU1hdGNoaW5nU3VydmV5cyByZW5kZXJTdXJ2ZXkgZGlzcGxheVN1cnZleSBjYW5jZWxQZW5kaW5nU3VydmV5IGNhblJlbmRlclN1cnZleSBjYW5SZW5kZXJTdXJ2ZXlBc3luYyBKciBpZGVudGlmeSBzZXRQZXJzb25Qcm9wZXJ0aWVzIGdyb3VwIHJlc2V0R3JvdXBzIHNldFBlcnNvblByb3BlcnRpZXNGb3JGbGFncyByZXNldFBlcnNvblByb3BlcnRpZXNGb3JGbGFncyBzZXRHcm91cFByb3BlcnRpZXNGb3JGbGFncyByZXNldEdyb3VwUHJvcGVydGllc0ZvckZsYWdzIHJlc2V0IHNldElkZW50aXR5IGNsZWFySWRlbnRpdHkgZ2V0X2Rpc3RpbmN0X2lkIGdldEdyb3VwcyBnZXRfc2Vzc2lvbl9pZCBnZXRfc2Vzc2lvbl9yZXBsYXlfdXJsIGFsaWFzIHNldF9jb25maWcgc3RhcnRTZXNzaW9uUmVjb3JkaW5nIHN0b3BTZXNzaW9uUmVjb3JkaW5nIHNlc3Npb25SZWNvcmRpbmdTdGFydGVkIGNhcHR1cmVFeGNlcHRpb24gY2FwdHVyZUxvZyBzdGFydEV4Y2VwdGlvbkF1dG9jYXB0dXJlIHN0b3BFeGNlcHRpb25BdXRvY2FwdHVyZSBsb2FkVG9vbGJhciBnZXRfcHJvcGVydHkgZ2V0U2Vzc2lvblByb3BlcnR5IFdyIEhyIGNyZWF0ZVBlcnNvblByb2ZpbGUgc2V0SW50ZXJuYWxPclRlc3RVc2VyIEdyIEZyIHRuIG9wdF9pbl9jYXB0dXJpbmcgb3B0X291dF9jYXB0dXJpbmcgaGFzX29wdGVkX2luX2NhcHR1cmluZyBoYXNfb3B0ZWRfb3V0X2NhcHR1cmluZyBnZXRfZXhwbGljaXRfY29uc2VudF9zdGF0dXMgaXNfY2FwdHVyaW5nIGNsZWFyX29wdF9pbl9vdXRfY2FwdHVyaW5nICRyIGRlYnVnIGtpIFlyIGdldFBhZ2VWaWV3SWQgY2FwdHVyZVRyYWNlRmVlZGJhY2sgY2FwdHVyZVRyYWNlTWV0cmljIFJyJy5zcGxpdCgnICcpLG49MDtuPG8ubGVuZ3RoO24rKylnKHUsb1tuXSk7ZS5faS5wdXNoKFtpLHMsYV0pfSxlLl9fU1Y9MSl9KGRvY3VtZW50LHdpbmRvdy5wb3N0aG9nfHxbXSk7cG9zdGhvZy5pbml0KCJwaGNfeFBodUZqVWtrOUIyS3ptc1BqQ3ZRamdab05qTEROYXZzSmFNQWhEamc0SjgiLHthcGlfaG9zdDoiaHR0cHM6Ly91cy5pLnBvc3Rob2cuY29tIixkZWZhdWx0czoiMjAyNi0wMS0zMCIscGVyc29uX3Byb2ZpbGVzOidpZGVudGlmaWVkX29ubHknLGF1dG9jYXB0dXJlOmZhbHNlLGNhcHR1cmVfcGFnZXZpZXc6ZmFsc2UsY2FwdHVyZV9wYWdlbGVhdmU6ZmFsc2UsY2FwdHVyZV9wZXJmb3JtYW5jZTpmYWxzZSxkaXNhYmxlX3Nlc3Npb25fcmVjb3JkaW5nOnRydWUsZGlzYWJsZV9jb21wcmVzc2lvbjpmYWxzZSxjcm9zc19zdWJkb21haW5fY29va2llOnRydWUsYmVmb3JlX3NlbmQ6ZnVuY3Rpb24oZXZlbnQpe3JldHVybiB3aW5kb3cuSVlSQW5hbHl0aWNzJiZ3aW5kb3cuSVlSQW5hbHl0aWNzLnNhbml0aXplRXZlbnQ/d2luZG93LklZUkFuYWx5dGljcy5zYW5pdGl6ZUV2ZW50KGV2ZW50KTpldmVudDt9LGxvYWRlZDpmdW5jdGlvbihwb3N0aG9nSW5zdGFuY2Upe3dpbmRvdy5fX2l5clBvc3RIb2dSZWFkeT10cnVlO2lmKHdpbmRvdy5JWVJBbmFseXRpY3MmJndpbmRvdy5JWVJBbmFseXRpY3Mub25Qb3N0SG9nTG9hZGVkKXt3aW5kb3cuSVlSQW5hbHl0aWNzLm9uUG9zdEhvZ0xvYWRlZChwb3N0aG9nSW5zdGFuY2UpO319fSk7PC9zY3JpcHQ+PHNjcmlwdCB0eXBlPSJ0ZXh0L2phdmFzY3JpcHQiPndpbmRvdy5JWVJBbmFseXRpY3MgJiYgd2luZG93LklZUkFuYWx5dGljcy5ib290c3RyYXAoeyJjb25maWciOnsidG9rZW4iOiJwaGNfeFBodUZqVWtrOUIyS3ptc1BqQ3ZRamdab05qTEROYXZzSmFNQWhEamc0SjgiLCJhcGlIb3N0IjoiaHR0cHM6Ly91cy5pLnBvc3Rob2cuY29tIiwiZW52aXJvbm1lbnQiOiJMaXZlIiwiZGVmYXVsdHMiOiIyMDI2LTAxLTMwIiwiZGlzYWJsZUNvbXByZXNzaW9uIjpmYWxzZSwiY3Jvc3NTdWJkb21haW5Db29raWUiOnRydWUsImRlYnVnIjpmYWxzZX0sInBhZ2UiOnsicGFnZVR5cGUiOiJyZXN1bHRzIiwicGFnZVZpZXdFdmVudCI6InJlc3VsdHMgcGFnZSB2aWV3ZWQifSwicHJvcGVydGllcyI6eyJzaXRlSWQiOnsidHlwZSI6ImludGVnZXIiLCJ2YWx1ZSI6MTY5MTUsInNlbGVjdG9ycyI6WyIjaGRuU2l0ZUlkIl19LCJzaXRlWWVhciI6eyJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjpudWxsLCJzZWxlY3RvcnMiOlsiI2hkblllYXIiLCIjZGRsWWVhciJdfSwicmFjZUlkIjp7InR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOm51bGwsInNlbGVjdG9ycyI6WyIjaGRuRXZlbnRJZCIsIiNkZGxSYWNlIl19LCJyZWdpc3RyYXRpb25Nb2RlIjp7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6bnVsbH19fSk7PC9zY3JpcHQ+ZAIMD2QWBAIDDxYCHwAFG01DQSAyMDI1IFJhY2UgOCBQaW5lIFZhbGxleWQCBQ8WAh8ABQtDbG9xdWV0LCBNTmQCDg9kFgYCAw8PFgIeCEltYWdlVXJsBV1odHRwczovL2l5cndlYnN0b3JhZ2UuYmxvYi5jb3JlLndpbmRvd3MubmV0L2V2ZW50cy8xNjM5MS8zOGU0MTNlN2RkZjc0OTQ3YWQyM2I2YmUwOTEwOGY3OC5wbmdkZAIFDxYCHwAFG01DQSAyMDI1IFJhY2UgOCBQaW5lIFZhbGxleWQCBw8WAh8ABQtDbG9xdWV0LCBNTmQCEA9kFgJmDw8WBB8ABQVBYm91dB4LTmF2aWdhdGVVcmwFFC9ldmVudC5hc3B4P2lkPTE2OTE1ZGQCEg9kFgJmDw8WBh8AZR8DBRwvZXZlbnRTY2hlZHVsZS5hc3B4P2lkPTE2OTE1HwFoZGQCFA9kFgJmDw8WBB8ABQxQYXJ0aWNpcGFudHMfAwUeL1BhcnRpY2lwYW50TGlzdC5hc3B4P2lkPTE2OTE1ZGQCFg9kFgJmDw8WBB8ABQVUZWFtcx8DBRcvVGVhbUxpc3QuYXNweD9pZD0xNjkxNWRkAhgPFgIeBWNsYXNzBQZhY3RpdmUWAmYPDxYEHwAFB1Jlc3VsdHMfAwUWL1Jlc3VsdHMuYXNweD9pZD0x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UGxhY2VIb2xkZXIxJGx2UmVzdWx0c0Nyb3NzQ291bnRyeQ9nZAUrY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyMSRsdlJlc3VsdHNMYXBzVGVhbQ9nZAUnY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyMSRsdlJlc3VsdHNUZWFtD2dkBR5fX0NvbnRyb2xzUmVxdWlyZVBvc3RCYWNrS2V5X18WBQUrY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyMSRSYWRXaW5kb3dNYW5hZ2VyMQUnY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyMSR3aW5VcGxvYWRUaW1lBShjdGwwMCRDb250ZW50UGxhY2VIb2xkZXIxJHdpbkFkZEFjdGl2aXR5BSFjdGwwMCRDb250ZW50UGxhY2VIb2xkZXIxJHdpblZpZXcFI2N0bDAwJENvbnRlbnRQbGFjZUhvbGRlcjEkd2luVG9wMTAwBSdjdGwwMCRDb250ZW50UGxhY2VIb2xkZXIxJGx2UmVzdWx0c0xhcHMPFCsADmRkZGRkZGQ8KwAXAAIXZGRkZgL/////D2QFLmN0bDAwJENvbnRlbnRQbGFjZUhvbGRlcjEkbHZSZXN1bHRzTGFwc0Zhc3Rlc3QPZ2QFI2N0bDAwJENvbnRlbnRQbGFjZUhvbGRlcjEkbHZSZXN1bHRzD2dkBSxjdGwwMCRDb250ZW50UGxhY2VIb2xkZXIxJGx2UmVzdWx0c0NoYWxsZW5nZQ9nZLlI2pHUq3Z/PybDq/VbjVeQb+jG" />
+</div>
+
+
+<script src="/Telerik.Web.UI.WebResource.axd?_TSM_HiddenField_=RadScriptManager1_TSM&amp;compress=1&amp;_TSM_CombinedScripts_=%3b%3bSystem.Web.Extensions%2c+Version%3d4.0.0.0%2c+Culture%3dneutral%2c+PublicKeyToken%3d31bf3856ad364e35%3aen-US%3a64455737-15dd-482f-b336-7074c5c53f91%3aea597d4b%3bTelerik.Web.UI%2c+Version%3d2012.3.1205.40%2c+Culture%3dneutral%2c+PublicKeyToken%3d121fae78165ba3d4%3aen-US%3af18b91a4-0e6c-41d1-af11-dfb338738b79%3a16e4e7cd%3a874f8ea2%3af7645509%3a24ee1bba%3a19620875%3af46195d3%3a490a9d4e%3abd8f85e4" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<div>
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="63301E89" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdADaKSeEQdcO6Rg+6Cp514eXH1KfA1+g2cP4Olcl+obAJ/8VSQ0Q94f9D3OK8qWh850WpSpRnEm/HQVJ3aesLyEYfTBtPdVwlJmpS/xnjHnh478VF/Mcpp6mfAq1mK5aWW7xSBl77zyhr9DLrNhSnNQvQR8XOA9g6vNuziapX327RZ7FfDThwMp8qXscCZbPPOusMAAJMBL9f7nuty1VKf5G1FazDyApc9EehZhyfb4CvL8b6bmS4HeGsHxnoLv4zivnecefO+MUGBGL16p9Gqynxff6vFBm57/tplovUo6NeANMO5dcN5QM4n7F3wFYWwFbPW4JZ7CJBJ3tuJ3O1yef/hKHwYMRd/81fTo7Jo4lgkG8cNpAHa/Gym9QrG3EkRr7ylRQDUFbqL1YI4lzIPWPcbQdY7wms3WB4IqAHdUa1PnBAjGyIMTClFuoifpKkIJsDD+kNMEDOMH726zNLlbRFCsmgJzeS5OJf4lMTHMQlZmKi7u/AlkUTINRpykXZcnB35N5c5XYUNGib+FfKpzNYlTb2uJBxZQ9MEN1TbrBqmcXXTj7wvHRTG68vD7udm60eEY7BycLGnEILAtVFgtZvQGok1UPl+MJWBTgYibMR5bG/+kz8FhSugeMkeSZVE+hxa75FNxjypCIOp94W2o0VkjLvfFoe82jUUr1keNLRjGsjptx6v0CsO6jJu+Ppz2+eN0T/oArUMjAR6Pa3BpfspWlZ5Velu/aYEdkP7czzLKUp3QG8e5dZMSx6XXJEdgx277m3XLB38w6Wg/C86ZwnlA0PEGvlbri0Spw0wQeyzYlYSS/eo8aKfxAcygCQ94gUY3bAw5quO2YTtHXEWr3ttFfgxaO+BZjb2TiMSR/sIY5MW6XMaFjzT9nUdsIknot1p1CSqcAGcJ8WRjWzKcq2l4+ILJ/AXgBhls7Ajmqqq6Rho53Rt4jl1aYSuToZUBRiMA8CLNsR+IGgCTyejTtTuUShizijBv3d8fmo0Sf266kswgAowp2skSJCZW5FoYArdQ13nWI7sAF51l5rYNwUUm+q8XOnk825Yr5YIe8shif7ucGPnBMhc0So+LL6nKckko4b2icuWodeepdN4/KCct0mzzzyPt4rulmVYC0oLo4H1CDrBjyZMDCO8EDVGDpVN9jq609ChjaZoK8CwJIjevO5bA==" />
+</div>
+
+    
+
+    
+
+    
+
+<script>
+    function SetLanguageCookie(selectedLanguage) {
+      var expDate = new Date();
+      expDate.setDate(expDate.getDate() + 20); // Expiration 20 days from today
+      document.cookie = "langCookie=" + selectedLanguage + "; expires=" + expDate.toUTCString() + "; path=/";
+      window.location.reload(true);
+    };
+</script>
+
+
+    <style>
+        @media (min-width: 768px) {
+            .navbar-nav > li > a {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+        }
+        li.dropdown.language-li {
+            min-width: 110px;
+            text-align: right;
+        }
+
+        .navbar-nav > li > .language-menu {
+            padding: 3px 0 3px 0;
+            margin-top: -8px;
+            border: 1px solid #49dffa;
+            border-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        @media (min-width: 768px) {
+            .navbar-right .language-menu {
+                left: auto;
+                right: 5px;
+            }
+        }
+
+        .open > .language-menu {
+            display: block;
+            border-top: 1px solid #2b8dcc !important;
+        }
+
+        .language-menu {
+            position: absolute;
+            top: 100%;
+            z-index: 1000;
+            display:none;
+            min-width: 100px;
+            margin: 0;
+            list-style: none;
+            font-size: 14px;
+            background-color: #2b8dcc;
+            box-shadow: 0 6px 12px rgba(0,0,0,.175);
+            background-clip: padding-box;
+        }
+
+       .language-menu li { text-align:right;  padding:3px 10px 3px 0;}
+       .language-menu li a { color:#49dffa; }
+
+        .nav .open > a, .nav .open > a:focus, .nav .open > a:hover {
+            background-color: #2b8dcc;
+            border-color: #49dffa;
+            border-bottom-color:#2b8dcc;
+        }
+
+        ul.language { width:120px !important; }
+    </style>
+    <!-- begins new navbar -->
+    <div id="pnlLoggedOut" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://www.itsyourrace.com/"><img src="https://www.itsyourrace.com/content/assets/img/its-your-race-logo.jpg" alt="ITS YOUR RACE logo" /></a>
+          <div class="navbar-right secret pad bump-login">
+            <ul id="menu-header-menu" class="nav navbar-nav-right">
+              <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                <a href="https://www.itsyourrace.com/login.aspx">Log In</a>
+              </li>
+              <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                <p class="nav-p">|</p>
+              </li>
+              <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                <a href="https://www.itsyourrace.com/signup.aspx">Sign Up</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        
+
+        <div class="navbar-collapse collapse">
+            <div class="navbar-right bump-login">
+                <ul id="menu-header-menu" class="nav navbar-nav-right">
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                        <a href="https://www.itsyourrace.com/login.aspx">Log In</a>
+                    </li>
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                        <p class="nav-p">|</p>
+                    </li>
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                        <a href="https://www.itsyourrace.com/signup.aspx">Sign Up</a>
+                    </li>
+                </ul>
+            </div>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </div>
+    <!-- /new navbar -->
+
+
+
+
+
+    
+
+    <link href="/CustomCss.ashx?id=16915" rel="stylesheet" />
+<script type="text/javascript" src="/js/iyr-posthog-analytics.js?v=639135086329123122&sv=2026-04-29-1"></script><script type="text/javascript">window.__iyrPostHogManaged=true;!function(t,e){var o,n,p,r;e.__SV||(window.posthog&&window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t1,e1){var o1=e1.split('.');2==o1.length&&(t1=t1[o1[0]],e1=o1[1]),t1[e1]=function(){t1.push([e1].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement('script')).type='text/javascript',p.crossOrigin='anonymous',p.async=!0,p.src=s.api_host.replace('.i.posthog.com','-assets.i.posthog.com')+'/static/array.js',(r=t.getElementsByTagName('script')[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a='posthog',u.people=u.people||[],u.toString=function(t2){var e2='posthog';return'posthog'!==a&&(e2+='.'+a),t2||(e2+=' (stub)'),e2},u.people.toString=function(){return u.toString(1)+'.people (stub)'},o='init Dr qr Ci Br Zr Pr capture calculateEventProperties Ur register register_once register_for_session unregister unregister_for_session Xr getFeatureFlag getFeatureFlagPayload getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Jr identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException captureLog startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty Wr Hr createPersonProfile setInternalOrTestUser Gr Fr tn opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing $r debug ki Yr getPageViewId captureTraceFeedback captureTraceMetric Rr'.split(' '),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_xPhuFjUkk9B2KzmsPjCvQjgZoNjLDNavsJaMAhDjg4J8",{api_host:"https://us.i.posthog.com",defaults:"2026-01-30",person_profiles:'identified_only',autocapture:false,capture_pageview:false,capture_pageleave:false,capture_performance:false,disable_session_recording:true,disable_compression:false,cross_subdomain_cookie:true,before_send:function(event){return window.IYRAnalytics&&window.IYRAnalytics.sanitizeEvent?window.IYRAnalytics.sanitizeEvent(event):event;},loaded:function(posthogInstance){window.__iyrPostHogReady=true;if(window.IYRAnalytics&&window.IYRAnalytics.onPostHogLoaded){window.IYRAnalytics.onPostHogLoaded(posthogInstance);}}});</script><script type="text/javascript">window.IYRAnalytics && window.IYRAnalytics.bootstrap({"config":{"token":"phc_xPhuFjUkk9B2KzmsPjCvQjgZoNjLDNavsJaMAhDjg4J8","apiHost":"https://us.i.posthog.com","environment":"Live","defaults":"2026-01-30","disableCompression":false,"crossSubdomainCookie":true,"debug":false},"page":{"pageType":"results","pageViewEvent":"results page viewed"},"properties":{"siteId":{"type":"integer","value":16915,"selectors":["#hdnSiteId"]},"siteYear":{"type":"integer","value":null,"selectors":["#hdnYear","#ddlYear"]},"raceId":{"type":"integer","value":null,"selectors":["#hdnEventId","#ddlRace"]},"registrationMode":{"type":"string","value":null}}});</script>
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div id="plnJumbotron" class="jumbotron event-header">
+    <div class="container">
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="event-logo">
+                    <img id="imgLogoMedium" src="https://iyrwebstorage.blob.core.windows.net/events/16391/38e413e7ddf74947ad23b6be09108f78.png" style="border-width:0px;" />
+                </div>
+
+                <h1 id="event-name" class="main-h1">MCA 2025 Race 8 Pine Valley</h1>
+                <p id="event-citystate">Cloquet, MN</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="main-container" class="container">
+    <!-- the event list -->
+
+    <div class="row event-nav">
+
+        <div class="event-nav-box">
+            <ul class="nav nav-pills">
+                <li id="liAbout"><a id="lnkAbout" href="/event.aspx?id=16915">About</a></li>
+                <li id="liEventSchedule"></li>
+                <li id="liParticipants"><a id="lnkParticipants" href="/ParticipantList.aspx?id=16915">Participants</a></li>
+                <li id="liTeams"><a id="lnkTeams" href="/TeamList.aspx?id=16915">Teams</a></li>
+                <li id="liResults" class="active"><a id="lnkResults" href="/Results.aspx?id=16915">Results</a></li>
+                
+                <li id="liAwards"><a id="lnkAwards" href="/Awards.aspx?id=16915&amp;y=&amp;eid=&amp;g=&amp;amin=&amp;amax=">Awards</a></li>
+                
+                
+                
+                <li id="liContact"><a id="lnkContact" href="/EventContact.aspx?id=16915">Contact</a></li>
+                
+                
+                
+                
+                
+            </ul>
+            
+        </div>
+
+    </div>
+
+
+    <div class="row event-group" style="padding-bottom:0;">
+        <div class="col-md-12 body-content">
+            <h1>Race Results</h1>
+
+
+            <div style="clear:both;"></div>
+
+            
+
+                <div class="col-md-12 results-container" style="margin-bottom:0;">
+                    <div class="row stats-panel">
+                        <div class="col-sm-4 stat-box results-header-box">
+                            <h3>6th Grade Girls</h3>
+                            <p>Saturday, Oct 4, 2025</p>
+                            <p><span class="results-unofficial">Results are: Unofficial</span></p>
+                            
+                        </div>
+                        
+                        <div class="col-sm-2 stat-box">
+                            
+                                <span class="title"></span>
+                                <span class="number"></span>
+                            
+                        </div>
+                        <div class="col-sm-2 stat-box">
+                            
+                                <span class="title"></span>
+                                <span class="number"></span>
+                            
+                        </div>
+                        <div class="col-sm-2 stat-box">
+                            
+                                <span class="title"></span>
+                                <span class="number"></span>
+                            
+                        </div>
+                        <div class="col-sm-2 stat-box">
+                            
+                                <span class="title"></span>
+                                <span class="number"></span>
+                            
+                        </div>
+                    </div>
+
+                    <div class="filters">
+                        <div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <label>Year:</label>
+                                    <select name="ctl00$ContentPlaceHolder1$ddlYear" id="ddlYear" class="form-control">
+	<option selected="selected" value="2025">2025</option>
+
+</select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label>Race:</label>
+                                    <select name="ctl00$ContentPlaceHolder1$ddlRace" id="ddlRace" class="form-control">
+	<option value="">Select Race</option>
+	<option selected="selected" value="137183">6th Grade Girls</option>
+	<option value="137192">6th Grade Boys D2</option>
+	<option value="137182">6th Grade Boys D1</option>
+	<option value="137185">7th Grade Girls</option>
+	<option value="137189">7th Grade Boys D2</option>
+	<option value="137187">7th Grade Boys D1</option>
+	<option value="137188">8th Grade Girls</option>
+	<option value="137186">8th Grade Boys D2</option>
+	<option value="137190">8th Grade Boys D1</option>
+	<option value="137184">Freshman Boys D2</option>
+	<option value="137193">Freshman Boys D1</option>
+	<option value="137191">Freshman Girls</option>
+	<option value="137194">JV2 Girls</option>
+	<option value="137195">JV3 Boys</option>
+	<option value="137197">Varsity Boys</option>
+	<option value="137198">JV3 Girls</option>
+	<option value="137199">Varsity Girls</option>
+	<option value="137196">JV2 Boys D2</option>
+	<option value="137200">JV2 Boys D1</option>
+
+</select>
+                                </div>
+                                <div id="pnlFilterGender" class="col-md-2">
+                                    <label>Gender:</label>
+                                    <select name="ctl00$ContentPlaceHolder1$ddlGender" id="ddlGender" class="form-control">
+	<option selected="selected" value="A">All</option>
+	<option value="f">Female</option>
+	<option value="m">Male</option>
+
+</select>
+                                </div><div id="pnlFilterAgeGroup" class="col-md-2">
+                                    <label>Age Group:</label>
+                                    <select name="ctl00$ContentPlaceHolder1$ddlAgeGroup" id="ddlAgeGroup" class="form-control">
+	<option selected="selected" value="amin=0&amp;amax=199">All Ages</option>
+	<option value="amin=0&amp;amax=14">14 &amp; Under</option>
+	<option value="amin=15&amp;amax=19">15 - 19</option>
+	<option value="amin=20&amp;amax=24">20 - 24</option>
+	<option value="amin=25&amp;amax=29">25 - 29</option>
+	<option value="amin=30&amp;amax=34">30 - 34</option>
+	<option value="amin=35&amp;amax=39">35 - 39</option>
+	<option value="amin=40&amp;amax=44">40 - 44</option>
+	<option value="amin=45&amp;amax=49">45 - 49</option>
+	<option value="amin=50&amp;amax=54">50 - 54</option>
+	<option value="amin=55&amp;amax=59">55 - 59</option>
+	<option value="amin=60&amp;amax=64">60 - 64</option>
+	<option value="amin=65&amp;amax=69">65 - 69</option>
+	<option value="amin=70&amp;amax=74">70 - 74</option>
+	<option value="amin=75&amp;amax=98">75 &amp; Above</option>
+
+</select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>
+                                        Search:
+                                        
+                                    </label>
+                                    <input name="ctl00$ContentPlaceHolder1$txtSearchTerm" type="text" id="txtSearchTerm" class="form-control" placeholder="Search the Results" style="display:inline-block; width:85%;" />
+                                    &nbsp;<a id="btnSearch" href="javascript:__doPostBack(&#39;ctl00$ContentPlaceHolder1$btnSearch&#39;,&#39;&#39;)" style="display:inline-block;width:9%;"><span class="glyphicon glyphicon-search"></span></a>
+                                </div>
+                                <div class="col-md-1">
+                                    <label></label>
+                                    <a id="lnkResultsCorrection" href="Correction.aspx?id=16915&amp;y=2025" style="display:block; font-size:12px; padding-top:5px;">Request a Correction</a>
+                                </div>
+                            </div>
+                            <!--<a href="#"><span class="glyphicon glyphicon-search"></span></a>-->
+                        </div>
+                    </div>
+                </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    <div id="pnlResultsWebTop" class="col-md-12 results-rows">
+        <div style="margin:0 20px 20px 20px;">
+            <div style="text-align: center;"><strong>Race Timing &amp; Results by</strong></div>
+<div style="text-align: center;"><span style="color: #ffffff;">.</span></div>
+<div><a href="https://www.precisionrace.com/mca" target="_blank" rel="noopener"><img style="display: block; margin-left: auto; margin-right: auto;" src="http://iyrwebstorage.blob.core.windows.net/events/16673/pr-transparent-450-png.png" alt="" width="230" height="51" /></a></div>
+        </div>
+    </div>
+
+    
+
+    <div>
+        <div id="pnlRaceInfo2">
+	
+
+            
+
+            
+        
+</div>
+
+        
+        
+        <div id="pnlResultsLaps">
+	
+            <div class="resultsTop" style="overflow:hidden; margin-bottom:5px; margin-top:0; vertical-align:bottom;">
+			    &nbsp;
+            </div>
+
+            <div style="clear:both;"></div>
+
+            <div class="wrapper1">
+                <div class="div1">
+                </div>
+            </div>
+
+            <div id="results" class="roundView" style="overflow-x:scroll;">
+                
+                        <table id="resultsTable" cellpadding="0" cellspacing="0" style="width:auto; min-width:100%;" > 
+                            <tr>
+                                <th scope="col"></th>
+                                <th id="thPlaceOverall" scope="col" class="placeOverall">Place</th>
+	 
+                                <th id="thName" scope="col" class="name">Name</th>
+	 
+                                <th id="thTeamName" scope="col" class="name">Team Name</th>
+	 
+                                <th id="thLapCount" class="lapCount" scope="col">Laps</th>
+	 
+                                <th id="thTotalTime" class="lapTotalTime">Total Time</th>
+	 
+                                 
+                                <th id="thTotalDistance" class="lapTotalDistance">Total Distance</th>
+	 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                            </tr>
+                            
+                        <tr id="Tr1" onclick="ShowPage2(10049194, 7063);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">1</td>
+		<td id="tdName" class="name"><strong>Darcy Brodegard</strong> (# 7063)</td>
+		<td id="tdTeamName" class="name">Minneapolis Washburn HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:21:16.567</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049207, 7094);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">2</td>
+		<td id="tdName" class="name"><strong>Zoie Reese</strong> (# 7094)</td>
+		<td id="tdTeamName" class="name">Watertown-Mayer</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:21:19.290</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049193, 7062);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">3</td>
+		<td id="tdName" class="name"><strong>Ruby Peterson</strong> (# 7062)</td>
+		<td id="tdTeamName" class="name">Minneapolis Southwest HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:21:49.400</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049203, 7087);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">4</td>
+		<td id="tdName" class="name"><strong>Ellie Gucinski</strong> (# 7087)</td>
+		<td id="tdTeamName" class="name">St Cloud</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:22:29.634</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049184, 7036);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">5</td>
+		<td id="tdName" class="name"><strong>Adelaide Prevost</strong> (# 7036)</td>
+		<td id="tdTeamName" class="name">Hopkins HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:22:39.254</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049190, 7058);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">6</td>
+		<td id="tdName" class="name"><strong>Adeline Coyne</strong> (# 7058)</td>
+		<td id="tdTeamName" class="name">Minneapolis Southwest HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:22:43.334</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049198, 7081);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">7</td>
+		<td id="tdName" class="name"><strong>Clara Mullen</strong> (# 7081)</td>
+		<td id="tdTeamName" class="name">Rochester Area</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:24:19.767</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049205, 7091);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">8</td>
+		<td id="tdName" class="name"><strong>Adelynn Colvin</strong> (# 7091)</td>
+		<td id="tdTeamName" class="name">Stillwater Mountain Bike</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:25:44.767</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049192, 7061);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">9</td>
+		<td id="tdName" class="name"><strong>Ruby Lindoo</strong> (# 7061)</td>
+		<td id="tdTeamName" class="name">Minneapolis Southwest HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:25:53.177</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049191, 7060);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">10</td>
+		<td id="tdName" class="name"><strong>Cora Kumaraperu</strong> (# 7060)</td>
+		<td id="tdTeamName" class="name">Minneapolis Southwest HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:25:57.710</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049204, 7090);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">11</td>
+		<td id="tdName" class="name"><strong>Audrey Williamson</strong> (# 7090)</td>
+		<td id="tdTeamName" class="name">St Paul Composite - North</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:26:13.074</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049202, 7085);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">12</td>
+		<td id="tdName" class="name"><strong>Ilene Shaffner</strong> (# 7085)</td>
+		<td id="tdTeamName" class="name">Roseville</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:26:14.887</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049175, 7011);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">13</td>
+		<td id="tdName" class="name"><strong>Annika Hitchcock</strong> (# 7011)</td>
+		<td id="tdTeamName" class="name">Cloquet-Esko-Carlton</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:26:21.234</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049176, 7012);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">14</td>
+		<td id="tdName" class="name"><strong>Esme Jordan</strong> (# 7012)</td>
+		<td id="tdTeamName" class="name">Cloquet-Esko-Carlton</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:28:05.824</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049188, 7055);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">15</td>
+		<td id="tdName" class="name"><strong>Olive Ortega</strong> (# 7055)</td>
+		<td id="tdTeamName" class="name">Minneapolis Roosevelt HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:28:59.760</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049196, 7066);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">16</td>
+		<td id="tdName" class="name"><strong>Colette Kuhlmann</strong> (# 7066)</td>
+		<td id="tdTeamName" class="name">Minnetonka HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:29:46.894</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049186, 7040);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">17</td>
+		<td id="tdName" class="name"><strong>Riley Soine</strong> (# 7040)</td>
+		<td id="tdTeamName" class="name">Kerkhoven</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:30:23.207</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049195, 7064);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">18</td>
+		<td id="tdName" class="name"><strong>Elsa Caruso</strong> (# 7064)</td>
+		<td id="tdTeamName" class="name">Minnetonka HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:30:29.350</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049189, 7057);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">19</td>
+		<td id="tdName" class="name"><strong>Emma Jeanne Foss</strong> (# 7057)</td>
+		<td id="tdTeamName" class="name">Minneapolis Southside</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:35:15.530</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049197, 7067);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">20</td>
+		<td id="tdName" class="name"><strong>Sara Shopbell</strong> (# 7067)</td>
+		<td id="tdTeamName" class="name">Minnetonka HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:36:30.914</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049200, 7083);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">21</td>
+		<td id="tdName" class="name"><strong>Talley Oates</strong> (# 7083)</td>
+		<td id="tdTeamName" class="name">Rock Ridge</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:37:18.657</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049178, 7025);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">22</td>
+		<td id="tdName" class="name"><strong>Penelope Greimel</strong> (# 7025)</td>
+		<td id="tdTeamName" class="name">Edina Cycling</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:44:54.240</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(10049183, 7035);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">23</td>
+		<td id="tdName" class="name"><strong>Hazel Milnes</strong> (# 7035)</td>
+		<td id="tdTeamName" class="name">Hopkins HS</td>
+		<td id="tdLapCount" class="lapCount">1</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:47:05.974</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">3.20 miles</td>
+	</tr>
+	
+                    
+                        </table>
+                    
+            </div>
+
+            <div style="clear:both;"></div>
+
+            <div id="pnlPagerLaps">
+		
+                <div class="pager">
+                    
+                    &nbsp;
+                    
+                    &nbsp;
+                    Page:
+                    &nbsp;
+                    <select name="ctl00$ContentPlaceHolder1$ddlPageLaps" id="ddlPageLaps" style="width:90px;">
+			<option selected="selected" value="1">1</option>
+
+		</select>
+                    &nbsp;
+                    
+                    &nbsp;
+                    
+                    <br /><br />
+                    
+                </div>
+            
+	</div>
+        
+</div>
+
+        
+
+        
+
+        
+
+        
+
+        <div style="clear:both;"></div>
+
+          <div class="row">
+            
+          </div>
+
+        <br /><br /><br />
+    </div>
+</div>
+
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnSiteId" id="hdnSiteId" value="16915" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnEventId" id="hdnEventId" value="137183" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnYear" id="hdnYear" value="2025" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnType" id="hdnType" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnBibNumber" id="hdnBibNumber" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnName" id="hdnName" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnLocation" id="hdnLocation" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnEventType" id="hdnEventType" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnResultsType" id="hdnResultsType" value="Indiv-Laps" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnChallengeGroupGoal" id="hdnChallengeGroupGoal" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnChallengeGroupCurrent" id="hdnChallengeGroupCurrent" />
+
+    <div id="myModal" class="modal hide fade"></div>
+
+    <div id="ctl00_ContentPlaceHolder1_RadWindowManager1" style="display:none;">
+	<!-- 2012.3.1205.40 --><div id="ctl00_ContentPlaceHolder1_winUploadTime" style="display:none;">
+		<div id="ctl00_ContentPlaceHolder1_winUploadTime_C" style="display:none;">
+
+		</div><input id="ctl00_ContentPlaceHolder1_winUploadTime_ClientState" name="ctl00_ContentPlaceHolder1_winUploadTime_ClientState" type="hidden" />
+	</div><div id="ctl00_ContentPlaceHolder1_winAddActivity" style="display:none;">
+		<div id="ctl00_ContentPlaceHolder1_winAddActivity_C" style="display:none;">
+
+		</div><input id="ctl00_ContentPlaceHolder1_winAddActivity_ClientState" name="ctl00_ContentPlaceHolder1_winAddActivity_ClientState" type="hidden" />
+	</div><div id="ctl00_ContentPlaceHolder1_winView" style="display:none;">
+		<div id="ctl00_ContentPlaceHolder1_winView_C" style="display:none;">
+
+		</div><input id="ctl00_ContentPlaceHolder1_winView_ClientState" name="ctl00_ContentPlaceHolder1_winView_ClientState" type="hidden" />
+	</div><div id="ctl00_ContentPlaceHolder1_winTop100" style="display:none;">
+		<div id="ctl00_ContentPlaceHolder1_winTop100_C" style="display:none;">
+
+		</div><input id="ctl00_ContentPlaceHolder1_winTop100_ClientState" name="ctl00_ContentPlaceHolder1_winTop100_ClientState" type="hidden" />
+	</div><div id="ctl00_ContentPlaceHolder1_RadWindowManager1_alerttemplate" style="display:none;">
+		<div class="rwDialogPopup radalert">			
+			<div class="rwDialogText">
+			{1}				
+			</div>
+			
+			<div>
+				<a  onclick="$find('{0}').close(true);"
+				class="rwPopupButton" href="javascript:void(0);">
+					<span class="rwOuterSpan">
+						<span class="rwInnerSpan">##LOC[OK]##</span>
+					</span>
+				</a>				
+			</div>
+		</div>
+		</div><div id="ctl00_ContentPlaceHolder1_RadWindowManager1_prompttemplate" style="display:none;">
+		 <div class="rwDialogPopup radprompt">			
+			    <div class="rwDialogText">
+			    {1}				
+			    </div>		
+			    <div>
+				    <script type="text/javascript">
+				    function RadWindowprompt_detectenter(id, ev, input)
+				    {							
+					    if (!ev) ev = window.event;                
+					    if (ev.keyCode == 13)
+					    {															        
+					        var but = input.parentNode.parentNode.getElementsByTagName("A")[0];					        
+					        if (but)
+						    {							
+							    if (but.click) but.click();
+							    else if (but.onclick)
+							    {
+							        but.focus(); var click = but.onclick; but.onclick = null; if (click) click.call(but);							 
+							    }
+						    }
+					       return false;
+					    } 
+					    else return true;
+				    }	 
+				    </script>
+				    <input title="Enter Value" onkeydown="return RadWindowprompt_detectenter('{0}', event, this);" type="text"  class="rwDialogInput" value="{2}" />
+			    </div>
+			    <div>
+				    <a onclick="$find('{0}').close(this.parentNode.parentNode.getElementsByTagName('input')[0].value);"				
+					    class="rwPopupButton" href="javascript:void(0);" ><span class="rwOuterSpan"><span class="rwInnerSpan">##LOC[OK]##</span></span></a>
+				    <a onclick="$find('{0}').close(null);" class="rwPopupButton"  href="javascript:void(0);"><span class="rwOuterSpan"><span class="rwInnerSpan">##LOC[Cancel]##</span></span></a>
+			    </div>
+		    </div>				       
+		</div><div id="ctl00_ContentPlaceHolder1_RadWindowManager1_confirmtemplate" style="display:none;">
+		<div class="rwDialogPopup radconfirm">			
+			<div class="rwDialogText">
+			{1}				
+			</div>						
+			<div>
+				<a onclick="$find('{0}').close(true);"  class="rwPopupButton" href="javascript:void(0);" ><span class="rwOuterSpan"><span class="rwInnerSpan">##LOC[OK]##</span></span></a>
+				<a onclick="$find('{0}').close(false);" class="rwPopupButton"  href="javascript:void(0);"><span class="rwOuterSpan"><span class="rwInnerSpan">##LOC[Cancel]##</span></span></a>
+			</div>
+		</div>		
+		</div><input id="ctl00_ContentPlaceHolder1_RadWindowManager1_ClientState" name="ctl00_ContentPlaceHolder1_RadWindowManager1_ClientState" type="hidden" />
+</div>
+    
+
+
+
+    
+
+    <div class="footer-wrapper">
+      <div class="container">
+        <div id="plStandardFooter" class="row">
+          <footer>
+            <div class="col-sm-4">
+              <h4>Main Navigation</h4>
+              <ul>
+                <li><a href="http://www.itsyourrace.com/search.aspx">Events/Results</a></li>
+                <li><a href="http://www.itsyourrace.com/features.aspx">Features</a></li>
+                <li><a href="http://www.itsyourrace.com/pricing.aspx">Pricing</a></li>
+                <li><a href="http://www.itsyourrace.com/event-organizers.aspx">Event Organizers</a></li>
+              </ul>
+            </div>
+            <div class="col-sm-4">
+              <h4>About ITS YOUR RACE</h4>
+              <ul>
+                <li><a href="http://www.itsyourrace.com/AboutUs.aspx">About Us</a></li>
+                <li><a href="http://www.itsyourrace.com/Pricing.aspx">Pricing</a></li>
+                <!--<li><a href="http://www.itsyourrace.com/FAQ.aspx">FAQ</a></li>-->
+                <li><a href="/Contact.aspx">Contact Us</a></li>
+                <li><a href="http://blog.itsyourrace.com" target="_blank">Blog</a></li>
+                <li><a href="https://www.itsyourrace.com/pc/mediakit">Advertise</a></li>
+              </ul>
+            </div>
+            <div class="col-sm-4">
+              <h4>Find Us Online</h4>
+              <ul>
+                <li><a href="https://facebook.com/itsyourrace" target="_blank">Facebook</a></li>
+                <li><a href="https://twitter.com/itsyourrace" target="_blank">Twitter</a></li>
+              </ul>
+            </div>
+            <div class="col-sm-12 center-div-content">
+              <p>&nbsp;</p>
+              <p>
+                  &copy; Innovative Timing Systems, LLC 2026. All Rights Reserved
+                  <br />
+                  <a href="/TermsOfUse.aspx">Terms of Use</a>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <a href="/Privacy.aspx">Privacy Policy</a>
+                  <br />
+                  We've updated our Privacy Policy. <a href="/Privacy.aspx">Click here for more information</a>.
+              </p>
+            </div>
+          </footer>
+        </div><!--/row-->
+
+        
+      </div>
+    </div>
+
+    
+    
+    <script type="text/javascript">
+        var clicky_site_ids = clicky_site_ids || [];
+        clicky_site_ids.push(100580214);
+        (function () {
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.async = true;
+            s.src = '//static.getclicky.com/js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s);
+        })();
+    </script>
+    <noscript>
+        <p>
+            <img alt="Clicky" width="1" height="1" src="//in.getclicky.com/100580214ns.gif" /></p>
+    </noscript>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    
+    <!-- legacy js -->
+    
+    <!--<script src="../../content/assets/legacy/js/bootstrap.min.js"></script>-->
+    <script src="../../content/assets/legacy/js/theme.js"></script>
+    <script src="../../content/assets/legacy/js/jquery.cookie.min.js"></script>
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-50023231-1', 'itsyourrace.com');
+        ga('send', 'pageview');
+    </script>
+    <!-- show location box-->
+    <script type="text/javascript">
+        $(document).ready(
+        function () {
+            // the event row register button highlights
+            $(".event-row, .results-grouper, .sponsored-grouper").hover(function () {
+                $(this).find(".event-btn-hover, .results-btn").toggleClass("hide-register");
+            });
+        });
+    </script>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindow, {"_dockMode":false,"behaviors":68,"clientStateFieldID":"ctl00_ContentPlaceHolder1_winUploadTime_ClientState","formID":"form1","height":"500px","iconUrl":"","minimizeIconUrl":"","modal":true,"name":"winUploadTime","skin":"Default","title":"Update Time","top":"100px","visibleStatusbar":false,"width":"300px"}, null, null, $get("ctl00_ContentPlaceHolder1_winUploadTime"));
+});
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindow, {"_dockMode":false,"behaviors":68,"clientStateFieldID":"ctl00_ContentPlaceHolder1_winAddActivity_ClientState","formID":"form1","height":"500px","iconUrl":"","minimizeIconUrl":"","modal":true,"name":"winAddActivity","skin":"Default","title":"Add Activity","top":"100px","visibleStatusbar":false,"width":"300px"}, {"close":RefreshParentPage}, null, $get("ctl00_ContentPlaceHolder1_winAddActivity"));
+});
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindow, {"_dockMode":false,"behaviors":68,"clientStateFieldID":"ctl00_ContentPlaceHolder1_winView_ClientState","formID":"form1","height":"600px","iconUrl":"","minimizeIconUrl":"","modal":true,"name":"winView","skin":"Default","title":"Participant Details","top":"100px","visibleStatusbar":false,"width":"400px"}, null, null, $get("ctl00_ContentPlaceHolder1_winView"));
+});
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindow, {"_dockMode":false,"behaviors":68,"clientStateFieldID":"ctl00_ContentPlaceHolder1_winTop100_ClientState","formID":"form1","height":"600px","iconUrl":"","minimizeIconUrl":"","modal":true,"name":"winTop100","skin":"Default","title":"Top 100","top":"100px","visibleStatusbar":false,"width":"500px"}, null, null, $get("ctl00_ContentPlaceHolder1_winTop100"));
+});
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindowManager, {"clientStateFieldID":"ctl00_ContentPlaceHolder1_RadWindowManager1_ClientState","formID":"form1","iconUrl":"","minimizeIconUrl":"","name":"RadWindowManager1","skin":"Default","windowControls":"['ctl00_ContentPlaceHolder1_winUploadTime','ctl00_ContentPlaceHolder1_winAddActivity','ctl00_ContentPlaceHolder1_winView','ctl00_ContentPlaceHolder1_winTop100']"}, null, {"child":"ctl00_ContentPlaceHolder1_winUploadTime"}, $get("ctl00_ContentPlaceHolder1_RadWindowManager1"));
+});
+//]]>
+</script>
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script><script>tg_jq = jQuery.noConflict(true);</script> <div class="tgfloat tgBleft" style="position:fixed;bottom:0px;z-index: 999999;text-align:left;left:0px;"><img alt="Trust Guard Security Scanned" id="tg_1-bleft" class="tgfloat-inner" src="https://seal.trustguard.com/sites/itsyourrace.com/5d6fbb95f4a06109fdcba9cd.svg" style="border: 0; width: 175px; " oncontextmenu="var d = new Date(); alert('Copying Prohibited by Law - This image and all included logos are copyrighted by Trust Guard '+d.getFullYear()+'.'); return false;" /></div> <div id="tgSlideContainer"></div><script src="https://tgscript.s3.amazonaws.com/tgscript-v1.016.js" integrity="sha384-OYyvZ9WS0+acYgiltgIE5KBNF/E/1phX7oscLbBV3h2bOfygwkwxhjnybxN9roqy" crossorigin="anonymous"></script><script>document.write(tg_script_bottom_left); tg_load_animations("5d6a92075f92ba0f48ba3f06", "bottom_left");</script><link rel="stylesheet" rel="preload" href="https://tgscript.s3.amazonaws.com/cert-style-v1.011.css" integrity="sha384-n1YfSisynv0soSJM+IY37BSiVCk9RcYkupLvkkn7Id5MptKUsY+EN5Plz+Tw4dpc" crossorigin="anonymous"><style type="text/css">@media (max-width: 500px) { .tgfloat img { width:145px !important; }}</style>
+
+
+    <!-- Facebook Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+     fbq('init', '166195480738674'); 
+    fbq('track', 'PageView');
+    </script>
+    <noscript>
+     <img height="1" width="1" 
+    src="https://www.facebook.com/tr?id=166195480738674&ev=PageView
+    &noscript=1"/>
+    </noscript>
+    <!-- End Facebook Pixel Code -->
+</body>
+</html>

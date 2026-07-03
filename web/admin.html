@@ -37,6 +37,9 @@
         <button data-scroll-target="rulesPanel" type="button">
           Rules
         </button>
+        <button data-scroll-target="raceResultsPanel" type="button">
+          Race Results
+        </button>
         <button data-scroll-target="importPanel" type="button">
           Import / Export
         </button>
@@ -216,6 +219,24 @@
             <button id="clearRule" type="button">Clear</button>
           </form>
           <div class="admin__list" id="ruleList"></div>
+        </article>
+
+        <article class="panel panel--wide" id="raceResultsPanel">
+          <h2>Race Results</h2>
+          <p class="branding__hint">
+            Sync the MCA index from Precision Race, then pull ITS YOUR RACE results for a race day.
+          </p>
+          <div class="form">
+            <label>
+              Event Date
+              <input id="raceResultsDate" type="date" />
+            </label>
+            <div class="button-row">
+              <button id="syncRaceIndex" type="button">Sync MCA index</button>
+              <button id="syncRaceResults" type="button">Sync results for date</button>
+            </div>
+          </div>
+          <div class="admin__list" id="raceResultsList"></div>
         </article>
 
         <article class="panel panel--wide" id="importPanel">

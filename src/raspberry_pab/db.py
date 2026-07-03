@@ -10,9 +10,14 @@ from pathlib import Path
 
 from raspberry_pab.models import (
     Alert,
+    IyrRaceSession,
+    ManualRaceResultLink,
     Participant,
     ParticipantCreate,
+    ParticipantResultMatchRecord,
     ParticipantUpdate,
+    RaceEvent,
+    RaceResult,
     ReminderRule,
     ReminderRuleCreate,
     ReminderRuleUpdate,
@@ -86,6 +91,60 @@ class ScheduleStore:
                 CREATE TABLE IF NOT EXISTS app_settings (
                     key TEXT PRIMARY KEY,
                     value TEXT NOT NULL
+                );
+
+                CREATE TABLE IF NOT EXISTS race_events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    season_year INTEGER NOT NULL,
+                    race_number TEXT NOT NULL,
+                    venue_label TEXT NOT NULL,
+                    date_saturday TEXT NOT NULL,
+                    date_sunday TEXT NOT NULL,
+                    iyr_series_id TEXT NOT NULL UNIQUE,
+                    iyr_base_url TEXT NOT NULL,
+                    source_url TEXT NOT NULL,
+                    scraped_at TEXT NOT NULL
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_race_events_dates
+                    ON race_events (date_saturday, date_sunday);
+
+                CREATE TABLE IF NOT EXISTS iyr_race_sessions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    race_event_id INTEGER NOT NULL,
+                    iyr_eid TEXT NOT NULL,
+                    category_label TEXT NOT NULL,
+                    race_date TEXT NOT NULL,
+                    results_url TEXT NOT NULL,
+                    results_status TEXT NOT NULL,
+                    scraped_at TEXT NOT NULL,
+                    UNIQUE (race_event_id, iyr_eid),
+                    FOREIGN KEY (race_event_id)
+                        REFERENCES race_events (id) ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_iyr_sessions_date
+                    ON iyr_race_sessions (race_date);
+
+                CREATE TABLE IF NOT EXISTS race_results (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    participant_id INTEGER NOT NULL UNIQUE,
+                    iyr_session_id INTEGER NOT NULL,
+                    place INTEGER NOT NULL,
+                    bib TEXT,
+                    team_name TEXT,
+                    laps INTEGER,
+                    total_time TEXT,
+                    total_distance TEXT,
+                    raw_name TEXT NOT NULL,
+                    match_confidence REAL NOT NULL,
+                    match_method TEXT NOT NULL,
+                    result_status TEXT NOT NULL,
+                    fetched_at TEXT NOT NULL,
+                    FOREIGN KEY (participant_id)
+                        REFERENCES participants (id) ON DELETE CASCADE,
+                    FOREIGN KEY (iyr_session_id)
+                        REFERENCES iyr_race_sessions (id) ON DELETE CASCADE
                 );
                 """
             )
@@ -463,6 +522,277 @@ class ScheduleStore:
             conn.commit()
             return cursor.rowcount > 0
 
+    def upsert_race_events(self, events: Iterable[object]) -> list[RaceEvent]:
+        now = datetime.now().isoformat()
+        stored: list[RaceEvent] = []
+        with self._connect() as conn:
+            for event in events:
+                conn.execute(
+                    """
+                    INSERT INTO race_events (
+                        season_year, race_number, venue_label,
+                        date_saturday, date_sunday, iyr_series_id,
+                        iyr_base_url, source_url, scraped_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(iyr_series_id) DO UPDATE SET
+                        season_year = excluded.season_year,
+                        race_number = excluded.race_number,
+                        venue_label = excluded.venue_label,
+                        date_saturday = excluded.date_saturday,
+                        date_sunday = excluded.date_sunday,
+                        iyr_base_url = excluded.iyr_base_url,
+                        source_url = excluded.source_url,
+                        scraped_at = excluded.scraped_at
+                    """,
+                    (
+                        event.season_year,
+                        event.race_number,
+                        event.venue_label,
+                        event.date_saturday.isoformat(),
+                        event.date_sunday.isoformat(),
+                        event.iyr_series_id,
+                        event.iyr_base_url,
+                        event.source_url,
+                        now,
+                    ),
+                )
+            conn.commit()
+            rows = conn.execute(
+                "SELECT * FROM race_events ORDER BY season_year DESC, date_saturday DESC"
+            ).fetchall()
+        return [self._race_event_from_row(row) for row in rows]
+
+    def list_race_events(self) -> list[RaceEvent]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT * FROM race_events ORDER BY season_year DESC, date_saturday DESC"
+            ).fetchall()
+        return [self._race_event_from_row(row) for row in rows]
+
+    def get_race_event_by_series_id(self, series_id: str) -> RaceEvent | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT * FROM race_events WHERE iyr_series_id = ?",
+                (series_id,),
+            ).fetchone()
+        return self._race_event_from_row(row) if row is not None else None
+
+    def upsert_iyr_session(
+        self,
+        *,
+        race_event_id: int,
+        iyr_eid: str,
+        category_label: str,
+        race_date: date,
+        results_url: str,
+        results_status: str,
+    ) -> IyrRaceSession:
+        now = datetime.now().isoformat()
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO iyr_race_sessions (
+                    race_event_id, iyr_eid, category_label, race_date,
+                    results_url, results_status, scraped_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(race_event_id, iyr_eid) DO UPDATE SET
+                    category_label = excluded.category_label,
+                    race_date = excluded.race_date,
+                    results_url = excluded.results_url,
+                    results_status = excluded.results_status,
+                    scraped_at = excluded.scraped_at
+                """,
+                (
+                    race_event_id,
+                    iyr_eid,
+                    category_label,
+                    race_date.isoformat(),
+                    results_url,
+                    results_status,
+                    now,
+                ),
+            )
+            row = conn.execute(
+                """
+                SELECT * FROM iyr_race_sessions
+                WHERE race_event_id = ? AND iyr_eid = ?
+                """,
+                (race_event_id, iyr_eid),
+            ).fetchone()
+            conn.commit()
+        if row is None:
+            raise RuntimeError("Failed to upsert IYR session")
+        return self._iyr_session_from_row(row)
+
+    def list_iyr_sessions_for_event(
+        self,
+        race_event_id: int,
+        race_date: date | None = None,
+    ) -> list[IyrRaceSession]:
+        query = "SELECT * FROM iyr_race_sessions WHERE race_event_id = ?"
+        params: list[object] = [race_event_id]
+        if race_date is not None:
+            query += " AND race_date = ?"
+            params.append(race_date.isoformat())
+        query += " ORDER BY category_label"
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+        return [self._iyr_session_from_row(row) for row in rows]
+
+    def upsert_race_result(
+        self,
+        *,
+        participant_id: int,
+        iyr_session_id: int,
+        place: int,
+        bib: str | None,
+        team_name: str | None,
+        laps: int | None,
+        total_time: str | None,
+        total_distance: str | None,
+        raw_name: str,
+        match_confidence: float,
+        match_method: str,
+        result_status: str,
+    ) -> RaceResult:
+        now = datetime.now().isoformat()
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO race_results (
+                    participant_id, iyr_session_id, place, bib, team_name,
+                    laps, total_time, total_distance, raw_name,
+                    match_confidence, match_method, result_status, fetched_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(participant_id) DO UPDATE SET
+                    iyr_session_id = excluded.iyr_session_id,
+                    place = excluded.place,
+                    bib = excluded.bib,
+                    team_name = excluded.team_name,
+                    laps = excluded.laps,
+                    total_time = excluded.total_time,
+                    total_distance = excluded.total_distance,
+                    raw_name = excluded.raw_name,
+                    match_confidence = excluded.match_confidence,
+                    match_method = excluded.match_method,
+                    result_status = excluded.result_status,
+                    fetched_at = excluded.fetched_at
+                """,
+                (
+                    participant_id,
+                    iyr_session_id,
+                    place,
+                    bib,
+                    team_name,
+                    laps,
+                    total_time,
+                    total_distance,
+                    raw_name,
+                    match_confidence,
+                    match_method,
+                    result_status,
+                    now,
+                ),
+            )
+            row = conn.execute(
+                "SELECT * FROM race_results WHERE participant_id = ?",
+                (participant_id,),
+            ).fetchone()
+            conn.commit()
+        if row is None:
+            raise RuntimeError("Failed to upsert race result")
+        return self._race_result_from_row(row)
+
+    def get_race_result_for_participant(self, participant_id: int) -> RaceResult | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT * FROM race_results WHERE participant_id = ?",
+                (participant_id,),
+            ).fetchone()
+        return self._race_result_from_row(row) if row is not None else None
+
+    def link_race_result_manual(self, link: ManualRaceResultLink) -> RaceResult:
+        return self.upsert_race_result(
+            participant_id=link.participant_id,
+            iyr_session_id=link.iyr_session_id,
+            place=link.place,
+            bib=link.bib,
+            team_name=link.team_name,
+            laps=link.laps,
+            total_time=link.total_time,
+            total_distance=link.total_distance,
+            raw_name=link.raw_name,
+            match_confidence=1.0,
+            match_method="manual",
+            result_status=link.result_status,
+        )
+
+    def list_participant_result_matches(
+        self,
+        event_date: date,
+    ) -> list[ParticipantResultMatchRecord]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    p.id AS participant_id,
+                    p.name AS participant_name,
+                    p.event_date,
+                    p.start_time,
+                    rr.place,
+                    rr.total_time,
+                    rr.team_name,
+                    rr.match_method,
+                    rr.match_confidence,
+                    rr.result_status,
+                    s.category_label,
+                    s.results_url,
+                    e.venue_label
+                FROM participants p
+                LEFT JOIN race_results rr ON rr.participant_id = p.id
+                LEFT JOIN iyr_race_sessions s ON s.id = rr.iyr_session_id
+                LEFT JOIN race_events e ON e.id = s.race_event_id
+                WHERE p.event_date = ?
+                ORDER BY p.start_time, p.name
+                """,
+                (event_date.isoformat(),),
+            ).fetchall()
+        results: list[ParticipantResultMatchRecord] = []
+        for row in rows:
+            if row["place"] is None:
+                state = "unmatched"
+            else:
+                state = "matched"
+            results.append(
+                ParticipantResultMatchRecord(
+                    participant_id=int(row["participant_id"]),
+                    participant_name=str(row["participant_name"]),
+                    event_date=date.fromisoformat(str(row["event_date"])),
+                    start_time=datetime.strptime(str(row["start_time"]), "%H:%M").time(),
+                    place=int(row["place"]) if row["place"] is not None else None,
+                    total_time=row["total_time"],
+                    team_name=row["team_name"],
+                    category_label=row["category_label"],
+                    venue_label=row["venue_label"],
+                    match_method=row["match_method"],
+                    match_confidence=row["match_confidence"],
+                    result_status=row["result_status"],
+                    results_url=row["results_url"],
+                    match_state=state,
+                )
+            )
+        return results
+
+    def get_participant_results_map(
+        self,
+        event_date: date,
+    ) -> dict[int, ParticipantResultMatchRecord]:
+        return {
+            item.participant_id: item
+            for item in self.list_participant_result_matches(event_date)
+            if item.match_state == "matched"
+        }
+
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
         conn = sqlite3.connect(self.db_path)
@@ -578,4 +908,51 @@ class ScheduleStore:
             buzzer_count=int(row["buzzer_count"]),
             buzzer_beep_ms=int(row["buzzer_beep_ms"]),
             buzzer_gap_ms=int(row["buzzer_gap_ms"]),
+        )
+
+    @staticmethod
+    def _race_event_from_row(row: sqlite3.Row) -> RaceEvent:
+        return RaceEvent(
+            id=int(row["id"]),
+            season_year=int(row["season_year"]),
+            race_number=str(row["race_number"]),
+            venue_label=str(row["venue_label"]),
+            date_saturday=date.fromisoformat(str(row["date_saturday"])),
+            date_sunday=date.fromisoformat(str(row["date_sunday"])),
+            iyr_series_id=str(row["iyr_series_id"]),
+            iyr_base_url=str(row["iyr_base_url"]),
+            source_url=str(row["source_url"]),
+            scraped_at=datetime.fromisoformat(str(row["scraped_at"])),
+        )
+
+    @staticmethod
+    def _iyr_session_from_row(row: sqlite3.Row) -> IyrRaceSession:
+        return IyrRaceSession(
+            id=int(row["id"]),
+            race_event_id=int(row["race_event_id"]),
+            iyr_eid=str(row["iyr_eid"]),
+            category_label=str(row["category_label"]),
+            race_date=date.fromisoformat(str(row["race_date"])),
+            results_url=str(row["results_url"]),
+            results_status=str(row["results_status"]),
+            scraped_at=datetime.fromisoformat(str(row["scraped_at"])),
+        )
+
+    @staticmethod
+    def _race_result_from_row(row: sqlite3.Row) -> RaceResult:
+        return RaceResult(
+            id=int(row["id"]),
+            participant_id=int(row["participant_id"]),
+            iyr_session_id=int(row["iyr_session_id"]),
+            place=int(row["place"]),
+            bib=row["bib"],
+            team_name=row["team_name"],
+            laps=int(row["laps"]) if row["laps"] is not None else None,
+            total_time=row["total_time"],
+            total_distance=row["total_distance"],
+            raw_name=str(row["raw_name"]),
+            match_confidence=float(row["match_confidence"]),
+            match_method=str(row["match_method"]),
+            result_status=str(row["result_status"]),
+            fetched_at=datetime.fromisoformat(str(row["fetched_at"])),
         )
