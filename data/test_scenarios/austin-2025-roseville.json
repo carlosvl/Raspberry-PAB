@@ -1,0 +1,31 @@
+{
+  "id": "austin-2025-roseville",
+  "label": "MCA 2025 Austin — Roseville",
+  "iyr_series_id": "16673",
+  "saturday": "2025-08-23",
+  "sunday": "2025-08-24",
+  "first_start_time": "10:30",
+  "stagger_minutes": 15,
+  "default_simulated_now": "2025-08-24T10:25:00",
+  "roster": [
+    { "name": "Owen Bianchet", "day": "sunday" },
+    { "name": "Allison Claydon", "day": "sunday" },
+    { "name": "Brooks Creighton", "day": "saturday" },
+    { "name": "Charlie Dixon", "day": "saturday" },
+    { "name": "Stefan Eastman-Loupe", "day": "sunday" },
+    { "name": "Elliot Freeman", "day": "saturday" },
+    { "name": "Elijah Hallin", "day": "sunday" },
+    { "name": "Ryan Kokotovich", "day": "saturday" },
+    { "name": "Henry Loe", "day": "sunday" },
+    { "name": "Miles Neumann", "day": "sunday" },
+    { "name": "Willem Nibbelink", "day": "sunday" },
+    { "name": "Bennett Schmaltz", "day": "sunday" },
+    { "name": "Fern Shaffner", "day": "sunday" },
+    { "name": "Ilene Shaffner", "day": "sunday" },
+    { "name": "Lukas Skinner", "day": "saturday" },
+    { "name": "Carlos Mateo Villalpando", "day": "sunday" },
+    { "name": "Joaquin Villalpando", "day": "saturday" },
+    { "name": "Clara Walz", "day": "saturday" },
+    { "name": "Drew Wright", "day": "saturday" }
+  ]
+}

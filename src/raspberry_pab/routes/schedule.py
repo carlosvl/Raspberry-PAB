@@ -20,6 +20,7 @@ from raspberry_pab.models import (
     ScheduleExport,
     ScheduleImport,
 )
+from raspberry_pab.kiosk_clock import effective_now
 from raspberry_pab.reminders import participant_status, show_participant_on_board
 
 router = APIRouter(prefix="/api", tags=["schedule"])
@@ -55,9 +56,9 @@ def list_participants(
     request: Request,
     date_filter: Annotated[date | None, Query(alias="date")] = None,
 ) -> list[ParticipantStatus]:
-    event_date = date_filter or date.today()
-    now = datetime.now()
     store = get_store(request)
+    now = effective_now(store)
+    event_date = date_filter or now.date()
     results_map = store.get_participant_results_map(event_date)
     results: list[ParticipantStatus] = []
     for participant in store.list_participants(event_date):

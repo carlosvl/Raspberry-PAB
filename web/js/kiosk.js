@@ -14,7 +14,10 @@ const exitKiosk = document.getElementById("exitKiosk");
 const closeMenu = document.getElementById("closeMenu");
 
 const today = new Date();
-const todayParam = today.toISOString().slice(0, 10);
+let displayDate = today.toISOString().slice(0, 10);
+let kioskNowIso = today.toISOString();
+let kioskSimulated = false;
+let kioskSimulatedRunning = false;
 const ADMIN_TAP_COUNT = 3;
 const ADMIN_TAP_WINDOW_MS = 1500;
 const CONTROL_MENU_HOLD_MS = 3000;
@@ -41,7 +44,7 @@ function formatDate(dateString) {
 }
 
 function formatTime(timeString) {
-  const date = new Date(`${todayParam}T${timeString}`);
+  const date = new Date(`${displayDate}T${timeString}`);
   return new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
     minute: "2-digit",
@@ -64,14 +67,17 @@ function formatCountdown(seconds) {
 function updateClock() {
   const clock = resolveClockEl();
   if (!clock || !eventDateEl) return;
-  const now = new Date();
+  const now = kioskSimulated ? new Date(kioskNowIso) : new Date();
   clock.textContent = now.toLocaleTimeString(undefined, {
     hour: "numeric",
     minute: "2-digit",
     second: "2-digit",
     hour12: true,
   });
-  eventDateEl.textContent = formatDate(todayParam);
+  const dateLabel = formatDate(displayDate);
+  eventDateEl.textContent = kioskSimulated
+    ? `TEST · ${dateLabel}`
+    : dateLabel;
 }
 
 function setStatus(message) {
@@ -83,6 +89,14 @@ async function loadAppConfig() {
     const response = await fetch("/api/config");
     if (!response.ok) throw new Error("config request failed");
     const config = await response.json();
+    if (config.display_date) {
+      displayDate = config.display_date;
+    }
+    if (config.kiosk_now) {
+      kioskNowIso = config.kiosk_now;
+    }
+    kioskSimulated = Boolean(config.kiosk_simulated);
+    kioskSimulatedRunning = Boolean(config.kiosk_simulated_running);
     if (kioskTitleEl && config.display_title) {
       kioskTitleEl.textContent = config.display_title;
       document.title = config.display_title;
@@ -169,7 +183,7 @@ function renderSchedule(items) {
 
 async function loadSchedule() {
   try {
-    const response = await fetch(`/api/participants?date=${todayParam}`);
+    const response = await fetch(`/api/participants?date=${displayDate}`);
     if (!response.ok) throw new Error("schedule request failed");
     const items = await response.json();
     renderSchedule(items);
@@ -295,11 +309,15 @@ controlMenu?.addEventListener("click", (event) => {
 configureAdminBrandTrigger();
 configureControlHotspot();
 registerServiceWorker();
-loadAppConfig();
+loadAppConfig().then(() => {
+  loadSchedule();
+});
 updateClock();
 loadNetworkInfo();
-loadSchedule();
 connectAlertStream();
-setInterval(updateClock, 1000);
+setInterval(async () => {
+  await loadAppConfig();
+  updateClock();
+}, 1000);
 setInterval(loadNetworkInfo, 60000);
 setInterval(loadSchedule, 1000);

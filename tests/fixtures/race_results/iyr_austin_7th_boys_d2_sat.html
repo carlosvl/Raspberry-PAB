@@ -1,0 +1,1280 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="description" /><meta name="author" /><meta name="google-site-verification" content="l3iJD8enYU434h1nNM1YI2-loi-1TpXi8mX8fB9CWZo" /><link rel="shortcut icon" href="/favicon.ico" /><link href="/content/assets/css/styles.css?v=3" rel="stylesheet" type="text/css" /><link href="//fonts.googleapis.com/css?family=Open+Sans:300,400italic,400,700" rel="stylesheet" type="text/css" />
+
+    <style>
+        .event-map { margin:15px; padding:0; border:1px solid #cccccc; }
+        .map-iframe { border-width:0; }
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+    <script src="/content/assets/js/bootstrap.js"></script>
+    <!-- the word rotator -->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    
+    <title>Race Results - MCA 2025 Wk1 Schindlers Way Austin - ITS YOUR RACE</title>
+
+    <style type="text/css">
+        h1 { margin: 0 0 10px 0;}
+        h2 { margin: 0; font-size:14px; }
+        .page-header { float: left; width: 62%; }
+        .page-ad { float: right; width: 340px; height: 150px; margin-bottom:10px;}
+        .page-header-right { width: 100%; margin-top:10px; }
+        .cameraIcon { width: 45px; height: 32px; }
+        .wrapper1{width: 300px; height: 20px; border: none 0px RED; overflow-x: scroll; overflow-y:hidden;}
+        .div1 {width:1000px; height: 20px; }
+        #resultsTable { font-size:12px; }
+        #resultsTable th{text-align:left; background-color:#0088CC; border-bottom:1px solid #272727; border-top:0px solid #5A7AA6; color:#FFFFFF; font-size:12px; vertical-align:middle; padding:5px 10px 0 0;}
+        #resultsTable td{padding:5px 0 5px 0; border-bottom:1px solid #efe9e2; text-align:left; width:auto;}
+            #resultsTable th a { color: #FFFFFF; }
+        #resultsTable #Tr1.no-bottom-border td { border-bottom-width:0; }
+        #resultsTable #Tr1:hover{background-color:#272727; color:#FFFFFF; cursor:pointer !important;}
+        #resultsTable #Tr1:hover #btnUploadTime { color:#000; }
+        #resultsTable td:hover{cursor:pointer;}
+        #resultsTable .blank{min-width:5px;}
+        #resultsTable .blank20{min-width:30px;}
+        #resultsTable .event{min-width:60px;}
+        #resultsTable .bib{min-width:75px;}
+        #resultsTable .name{min-width:220px; text-align:left;}
+        #resultsTable .location{min-width:150px; text-align:left;}
+        #resultsTable .placeOverall{min-width:50px; text-align:left;}
+        #resultsTable .sex{min-width:50px; text-align:center;}
+        #resultsTable .sexPlace{min-width:90px; text-align:center;}
+        #resultsTable .age{min-width:50px; text-align:center;}
+        #resultsTable .agePlace{min-width:90px; text-align:center;}
+        #resultsTable .starttime{min-width:100px;}
+        #resultsTable .clocktime{min-width:100px;}
+        #resultsTable .chiptime{min-width:100px;}
+        #resultsTable .pace{min-width:80px;}
+        #resultsTable .splittime { min-width: 70px; padding-right:20px; text-align:right; }
+        #resultsTable .enduroSplit { min-width: 90px; }
+        #resultsTable .finishtime { min-width: 100px; }
+        #resultsTable .lastSeenAt{ min-width: 130px; }
+        #resultsTable .teamName{ min-width: 175px; }
+        #resultsTable .splitTimeHeader { text-align: center; }
+        #resultsTable .splitPlaceHeader { min-width: 100px; text-align: center; }
+        #resultsTable .splitPlace { text-align: center; }
+        #resultsTable .totaltime{min-width:110px;}
+        #resultsTable .totalScore{min-width:50px;}
+        #resultsTable .totalRank{min-width:50px;}
+        #resultsTable .lapCount{min-width:80px; text-align:center;}
+        #resultsTable .lapStartTime{min-width:110px;}
+        #resultsTable .lapTotalTime{min-width:110px;}
+        #resultsTable .lapTotalDistance{min-width:110px;}
+        #resultsTable .laptime{min-width:110px;}
+        #resultsTable .numActivities{min-width:110px; text-align:center;}
+        #resultsTable .totalDistance{min-width:110px; text-align:center;}
+        #resultsTable .totalTime{min-width:110px; text-align:center;}
+        #resultsTable img { width: 40px; height: auto; margin: 0 5px 0 0; float: left;}
+        .filters label{ color:#0088CC; }
+        .clear-search { display:inline-block; padding-left:12px; font-weight:normal; }
+        #resultsTable img.ad {
+            width: auto;
+            height: auto;
+            margin: 10px;
+            float: none;
+        }
+        .results-top-ad { margin:15px 0 15px 0; text-align:center; }
+        #results { float:left; width:100%; }
+        #results-right-ad { margin:0; float:right; width:0; }
+        #ad1 { margin-top:20px;}
+        ul.rwControlButtons[style] {
+            width: auto !important;
+        }
+        #group-gauge {
+	        max-width: 70px;
+	        margin: 0 auto;
+        }
+        .highcharts-background {
+            background-color:#efefef !important;
+        }
+        .results-unofficial {
+            text-transform: uppercase; /* Makes text uppercase */
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+    
+    
+    
+    <script src="/js/arg-1.2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            //$('select#ddlRaces').selectmenu({ width: 150 });
+            //$('select#ddlGender').selectmenu({ width: 150 });
+            //$('select#ddlAgeGroups').selectmenu({ width: 150 });
+
+            $('.wrapper1').width($('.roundView').width());
+            $('.div1').width($('#resultsTable').width());
+
+            $(".wrapper1").scroll(function () {
+                $(".roundView")
+                    .scrollLeft($(".wrapper1").scrollLeft());
+            });
+            $(".roundView").scroll(function () {
+                $(".wrapper1")
+                    .scrollLeft($(".roundView").scrollLeft());
+            });
+
+            $('#btnSearch').bind('click', function (e) {
+                var term = $('#txtSearchTerm').val();
+
+                if (term.length == 0) {
+                    alert('Please enter something to search for in the search field.');
+                    e.preventDefault();
+                }
+                else {
+                    var url = window.location.pathname + '?id=' + GetArgument(Arg('id')) + '&y=' + GetArgument(Arg('y')) + '&eid=' + GetArgument(Arg('eid')) + '&srch=' + term + '&g=' + GetArgument(Arg('g')) + '&amin=' + GetArgument(Arg('amin')) + '&amax=' + GetArgument(Arg('amax'));
+                    //alert(url);
+                    window.location = url;
+                    e.preventDefault();
+
+                }
+            });
+
+            $('a.top100').bind('click', function (e) {
+                window.radopen(this.href, "winTop100");
+                e.preventDefault();
+            });
+
+            $('#txtSearchTerm').keypress(function (e) {
+                var key = e.which;
+                if (key == 13)  // the enter key code
+                {
+                    var url = window.location.pathname + '?id=' + GetArgument(Arg('id')) + '&y=' + GetArgument(Arg('y')) + '&eid=' + GetArgument(Arg('eid')) + '&srch=' + $(this).val() + '&g=' + GetArgument(Arg('g')) + '&amin=' + GetArgument(Arg('amin')) + '&amax=' + GetArgument(Arg('amax'));
+                    //alert(url);
+                    window.location = url;
+                    e.preventDefault();
+                }
+            });
+
+            $('.filters select').change(function (e) {
+                var id = $(this).attr('id');
+                ShowResults(id);
+                e.preventDefault();
+            });
+
+            $('#ddlPage').change(function (e) {
+                e.preventDefault();
+                var url = window.location.pathname + '?id=' + GetArgument(Arg('id')) + '&y=' + GetArgument(Arg('y')) + '&eid=' + GetArgument(Arg('eid')) + '&srch=' + GetArgument(Arg('srch')) + '&g=' + GetArgument(Arg('g')) + '&amin=' + GetArgument(Arg('amin')) + '&amax=' + GetArgument(Arg('amax')) + '&pg=' + $(this).val();
+                window.location.href = url;
+            });
+
+            $('#lnkClearSearch').click(function (e) {
+                e.preventDefault();
+                var url = window.location.pathname + '?id=' + GetArgument(Arg('id')) + '&y=' + GetArgument(Arg('y')) + '&eid=' + GetArgument(Arg('eid')) + '&srch=&g=' + GetArgument(Arg('g')) + '&amin=' + GetArgument(Arg('amin')) + '&amax=' + GetArgument(Arg('amax')) + '&pg=1';
+                window.location.href = url;
+            });
+
+            $('.btnUploadTime').click(function (e) {
+                e.preventDefault();
+                var id = $(this).attr('data-id');
+                ShowUploadPopup(id);
+                return false;
+            });
+
+            $('.btnAddActivity').click(function (e) {
+                e.preventDefault();
+                var id = $(this).attr('data-id');
+                ShowActivityPopup(id);
+                return false;
+            });
+        });
+
+        function RefreshParentPage()//function in parent page
+        {
+            document.location.reload();
+        }
+
+        function GetArgument(value) {
+            return (value == undefined ? '' : value);
+        }
+
+        function ShowResults(id) {
+            var siteId = $('#hdnSiteId').val();
+            var year = $('#ddlYear').val();
+
+            if (id == 'ddlYear') {
+                var url = 'Results.aspx?id=' + siteId + '&y=' + year;
+                //alert(url);
+                window.location.href = url;
+            }
+            else {
+                var eventId = $('#ddlRace').val();
+                var gender = $('#ddlGender').val();
+                var age = $('#ddlAgeGroup').val();
+
+                var url = 'Results.aspx?id=' + siteId + '&y=' + year + '&eid=' + eventId + '&g=' + gender + '&' + age;
+                //alert(url);
+                window.location.href = url;
+            }
+        }
+
+        function ShowPage(id) {
+            var eventType = $('#hdnEventType').val();
+
+            $("#myModal ").modal(show = true);
+
+            var url = "/ResultsDetailsNew.aspx?id=" + id;
+
+            if (eventType == 'tri') {
+                url = "/ResultsDetailsTriathlon.aspx?id=" + id;
+            }
+
+            $.get(url, function (data) {
+                $("#myModal ").html(data);
+
+            });
+
+            //return false;
+        }
+
+        function ShowPage2(id, bib) {
+            var eventId = $('#hdnEventId').val();
+            var eventType = $('#hdnEventType').val();
+            var siteId = $('#hdnSiteId').val()
+            var year = $('#hdnYear').val()
+
+            var url = "/Results/" + siteId + '/' + year + '/' + eventId + '/' + bib;
+            //alert(url);
+
+            if (eventType == 'tri---') {
+                url = "/ResultsDetailsTriathlon.aspx?id=" + id;
+                $("#myModal ").modal(show = true);
+
+                $.get(url, function (data) {
+                    $("#myModal ").html(data);
+                });
+            }
+            else {
+                window.location = url;
+            }
+
+
+            //return false;
+        }
+
+        function ShowPage3(eventParticipantId) {
+            var eventId = $('#hdnEventId').val();
+            var eventType = $('#hdnEventType').val();
+            var siteId = $('#hdnSiteId').val()
+            var year = $('#hdnYear').val()
+
+            var url = "/Results/" + siteId + '/' + year + '/' + eventId + '/' + eventParticipantId;
+            //alert(url);
+        }
+
+        function ShowTeamMember(eventId, bib) {
+            var siteId = $('#hdnSiteId').val()
+            var year = $('#hdnYear').val()
+
+            var url = "/Results/" + siteId + '/' + year + '/' + eventId + '/' + bib;
+            //alert(url);
+
+            window.location = url;
+        }
+    
+        function ShowUploadPopup(participantId) {
+            window.radopen("/UploadTime.aspx?id=" + participantId, "winUploadTime");
+        }
+
+        function ShowActivityPopup(participantId) {
+            window.radopen("/ChallengeAddActivity.aspx?id=" + participantId, "winAddActivity");
+        }
+    </script>
+    <script type="text/javascript" src="//code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript" src="//code.highcharts.com/highcharts-more.js"></script>
+    <script type="text/javascript" src="//code.highcharts.com/modules/solid-gauge.js"></script>
+    <script type="text/javascript" src="/js/results-challenge.js")"></script>
+<link href="/WebResource.axd?d=NfjaWEkS3UfcVcXpCtbBTrSE8IhAK4T-6puqkbrdzhtrxaaflmuUu5uPL3qzG1n3YJuIz4iBcRghtz73gKX5YkfIu-mhoAk6Tycn0VcDQ_VuTwYAJ8B1jNAEPWwmIyZIEDO7Iw2&amp;t=637881501730111606" type="text/css" rel="stylesheet" class="Telerik_stylesheet" /><link href="/WebResource.axd?d=OHe9eZiekme4vhu9xcbAW8KRd_zXkYI6pvRNyfm_iYuEHbyPjaL0SBe__2OgPLGl4AEKM5-1L88F-z5LHrinR2upi8LrijTODFzXX-vMyRZKY4_WAZL65kQlSjxed5vdf2btYjyq1xemuCkHZHGIKqORL6c1&amp;t=637881501730111606" type="text/css" rel="stylesheet" class="Telerik_stylesheet" /><title>
+
+</title></head>
+<body>
+
+<form name="form1" method="post" action="./Results.aspx?id=16673&amp;y=2025&amp;eid=134108&amp;g=A&amp;amin=0&amp;amax=199" id="form1">
+<div>
+<input type="hidden" name="RadScriptManager1_TSM" id="RadScriptManager1_TSM" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKMTY1NTI1MTM0MA9kFgJmD2QWBAIBD2QWAgIMD2QWBAIBDxYCHgRUZXh0BUFSYWNlIFJlc3VsdHMgLSBNQ0EgMjAyNSBXazEgU2NoaW5kbGVycyBXYXkgQXVzdGluIC0gSVRTIFlPVVIgUkFDRWQCAw8WAh4HVmlzaWJsZWhkAgMPZBYGAgUPZBYEAgEPFgIfAWcWBAIBD2QWAmYPFgIfAWgWBAIBDxYCHwAFB0VuZ2xpc2hkAgMPFgIfAWhkAgIPFgIfAWgWAmYPFgIfAWgWBAIBDxYCHwAFB0VuZ2xpc2hkAgMPFgIfAWhkAgMPZBYEAgEPZBYCZg8WAh8BaBYCAgMPFgIfAWhkAgIPZBYCZg8WAh8BaBYCAgMPFgIfAWhkAgcPZBYYZg9kFipmDxYCHwAFOTxsaW5rIGhyZWY9Ii9DdXN0b21Dc3MuYXNoeD9pZD0xNjY3MyIgcmVsPSJzdHlsZXNoZWV0IiAvPmQCAg9kFgJmDxYCHwAFjxw8c2NyaXB0IHR5cGU9InRleHQvamF2YXNjcmlwdCIgc3JjPSIvanMvaXlyLXBvc3Rob2ctYW5hbHl0aWNzLmpzP3Y9NjM5MTM1MDg2MzI5MTIzMTIyJnN2PTIwMjYtMDQtMjktMSI+PC9zY3JpcHQ+PHNjcmlwdCB0eXBlPSJ0ZXh0L2phdmFzY3JpcHQiPndpbmRvdy5fX2l5clBvc3RIb2dNYW5hZ2VkPXRydWU7IWZ1bmN0aW9uKHQsZSl7dmFyIG8sbixwLHI7ZS5fX1NWfHwod2luZG93LnBvc3Rob2cmJndpbmRvdy5wb3N0aG9nLl9fbG9hZGVkKXx8KHdpbmRvdy5wb3N0aG9nPWUsZS5faT1bXSxlLmluaXQ9ZnVuY3Rpb24oaSxzLGEpe2Z1bmN0aW9uIGcodDEsZTEpe3ZhciBvMT1lMS5zcGxpdCgnLicpOzI9PW8xLmxlbmd0aCYmKHQxPXQxW28xWzBdXSxlMT1vMVsxXSksdDFbZTFdPWZ1bmN0aW9uKCl7dDEucHVzaChbZTFdLmNvbmNhdChBcnJheS5wcm90b3R5cGUuc2xpY2UuY2FsbChhcmd1bWVudHMsMCkpKX19KHA9dC5jcmVhdGVFbGVtZW50KCdzY3JpcHQnKSkudHlwZT0ndGV4dC9qYXZhc2NyaXB0JyxwLmNyb3NzT3JpZ2luPSdhbm9ueW1vdXMnLHAuYXN5bmM9ITAscC5zcmM9cy5hcGlfaG9zdC5yZXBsYWNlKCcuaS5wb3N0aG9nLmNvbScsJy1hc3NldHMuaS5wb3N0aG9nLmNvbScpKycvc3RhdGljL2FycmF5LmpzJywocj10LmdldEVsZW1lbnRzQnlUYWdOYW1lKCdzY3JpcHQnKVswXSkucGFyZW50Tm9kZS5pbnNlcnRCZWZvcmUocCxyKTt2YXIgdT1lO2Zvcih2b2lkIDAhPT1hP3U9ZVthXT1bXTphPSdwb3N0aG9nJyx1LnBlb3BsZT11LnBlb3BsZXx8W10sdS50b1N0cmluZz1mdW5jdGlvbih0Mil7dmFyIGUyPSdwb3N0aG9nJztyZXR1cm4ncG9zdGhvZychPT1hJiYoZTIrPScuJythKSx0Mnx8KGUyKz0nIChzdHViKScpLGUyfSx1LnBlb3BsZS50b1N0cmluZz1mdW5jdGlvbigpe3JldHVybiB1LnRvU3RyaW5nKDEpKycucGVvcGxlIChzdHViKSd9LG89J2luaXQgRHIgcXIgQ2kgQnIgWnIgUHIgY2FwdHVyZSBjYWxjdWxhdGVFdmVudFByb3BlcnRpZXMgVXIgcmVnaXN0ZXIgcmVnaXN0ZXJfb25jZSByZWdpc3Rlcl9mb3Jfc2Vzc2lvbiB1bnJlZ2lzdGVyIHVucmVnaXN0ZXJfZm9yX3Nlc3Npb24gWHIgZ2V0RmVhdHVyZUZsYWcgZ2V0RmVhdHVyZUZsYWdQYXlsb2FkIGdldEZlYXR1cmVGbGFnUmVzdWx0IGlzRmVhdHVyZUVuYWJsZWQgcmVsb2FkRmVhdHVyZUZsYWdzIHVwZGF0ZUZsYWdzIHVwZGF0ZUVhcmx5QWNjZXNzRmVhdHVyZUVucm9sbG1lbnQgZ2V0RWFybHlBY2Nlc3NGZWF0dXJlcyBvbiBvbkZlYXR1cmVGbGFncyBvblN1cnZleXNMb2FkZWQgb25TZXNzaW9uSWQgZ2V0U3VydmV5cyBnZXRBY3RpdmVNYXRjaGluZ1N1cnZleXMgcmVuZGVyU3VydmV5IGRpc3BsYXlTdXJ2ZXkgY2FuY2VsUGVuZGluZ1N1cnZleSBjYW5SZW5kZXJTdXJ2ZXkgY2FuUmVuZGVyU3VydmV5QXN5bmMgSnIgaWRlbnRpZnkgc2V0UGVyc29uUHJvcGVydGllcyBncm91cCByZXNldEdyb3VwcyBzZXRQZXJzb25Qcm9wZXJ0aWVzRm9yRmxhZ3MgcmVzZXRQZXJzb25Qcm9wZXJ0aWVzRm9yRmxhZ3Mgc2V0R3JvdXBQcm9wZXJ0aWVzRm9yRmxhZ3MgcmVzZXRHcm91cFByb3BlcnRpZXNGb3JGbGFncyByZXNldCBzZXRJZGVudGl0eSBjbGVhcklkZW50aXR5IGdldF9kaXN0aW5jdF9pZCBnZXRHcm91cHMgZ2V0X3Nlc3Npb25faWQgZ2V0X3Nlc3Npb25fcmVwbGF5X3VybCBhbGlhcyBzZXRfY29uZmlnIHN0YXJ0U2Vzc2lvblJlY29yZGluZyBzdG9wU2Vzc2lvblJlY29yZGluZyBzZXNzaW9uUmVjb3JkaW5nU3RhcnRlZCBjYXB0dXJlRXhjZXB0aW9uIGNhcHR1cmVMb2cgc3RhcnRFeGNlcHRpb25BdXRvY2FwdHVyZSBzdG9wRXhjZXB0aW9uQXV0b2NhcHR1cmUgbG9hZFRvb2xiYXIgZ2V0X3Byb3BlcnR5IGdldFNlc3Npb25Qcm9wZXJ0eSBXciBIciBjcmVhdGVQZXJzb25Qcm9maWxlIHNldEludGVybmFsT3JUZXN0VXNlciBHciBGciB0biBvcHRfaW5fY2FwdHVyaW5nIG9wdF9vdXRfY2FwdHVyaW5nIGhhc19vcHRlZF9pbl9jYXB0dXJpbmcgaGFzX29wdGVkX291dF9jYXB0dXJpbmcgZ2V0X2V4cGxpY2l0X2NvbnNlbnRfc3RhdHVzIGlzX2NhcHR1cmluZyBjbGVhcl9vcHRfaW5fb3V0X2NhcHR1cmluZyAkciBkZWJ1ZyBraSBZciBnZXRQYWdlVmlld0lkIGNhcHR1cmVUcmFjZUZlZWRiYWNrIGNhcHR1cmVUcmFjZU1ldHJpYyBScicuc3BsaXQoJyAnKSxuPTA7bjxvLmxlbmd0aDtuKyspZyh1LG9bbl0pO2UuX2kucHVzaChbaSxzLGFdKX0sZS5fX1NWPTEpfShkb2N1bWVudCx3aW5kb3cucG9zdGhvZ3x8W10pO3Bvc3Rob2cuaW5pdCgicGhjX3hQaHVGalVrazlCMkt6bXNQakN2UWpnWm9OakxETmF2c0phTUFoRGpnNEo4Iix7YXBpX2hvc3Q6Imh0dHBzOi8vdXMuaS5wb3N0aG9nLmNvbSIsZGVmYXVsdHM6IjIwMjYtMDEtMzAiLHBlcnNvbl9wcm9maWxlczonaWRlbnRpZmllZF9vbmx5JyxhdXRvY2FwdHVyZTpmYWxzZSxjYXB0dXJlX3BhZ2V2aWV3OmZhbHNlLGNhcHR1cmVfcGFnZWxlYXZlOmZhbHNlLGNhcHR1cmVfcGVyZm9ybWFuY2U6ZmFsc2UsZGlzYWJsZV9zZXNzaW9uX3JlY29yZGluZzp0cnVlLGRpc2FibGVfY29tcHJlc3Npb246ZmFsc2UsY3Jvc3Nfc3ViZG9tYWluX2Nvb2tpZTp0cnVlLGJlZm9yZV9zZW5kOmZ1bmN0aW9uKGV2ZW50KXtyZXR1cm4gd2luZG93LklZUkFuYWx5dGljcyYmd2luZG93LklZUkFuYWx5dGljcy5zYW5pdGl6ZUV2ZW50P3dpbmRvdy5JWVJBbmFseXRpY3Muc2FuaXRpemVFdmVudChldmVudCk6ZXZlbnQ7fSxsb2FkZWQ6ZnVuY3Rpb24ocG9zdGhvZ0luc3RhbmNlKXt3aW5kb3cuX19peXJQb3N0SG9nUmVhZHk9dHJ1ZTtpZih3aW5kb3cuSVlSQW5hbHl0aWNzJiZ3aW5kb3cuSVlSQW5hbHl0aWNzLm9uUG9zdEhvZ0xvYWRlZCl7d2luZG93LklZUkFuYWx5dGljcy5vblBvc3RIb2dMb2FkZWQocG9zdGhvZ0luc3RhbmNlKTt9fX0pOzwvc2NyaXB0PjxzY3JpcHQgdHlwZT0idGV4dC9qYXZhc2NyaXB0Ij53aW5kb3cuSVlSQW5hbHl0aWNzICYmIHdpbmRvdy5JWVJBbmFseXRpY3MuYm9vdHN0cmFwKHsiY29uZmlnIjp7InRva2VuIjoicGhjX3hQaHVGalVrazlCMkt6bXNQakN2UWpnWm9OakxETmF2c0phTUFoRGpnNEo4IiwiYXBpSG9zdCI6Imh0dHBzOi8vdXMuaS5wb3N0aG9nLmNvbSIsImVudmlyb25tZW50IjoiTGl2ZSIsImRlZmF1bHRzIjoiMjAyNi0wMS0zMCIsImRpc2FibGVDb21wcmVzc2lvbiI6ZmFsc2UsImNyb3NzU3ViZG9tYWluQ29va2llIjp0cnVlLCJkZWJ1ZyI6ZmFsc2V9LCJwYWdlIjp7InBhZ2VUeXBlIjoicmVzdWx0cyIsInBhZ2VWaWV3RXZlbnQiOiJyZXN1bHRzIHBhZ2Ugdmlld2VkIn0sInByb3BlcnRpZXMiOnsic2l0ZUlkIjp7InR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjE2NjczLCJzZWxlY3RvcnMiOlsiI2hkblNpdGVJZCJdfSwic2l0ZVllYXIiOnsidHlwZSI6ImludGVnZXIiLCJ2YWx1ZSI6bnVsbCwic2VsZWN0b3JzIjpbIiNoZG5ZZWFyIiwiI2RkbFllYXIiXX0sInJhY2VJZCI6eyJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjpudWxsLCJzZWxlY3RvcnMiOlsiI2hkbkV2ZW50SWQiLCIjZGRsUmFjZSJdfSwicmVnaXN0cmF0aW9uTW9kZSI6eyJ0eXBlIjoic3RyaW5nIiwidmFsdWUiOm51bGx9fX0pOzwvc2NyaXB0PmQCDA9kFgQCAw8WAh8ABSJNQ0EgMjAyNSBXazEgU2NoaW5kbGVycyBXYXkgQXVzdGluZAIFDxYCHwAFCkF1c3RpbiwgTU5kAg4PZBYGAgMPDxYCHghJbWFnZVVybAVdaHR0cHM6Ly9peXJ3ZWJzdG9yYWdlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9ldmVudHMvMTYzOTEvMzhlNDEzZTdkZGY3NDk0N2FkMjNiNmJlMDkxMDhmNzgucG5nZGQCBQ8WAh8ABSJNQ0EgMjAyNSBXazEgU2NoaW5kbGVycyBXYXkgQXVzdGluZAIHDxYCHwAFCkF1c3RpbiwgTU5kAhAPZBYCZg8PFgQfAAUFQWJvdXQeC05hdmlnYXRlVXJsBRQvZXZlbnQuYXNweD9pZD0xNjY3M2RkAhIPZBYCZg8PFgYfAGUfAwUcL2V2ZW50U2NoZWR1bGUuYXNweD9pZD0xNjY3Mx8BaGRkAhQPZBYCZg8PFgQfAAUMUGFydGljaXBhbnRzHwMFHi9QYXJ0aWNpcGFudExpc3QuYXNweD9pZD0xNjY3M2RkAhYPZBYCZg8PFgQfAAUFVGVhbXMfAwUXL1RlYW1MaXN0LmFzcHg/aWQ9MTY2NzNkZAIYDxYCHgVjbGFzcwUGYWN0aXZlFgJmDw8WBB8ABQdSZXN1bHRzHwMF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AQICAgMWBBQrAAMPFgIfDGhkZGQUKwADDxYCHwxoZGRkFCsAAw8WAh8MaGRkZBQrAAMPFgIfDGhkZGQPFgRmZmZmFgEFclRlbGVyaWsuV2ViLlVJLlJhZFdpbmRvdywgVGVsZXJpay5XZWIuVUksIFZlcnNpb249MjAxMi4zLjEyMDUuNDAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49MTIxZmFlNzgxNjViYTNkNBYIZg8UKwADDxYCHwxoZGRkZAIBDxQrAAMPFgIfDGhkZGRkAgIPFCsAAw8WAh8MaGRkZGQCAw8UKwADDxYCHwxoZGRkZAIJD2QWAgIFDxYCHwBlZBgIBS9jdGwwMCRDb250ZW50UGxhY2VIb2xkZXIxJGx2UmVzdWx0c0Nyb3NzQ291bnRyeQ9nZAUrY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyMSRsdlJlc3VsdHNMYXBzVGVhbQ9nZAUnY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyMSRsdlJlc3VsdHNUZWFtD2dkBR5fX0NvbnRyb2xzUmVxdWlyZVBvc3RCYWNrS2V5X18WBQUrY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyMSRSYWRXaW5kb3dNYW5hZ2VyMQUnY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyMSR3aW5VcGxvYWRUaW1lBShjdGwwMCRDb250ZW50UGxhY2VIb2xkZXIxJHdpbkFkZEFjdGl2aXR5BSFjdGwwMCRDb250ZW50UGxhY2VIb2xkZXIxJHdpblZpZXcFI2N0bDAwJENvbnRlbnRQbGFjZUhvbGRlcjEkd2luVG9wMTAwBSdjdGwwMCRDb250ZW50UGxhY2VIb2xkZXIxJGx2UmVzdWx0c0xhcHMPFCsADmRkZGRkZGQ8KwAZAAIZZGRkZgL/////D2QFLmN0bDAwJENvbnRlbnRQbGFjZUhvbGRlcjEkbHZSZXN1bHRzTGFwc0Zhc3Rlc3QPZ2QFI2N0bDAwJENvbnRlbnRQbGFjZUhvbGRlcjEkbHZSZXN1bHRzD2dkBSxjdGwwMCRDb250ZW50UGxhY2VIb2xkZXIxJGx2UmVzdWx0c0NoYWxsZW5nZQ9nZHpyn8cudKGVSiL+bXktZW6QWTqg" />
+</div>
+
+
+<script src="/Telerik.Web.UI.WebResource.axd?_TSM_HiddenField_=RadScriptManager1_TSM&amp;compress=1&amp;_TSM_CombinedScripts_=%3b%3bSystem.Web.Extensions%2c+Version%3d4.0.0.0%2c+Culture%3dneutral%2c+PublicKeyToken%3d31bf3856ad364e35%3aen-US%3a64455737-15dd-482f-b336-7074c5c53f91%3aea597d4b%3bTelerik.Web.UI%2c+Version%3d2012.3.1205.40%2c+Culture%3dneutral%2c+PublicKeyToken%3d121fae78165ba3d4%3aen-US%3af18b91a4-0e6c-41d1-af11-dfb338738b79%3a16e4e7cd%3a874f8ea2%3af7645509%3a24ee1bba%3a19620875%3af46195d3%3a490a9d4e%3abd8f85e4" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<div>
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="63301E89" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdADlkXbeMDZLe1Hqh8qkOHQY51KfA1+g2cP4Olcl+obAJ/8VSQ0Q94f9D3OK8qWh850UygjRCwx30weBk8aIpTFyTHcmUNo646TzNRWhABTxsh6LVqGCY3x9+54OwAamxKXBrBjG8dm/pNFVe6az3CvdB3KoirRdBbeh9cOD8Zt5m0IjBr2mG8ukf9151btFsvE0wBrfFFalsmb6XEbQ0AmoI2WvWYiMtdd94n+25jBy8o5Xp3BzGYAgxIYhPqC18Iq4i1ZwKlPslBfvwPB7vGP2xSrP5BpXNXmC6Hc6pNnC+Vc9RR85q4x6PqJGVyf/JjVM4x3dzajo3qfxKuZX9Bx+w0lhUp1zf5WjWzMUYtODjOSoyeXyX8BKgoHCL0WjC4QG2M51iPuyUKlfFdU9wlX0u7KuPQHLHlD29M1W5AOn9bBwr7UwhRXyqdDHicODj99gPsPFXYvdoGbTTKQtrvoQeCsmgJzeS5OJf4lMTHMQlZmKi7u/AlkUTINRpykXZcnB35N5c5XYUNGib+FfKpzNYlTb2uJBxZQ9MEN1TbrBqmcXXTj7wvHRTG68vD7udm60eEY7BycLGnEILAtVFgtZvQGok1UPl+MJWBTgYibMR5bG/+kz8FhSugeMkeSZVE+hxa75FNxjypCIOp94W2o0VkjLvfFoe82jUUr1keNLRjGsjptx6v0CsO6jJu+Ppz2+eN0T/oArUMjAR6Pa3BpfspWlZ5Velu/aYEdkP7czzLKUp3QG8e5dZMSx6XXJEdgx277m3XLB38w6Wg/C86ZwnlA0PEGvlbri0Spw0wQeyzYlYSS/eo8aKfxAcygCQ94gUY3bAw5quO2YTtHXEWr3ttFfgxaO+BZjb2TiMSR/sIY5MW6XMaFjzT9nUdsIknot1p1CSqcAGcJ8WRjWzKcq2zKyfnA0cjbNFORTOeLD6eNmjMKgisOjvEAVJpvHMOYScFMPn+SZbnZvqPP0lTansl4+ILJ/AXgBhls7Ajmqqq6Rho53Rt4jl1aYSuToZUBRiMA8CLNsR+IGgCTyejTtTuUShizijBv3d8fmo0Sf266kswgAowp2skSJCZW5FoYArdQ13nWI7sAF51l5rYNwUUm+q8XOnk825Yr5YIe8shif7ucGPnBMhc0So+LL6nKckko4b2icuWodeepdN4/KCct0mzzzyPt4rulmVYC0oLo4H1CDrBjyZMDCO8EDVGDq88b2/2LwFMk3eqXKWNLrb/gUcIA==" />
+</div>
+
+    
+
+    
+
+    
+
+<script>
+    function SetLanguageCookie(selectedLanguage) {
+      var expDate = new Date();
+      expDate.setDate(expDate.getDate() + 20); // Expiration 20 days from today
+      document.cookie = "langCookie=" + selectedLanguage + "; expires=" + expDate.toUTCString() + "; path=/";
+      window.location.reload(true);
+    };
+</script>
+
+
+    <style>
+        @media (min-width: 768px) {
+            .navbar-nav > li > a {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+        }
+        li.dropdown.language-li {
+            min-width: 110px;
+            text-align: right;
+        }
+
+        .navbar-nav > li > .language-menu {
+            padding: 3px 0 3px 0;
+            margin-top: -8px;
+            border: 1px solid #49dffa;
+            border-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        @media (min-width: 768px) {
+            .navbar-right .language-menu {
+                left: auto;
+                right: 5px;
+            }
+        }
+
+        .open > .language-menu {
+            display: block;
+            border-top: 1px solid #2b8dcc !important;
+        }
+
+        .language-menu {
+            position: absolute;
+            top: 100%;
+            z-index: 1000;
+            display:none;
+            min-width: 100px;
+            margin: 0;
+            list-style: none;
+            font-size: 14px;
+            background-color: #2b8dcc;
+            box-shadow: 0 6px 12px rgba(0,0,0,.175);
+            background-clip: padding-box;
+        }
+
+       .language-menu li { text-align:right;  padding:3px 10px 3px 0;}
+       .language-menu li a { color:#49dffa; }
+
+        .nav .open > a, .nav .open > a:focus, .nav .open > a:hover {
+            background-color: #2b8dcc;
+            border-color: #49dffa;
+            border-bottom-color:#2b8dcc;
+        }
+
+        ul.language { width:120px !important; }
+    </style>
+    <!-- begins new navbar -->
+    <div id="pnlLoggedOut" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://www.itsyourrace.com/"><img src="https://www.itsyourrace.com/content/assets/img/its-your-race-logo.jpg" alt="ITS YOUR RACE logo" /></a>
+          <div class="navbar-right secret pad bump-login">
+            <ul id="menu-header-menu" class="nav navbar-nav-right">
+              <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                <a href="https://www.itsyourrace.com/login.aspx">Log In</a>
+              </li>
+              <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                <p class="nav-p">|</p>
+              </li>
+              <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                <a href="https://www.itsyourrace.com/signup.aspx">Sign Up</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        
+
+        <div class="navbar-collapse collapse">
+            <div class="navbar-right bump-login">
+                <ul id="menu-header-menu" class="nav navbar-nav-right">
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                        <a href="https://www.itsyourrace.com/login.aspx">Log In</a>
+                    </li>
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                        <p class="nav-p">|</p>
+                    </li>
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page current_page_item">
+                        <a href="https://www.itsyourrace.com/signup.aspx">Sign Up</a>
+                    </li>
+                </ul>
+            </div>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </div>
+    <!-- /new navbar -->
+
+
+
+
+
+    
+
+    <link href="/CustomCss.ashx?id=16673" rel="stylesheet" />
+<script type="text/javascript" src="/js/iyr-posthog-analytics.js?v=639135086329123122&sv=2026-04-29-1"></script><script type="text/javascript">window.__iyrPostHogManaged=true;!function(t,e){var o,n,p,r;e.__SV||(window.posthog&&window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t1,e1){var o1=e1.split('.');2==o1.length&&(t1=t1[o1[0]],e1=o1[1]),t1[e1]=function(){t1.push([e1].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement('script')).type='text/javascript',p.crossOrigin='anonymous',p.async=!0,p.src=s.api_host.replace('.i.posthog.com','-assets.i.posthog.com')+'/static/array.js',(r=t.getElementsByTagName('script')[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a='posthog',u.people=u.people||[],u.toString=function(t2){var e2='posthog';return'posthog'!==a&&(e2+='.'+a),t2||(e2+=' (stub)'),e2},u.people.toString=function(){return u.toString(1)+'.people (stub)'},o='init Dr qr Ci Br Zr Pr capture calculateEventProperties Ur register register_once register_for_session unregister unregister_for_session Xr getFeatureFlag getFeatureFlagPayload getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Jr identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException captureLog startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty Wr Hr createPersonProfile setInternalOrTestUser Gr Fr tn opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing $r debug ki Yr getPageViewId captureTraceFeedback captureTraceMetric Rr'.split(' '),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_xPhuFjUkk9B2KzmsPjCvQjgZoNjLDNavsJaMAhDjg4J8",{api_host:"https://us.i.posthog.com",defaults:"2026-01-30",person_profiles:'identified_only',autocapture:false,capture_pageview:false,capture_pageleave:false,capture_performance:false,disable_session_recording:true,disable_compression:false,cross_subdomain_cookie:true,before_send:function(event){return window.IYRAnalytics&&window.IYRAnalytics.sanitizeEvent?window.IYRAnalytics.sanitizeEvent(event):event;},loaded:function(posthogInstance){window.__iyrPostHogReady=true;if(window.IYRAnalytics&&window.IYRAnalytics.onPostHogLoaded){window.IYRAnalytics.onPostHogLoaded(posthogInstance);}}});</script><script type="text/javascript">window.IYRAnalytics && window.IYRAnalytics.bootstrap({"config":{"token":"phc_xPhuFjUkk9B2KzmsPjCvQjgZoNjLDNavsJaMAhDjg4J8","apiHost":"https://us.i.posthog.com","environment":"Live","defaults":"2026-01-30","disableCompression":false,"crossSubdomainCookie":true,"debug":false},"page":{"pageType":"results","pageViewEvent":"results page viewed"},"properties":{"siteId":{"type":"integer","value":16673,"selectors":["#hdnSiteId"]},"siteYear":{"type":"integer","value":null,"selectors":["#hdnYear","#ddlYear"]},"raceId":{"type":"integer","value":null,"selectors":["#hdnEventId","#ddlRace"]},"registrationMode":{"type":"string","value":null}}});</script>
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div id="plnJumbotron" class="jumbotron event-header">
+    <div class="container">
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="event-logo">
+                    <img id="imgLogoMedium" src="https://iyrwebstorage.blob.core.windows.net/events/16391/38e413e7ddf74947ad23b6be09108f78.png" style="border-width:0px;" />
+                </div>
+
+                <h1 id="event-name" class="main-h1">MCA 2025 Wk1 Schindlers Way Austin</h1>
+                <p id="event-citystate">Austin, MN</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="main-container" class="container">
+    <!-- the event list -->
+
+    <div class="row event-nav">
+
+        <div class="event-nav-box">
+            <ul class="nav nav-pills">
+                <li id="liAbout"><a id="lnkAbout" href="/event.aspx?id=16673">About</a></li>
+                <li id="liEventSchedule"></li>
+                <li id="liParticipants"><a id="lnkParticipants" href="/ParticipantList.aspx?id=16673">Participants</a></li>
+                <li id="liTeams"><a id="lnkTeams" href="/TeamList.aspx?id=16673">Teams</a></li>
+                <li id="liResults" class="active"><a id="lnkResults" href="/Results.aspx?id=16673">Results</a></li>
+                
+                
+                
+                
+                
+                <li id="liContact"><a id="lnkContact" href="/EventContact.aspx?id=16673">Contact</a></li>
+                
+                
+                
+                
+                
+            </ul>
+            
+        </div>
+
+    </div>
+
+
+    <div class="row event-group" style="padding-bottom:0;">
+        <div class="col-md-12 body-content">
+            <h1>Race Results</h1>
+
+
+            <div style="clear:both;"></div>
+
+            
+
+                <div class="col-md-12 results-container" style="margin-bottom:0;">
+                    <div class="row stats-panel">
+                        <div class="col-sm-4 stat-box results-header-box">
+                            <h3>7th Grade Boys D2</h3>
+                            <p>Saturday, Aug 23, 2025</p>
+                            <p><span class="results-unofficial">Results are: Unofficial</span></p>
+                            
+                        </div>
+                        
+                        <div class="col-sm-2 stat-box">
+                            
+                                <span class="title"></span>
+                                <span class="number"></span>
+                            
+                        </div>
+                        <div class="col-sm-2 stat-box">
+                            
+                                <span class="title"></span>
+                                <span class="number"></span>
+                            
+                        </div>
+                        <div class="col-sm-2 stat-box">
+                            
+                                <span class="title"></span>
+                                <span class="number"></span>
+                            
+                        </div>
+                        <div class="col-sm-2 stat-box">
+                            
+                                <span class="title"></span>
+                                <span class="number"></span>
+                            
+                        </div>
+                    </div>
+
+                    <div class="filters">
+                        <div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <label>Year:</label>
+                                    <select name="ctl00$ContentPlaceHolder1$ddlYear" id="ddlYear" class="form-control">
+	<option selected="selected" value="2025">2025</option>
+
+</select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label>Race:</label>
+                                    <select name="ctl00$ContentPlaceHolder1$ddlRace" id="ddlRace" class="form-control">
+	<option value="">Select Race</option>
+	<option value="134099">6th Grade Girls</option>
+	<option value="134105">6th Grade Boys D2</option>
+	<option value="134106">6th Grade Boys D1</option>
+	<option value="134107">7th Grade Girls</option>
+	<option selected="selected" value="134108">7th Grade Boys D2</option>
+	<option value="134109">7th Grade Boys D1</option>
+	<option value="134110">8th Grade Girls</option>
+	<option value="134111">8th Grade Boys D2</option>
+	<option value="134112">8th Grade Boys D1</option>
+	<option value="134113">Freshman Boys D2</option>
+	<option value="134114">Freshman Boys D1</option>
+	<option value="134115">Freshman Girls</option>
+	<option value="134116">JV2 Girls</option>
+	<option value="134117">JV3 Boys</option>
+	<option value="134118">Varsity Boys</option>
+	<option value="134119">JV3 Girls</option>
+	<option value="134120">Varsity Girls</option>
+	<option value="134121">JV2 Boys D2</option>
+	<option value="134122">JV2 Boys D1</option>
+
+</select>
+                                </div>
+                                <div id="pnlFilterGender" class="col-md-2">
+                                    <label>Gender:</label>
+                                    <select name="ctl00$ContentPlaceHolder1$ddlGender" id="ddlGender" class="form-control">
+	<option selected="selected" value="A">All</option>
+	<option value="f">Female</option>
+	<option value="m">Male</option>
+
+</select>
+                                </div><div id="pnlFilterAgeGroup" class="col-md-2">
+                                    <label>Age Group:</label>
+                                    <select name="ctl00$ContentPlaceHolder1$ddlAgeGroup" id="ddlAgeGroup" class="form-control">
+	<option selected="selected" value="amin=0&amp;amax=199">All Ages</option>
+	<option value="amin=0&amp;amax=14">14 &amp; Under</option>
+	<option value="amin=15&amp;amax=19">15 - 19</option>
+	<option value="amin=20&amp;amax=24">20 - 24</option>
+	<option value="amin=25&amp;amax=29">25 - 29</option>
+	<option value="amin=30&amp;amax=34">30 - 34</option>
+	<option value="amin=35&amp;amax=39">35 - 39</option>
+	<option value="amin=40&amp;amax=44">40 - 44</option>
+	<option value="amin=45&amp;amax=49">45 - 49</option>
+	<option value="amin=50&amp;amax=54">50 - 54</option>
+	<option value="amin=55&amp;amax=59">55 - 59</option>
+	<option value="amin=60&amp;amax=64">60 - 64</option>
+	<option value="amin=65&amp;amax=69">65 - 69</option>
+	<option value="amin=70&amp;amax=74">70 - 74</option>
+	<option value="amin=75&amp;amax=98">75 &amp; Above</option>
+
+</select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>
+                                        Search:
+                                        
+                                    </label>
+                                    <input name="ctl00$ContentPlaceHolder1$txtSearchTerm" type="text" id="txtSearchTerm" class="form-control" placeholder="Search the Results" style="display:inline-block; width:85%;" />
+                                    &nbsp;<a id="btnSearch" href="javascript:__doPostBack(&#39;ctl00$ContentPlaceHolder1$btnSearch&#39;,&#39;&#39;)" style="display:inline-block;width:9%;"><span class="glyphicon glyphicon-search"></span></a>
+                                </div>
+                                <div class="col-md-1">
+                                    <label></label>
+                                    <a id="lnkResultsCorrection" href="Correction.aspx?id=16673&amp;y=2025" style="display:block; font-size:12px; padding-top:5px;">Request a Correction</a>
+                                </div>
+                            </div>
+                            <!--<a href="#"><span class="glyphicon glyphicon-search"></span></a>-->
+                        </div>
+                    </div>
+                </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    <div id="pnlResultsWebTop" class="col-md-12 results-rows">
+        <div style="margin:0 20px 20px 20px;">
+            <div style="text-align: center;"><strong>Race Timing &amp; Results by</strong></div>
+<div style="text-align: center;"><span style="color: #ffffff;">.</span></div>
+<div><a href="https://www.precisionrace.com/mca" target="_blank" rel="noopener"><img style="display: block; margin-left: auto; margin-right: auto;" src="http://iyrwebstorage.blob.core.windows.net/events/16673/pr-transparent-450-png.png" alt="" width="271" height="60" /></a></div>
+        </div>
+    </div>
+
+    
+
+    <div>
+        <div id="pnlRaceInfo2">
+	
+
+            
+
+            
+        
+</div>
+
+        
+        
+        <div id="pnlResultsLaps">
+	
+            <div class="resultsTop" style="overflow:hidden; margin-bottom:5px; margin-top:0; vertical-align:bottom;">
+			    &nbsp;
+            </div>
+
+            <div style="clear:both;"></div>
+
+            <div class="wrapper1">
+                <div class="div1">
+                </div>
+            </div>
+
+            <div id="results" class="roundView" style="overflow-x:scroll;">
+                
+                        <table id="resultsTable" cellpadding="0" cellspacing="0" style="width:auto; min-width:100%;" > 
+                            <tr>
+                                <th scope="col"></th>
+                                <th id="thPlaceOverall" scope="col" class="placeOverall">Place</th>
+	 
+                                <th id="thName" scope="col" class="name">Name</th>
+	 
+                                <th id="thTeamName" scope="col" class="name">Team Name</th>
+	 
+                                <th id="thLapCount" class="lapCount" scope="col">Laps</th>
+	 
+                                <th id="thTotalTime" class="lapTotalTime">Total Time</th>
+	 
+                                 
+                                <th id="thTotalDistance" class="lapTotalDistance">Total Distance</th>
+	 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                            </tr>
+                            
+                        <tr id="Tr1" onclick="ShowPage2(9984134, 6626);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">1</td>
+		<td id="tdName" class="name"><strong>QUINCY GROTENHUIS</strong> (# 6626)</td>
+		<td id="tdTeamName" class="name">Lakeville South</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:19:11.737</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984184, 6745);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">2</td>
+		<td id="tdName" class="name"><strong>RYAN KOKOTOVICH</strong> (# 6745)</td>
+		<td id="tdTeamName" class="name">Roseville</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:19:16.020</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984090, 6517);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">3</td>
+		<td id="tdName" class="name"><strong>MARCUS BRAND</strong> (# 6517)</td>
+		<td id="tdTeamName" class="name">Austin HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:20:39.160</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984175, 6717);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">4</td>
+		<td id="tdName" class="name"><strong>AXTON ZICK</strong> (# 6717)</td>
+		<td id="tdTeamName" class="name">River Falls HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:21:37.977</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984181, 6741);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">5</td>
+		<td id="tdName" class="name"><strong>RHONE URBAN</strong> (# 6741)</td>
+		<td id="tdTeamName" class="name">Rosemount HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:21:53.997</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984099, 6558);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">6</td>
+		<td id="tdName" class="name"><strong>GAVIN TAYLOR</strong> (# 6558)</td>
+		<td id="tdTeamName" class="name">Chaska HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:22:15.350</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984121, 6600);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">7</td>
+		<td id="tdName" class="name"><strong>GRAY SCHMIDT</strong> (# 6600)</td>
+		<td id="tdTeamName" class="name">Elk River</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:22:31.463</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984182, 6742);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">8</td>
+		<td id="tdName" class="name"><strong>CHARLIE DIXON</strong> (# 6742)</td>
+		<td id="tdTeamName" class="name">Roseville</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:22:32.577</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984109, 6584);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">9</td>
+		<td id="tdName" class="name"><strong>KAI LANDER</strong> (# 6584)</td>
+		<td id="tdTeamName" class="name">Eastview HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:22:33.633</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984200, 6807);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">10</td>
+		<td id="tdName" class="name"><strong>CAM SLAVEY</strong> (# 6807)</td>
+		<td id="tdTeamName" class="name">Winona</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:05.513</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984199, 6806);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">11</td>
+		<td id="tdName" class="name"><strong>WILLIAM LOHMEYER</strong> (# 6806)</td>
+		<td id="tdTeamName" class="name">Winona</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:05.663</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984089, 6516);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">12</td>
+		<td id="tdName" class="name"><strong>OWEN BERG</strong> (# 6516)</td>
+		<td id="tdTeamName" class="name">Austin HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:18.507</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984141, 6641);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">13</td>
+		<td id="tdName" class="name"><strong>PETER MARTINSON</strong> (# 6641)</td>
+		<td id="tdTeamName" class="name">Minneapolis South HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:20.070</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984183, 6744);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">14</td>
+		<td id="tdName" class="name"><strong>ELLIOT FREEMAN</strong> (# 6744)</td>
+		<td id="tdTeamName" class="name">Roseville</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:20.877</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984131, 6616);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">15</td>
+		<td id="tdName" class="name"><strong>LINCOLN WESCOTT</strong> (# 6616)</td>
+		<td id="tdTeamName" class="name">Hudson HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:31.877</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984136, 6635);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">16</td>
+		<td id="tdName" class="name"><strong>WILLEM SHELDON</strong> (# 6635)</td>
+		<td id="tdTeamName" class="name">Minneapolis Northside</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:31.957</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984174, 6716);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">17</td>
+		<td id="tdName" class="name"><strong>BREYKER WELLS-MANGOLD</strong> (# 6716)</td>
+		<td id="tdTeamName" class="name">River Falls HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:32.310</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984129, 6614);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">18</td>
+		<td id="tdName" class="name"><strong>EVERETT HUTTON</strong> (# 6614)</td>
+		<td id="tdTeamName" class="name">Hudson HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:32.310</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984088, 6511);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">19</td>
+		<td id="tdName" class="name"><strong>MERRICK HELGERSON</strong> (# 6511)</td>
+		<td id="tdTeamName" class="name">Apple Valley HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:34.830</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984186, 6757);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">20</td>
+		<td id="tdName" class="name"><strong>SILAS BODEN</strong> (# 6757)</td>
+		<td id="tdTeamName" class="name">St Croix</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:43.493</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984132, 6617);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">21</td>
+		<td id="tdName" class="name"><strong>SAM HEITMAN</strong> (# 6617)</td>
+		<td id="tdTeamName" class="name">Hutchinson Tigers</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:23:48.530</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984097, 6553);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">22</td>
+		<td id="tdName" class="name"><strong>REX NELSON</strong> (# 6553)</td>
+		<td id="tdTeamName" class="name">Chanhassen HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:24:04.090</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984133, 6625);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">23</td>
+		<td id="tdName" class="name"><strong>LUCAS PARKER</strong> (# 6625)</td>
+		<td id="tdTeamName" class="name">Lakeville North HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:24:08.873</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984187, 6770);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">24</td>
+		<td id="tdName" class="name"><strong>LEVI LAYER</strong> (# 6770)</td>
+		<td id="tdTeamName" class="name">St Paul Composite - North</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:24:11.343</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        <tr id="Tr1" onclick="ShowPage2(9984107, 6580);">
+		<td class="blank"></td>
+		<td id="tdPlaceOverall" class="placeOverall">25</td>
+		<td id="tdName" class="name"><strong>LEIF REED</strong> (# 6580)</td>
+		<td id="tdTeamName" class="name">Eagan HS</td>
+		<td id="tdLapCount" class="lapCount">2</td>
+		<td id="tdTotalTime" class="lapTotalTime">00:24:22.623</td>
+		<td id="tdTotalDistance" class="lapTotalDistance">7.50 miles</td>
+	</tr>
+	
+                    
+                        </table>
+                    
+            </div>
+
+            <div style="clear:both;"></div>
+
+            <div id="pnlPagerLaps">
+		
+                <div class="pager">
+                    
+                    &nbsp;
+                    
+                    &nbsp;
+                    Page:
+                    &nbsp;
+                    <select name="ctl00$ContentPlaceHolder1$ddlPageLaps" id="ddlPageLaps" style="width:90px;">
+			<option selected="selected" value="1">1</option>
+			<option value="2">2</option>
+
+		</select>
+                    &nbsp;
+                    <a id="btnNextLaps" href="javascript:__doPostBack(&#39;ctl00$ContentPlaceHolder1$btnNextLaps&#39;,&#39;&#39;)">next ></a>
+                    &nbsp;
+                    <a id="btnLastLaps" href="javascript:__doPostBack(&#39;ctl00$ContentPlaceHolder1$btnLastLaps&#39;,&#39;&#39;)">last >></a>
+                    <br /><br />
+                    
+                </div>
+            
+	</div>
+        
+</div>
+
+        
+
+        
+
+        
+
+        
+
+        <div style="clear:both;"></div>
+
+          <div class="row">
+            
+          </div>
+
+        <br /><br /><br />
+    </div>
+</div>
+
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnSiteId" id="hdnSiteId" value="16673" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnEventId" id="hdnEventId" value="134108" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnYear" id="hdnYear" value="2025" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnType" id="hdnType" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnBibNumber" id="hdnBibNumber" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnName" id="hdnName" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnLocation" id="hdnLocation" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnEventType" id="hdnEventType" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnResultsType" id="hdnResultsType" value="Indiv-Laps" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnChallengeGroupGoal" id="hdnChallengeGroupGoal" />
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hdnChallengeGroupCurrent" id="hdnChallengeGroupCurrent" />
+
+    <div id="myModal" class="modal hide fade"></div>
+
+    <div id="ctl00_ContentPlaceHolder1_RadWindowManager1" style="display:none;">
+	<!-- 2012.3.1205.40 --><div id="ctl00_ContentPlaceHolder1_winUploadTime" style="display:none;">
+		<div id="ctl00_ContentPlaceHolder1_winUploadTime_C" style="display:none;">
+
+		</div><input id="ctl00_ContentPlaceHolder1_winUploadTime_ClientState" name="ctl00_ContentPlaceHolder1_winUploadTime_ClientState" type="hidden" />
+	</div><div id="ctl00_ContentPlaceHolder1_winAddActivity" style="display:none;">
+		<div id="ctl00_ContentPlaceHolder1_winAddActivity_C" style="display:none;">
+
+		</div><input id="ctl00_ContentPlaceHolder1_winAddActivity_ClientState" name="ctl00_ContentPlaceHolder1_winAddActivity_ClientState" type="hidden" />
+	</div><div id="ctl00_ContentPlaceHolder1_winView" style="display:none;">
+		<div id="ctl00_ContentPlaceHolder1_winView_C" style="display:none;">
+
+		</div><input id="ctl00_ContentPlaceHolder1_winView_ClientState" name="ctl00_ContentPlaceHolder1_winView_ClientState" type="hidden" />
+	</div><div id="ctl00_ContentPlaceHolder1_winTop100" style="display:none;">
+		<div id="ctl00_ContentPlaceHolder1_winTop100_C" style="display:none;">
+
+		</div><input id="ctl00_ContentPlaceHolder1_winTop100_ClientState" name="ctl00_ContentPlaceHolder1_winTop100_ClientState" type="hidden" />
+	</div><div id="ctl00_ContentPlaceHolder1_RadWindowManager1_alerttemplate" style="display:none;">
+		<div class="rwDialogPopup radalert">			
+			<div class="rwDialogText">
+			{1}				
+			</div>
+			
+			<div>
+				<a  onclick="$find('{0}').close(true);"
+				class="rwPopupButton" href="javascript:void(0);">
+					<span class="rwOuterSpan">
+						<span class="rwInnerSpan">##LOC[OK]##</span>
+					</span>
+				</a>				
+			</div>
+		</div>
+		</div><div id="ctl00_ContentPlaceHolder1_RadWindowManager1_prompttemplate" style="display:none;">
+		 <div class="rwDialogPopup radprompt">			
+			    <div class="rwDialogText">
+			    {1}				
+			    </div>		
+			    <div>
+				    <script type="text/javascript">
+				    function RadWindowprompt_detectenter(id, ev, input)
+				    {							
+					    if (!ev) ev = window.event;                
+					    if (ev.keyCode == 13)
+					    {															        
+					        var but = input.parentNode.parentNode.getElementsByTagName("A")[0];					        
+					        if (but)
+						    {							
+							    if (but.click) but.click();
+							    else if (but.onclick)
+							    {
+							        but.focus(); var click = but.onclick; but.onclick = null; if (click) click.call(but);							 
+							    }
+						    }
+					       return false;
+					    } 
+					    else return true;
+				    }	 
+				    </script>
+				    <input title="Enter Value" onkeydown="return RadWindowprompt_detectenter('{0}', event, this);" type="text"  class="rwDialogInput" value="{2}" />
+			    </div>
+			    <div>
+				    <a onclick="$find('{0}').close(this.parentNode.parentNode.getElementsByTagName('input')[0].value);"				
+					    class="rwPopupButton" href="javascript:void(0);" ><span class="rwOuterSpan"><span class="rwInnerSpan">##LOC[OK]##</span></span></a>
+				    <a onclick="$find('{0}').close(null);" class="rwPopupButton"  href="javascript:void(0);"><span class="rwOuterSpan"><span class="rwInnerSpan">##LOC[Cancel]##</span></span></a>
+			    </div>
+		    </div>				       
+		</div><div id="ctl00_ContentPlaceHolder1_RadWindowManager1_confirmtemplate" style="display:none;">
+		<div class="rwDialogPopup radconfirm">			
+			<div class="rwDialogText">
+			{1}				
+			</div>						
+			<div>
+				<a onclick="$find('{0}').close(true);"  class="rwPopupButton" href="javascript:void(0);" ><span class="rwOuterSpan"><span class="rwInnerSpan">##LOC[OK]##</span></span></a>
+				<a onclick="$find('{0}').close(false);" class="rwPopupButton"  href="javascript:void(0);"><span class="rwOuterSpan"><span class="rwInnerSpan">##LOC[Cancel]##</span></span></a>
+			</div>
+		</div>		
+		</div><input id="ctl00_ContentPlaceHolder1_RadWindowManager1_ClientState" name="ctl00_ContentPlaceHolder1_RadWindowManager1_ClientState" type="hidden" />
+</div>
+    
+
+
+
+    
+
+    <div class="footer-wrapper">
+      <div class="container">
+        <div id="plStandardFooter" class="row">
+          <footer>
+            <div class="col-sm-4">
+              <h4>Main Navigation</h4>
+              <ul>
+                <li><a href="http://www.itsyourrace.com/search.aspx">Events/Results</a></li>
+                <li><a href="http://www.itsyourrace.com/features.aspx">Features</a></li>
+                <li><a href="http://www.itsyourrace.com/pricing.aspx">Pricing</a></li>
+                <li><a href="http://www.itsyourrace.com/event-organizers.aspx">Event Organizers</a></li>
+              </ul>
+            </div>
+            <div class="col-sm-4">
+              <h4>About ITS YOUR RACE</h4>
+              <ul>
+                <li><a href="http://www.itsyourrace.com/AboutUs.aspx">About Us</a></li>
+                <li><a href="http://www.itsyourrace.com/Pricing.aspx">Pricing</a></li>
+                <!--<li><a href="http://www.itsyourrace.com/FAQ.aspx">FAQ</a></li>-->
+                <li><a href="/Contact.aspx">Contact Us</a></li>
+                <li><a href="http://blog.itsyourrace.com" target="_blank">Blog</a></li>
+                <li><a href="https://www.itsyourrace.com/pc/mediakit">Advertise</a></li>
+              </ul>
+            </div>
+            <div class="col-sm-4">
+              <h4>Find Us Online</h4>
+              <ul>
+                <li><a href="https://facebook.com/itsyourrace" target="_blank">Facebook</a></li>
+                <li><a href="https://twitter.com/itsyourrace" target="_blank">Twitter</a></li>
+              </ul>
+            </div>
+            <div class="col-sm-12 center-div-content">
+              <p>&nbsp;</p>
+              <p>
+                  &copy; Innovative Timing Systems, LLC 2026. All Rights Reserved
+                  <br />
+                  <a href="/TermsOfUse.aspx">Terms of Use</a>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <a href="/Privacy.aspx">Privacy Policy</a>
+                  <br />
+                  We've updated our Privacy Policy. <a href="/Privacy.aspx">Click here for more information</a>.
+              </p>
+            </div>
+          </footer>
+        </div><!--/row-->
+
+        
+      </div>
+    </div>
+
+    
+    
+    <script type="text/javascript">
+        var clicky_site_ids = clicky_site_ids || [];
+        clicky_site_ids.push(100580214);
+        (function () {
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.async = true;
+            s.src = '//static.getclicky.com/js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s);
+        })();
+    </script>
+    <noscript>
+        <p>
+            <img alt="Clicky" width="1" height="1" src="//in.getclicky.com/100580214ns.gif" /></p>
+    </noscript>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    
+    <!-- legacy js -->
+    
+    <!--<script src="../../content/assets/legacy/js/bootstrap.min.js"></script>-->
+    <script src="../../content/assets/legacy/js/theme.js"></script>
+    <script src="../../content/assets/legacy/js/jquery.cookie.min.js"></script>
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-50023231-1', 'itsyourrace.com');
+        ga('send', 'pageview');
+    </script>
+    <!-- show location box-->
+    <script type="text/javascript">
+        $(document).ready(
+        function () {
+            // the event row register button highlights
+            $(".event-row, .results-grouper, .sponsored-grouper").hover(function () {
+                $(this).find(".event-btn-hover, .results-btn").toggleClass("hide-register");
+            });
+        });
+    </script>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindow, {"_dockMode":false,"behaviors":68,"clientStateFieldID":"ctl00_ContentPlaceHolder1_winUploadTime_ClientState","formID":"form1","height":"500px","iconUrl":"","minimizeIconUrl":"","modal":true,"name":"winUploadTime","skin":"Default","title":"Update Time","top":"100px","visibleStatusbar":false,"width":"300px"}, null, null, $get("ctl00_ContentPlaceHolder1_winUploadTime"));
+});
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindow, {"_dockMode":false,"behaviors":68,"clientStateFieldID":"ctl00_ContentPlaceHolder1_winAddActivity_ClientState","formID":"form1","height":"500px","iconUrl":"","minimizeIconUrl":"","modal":true,"name":"winAddActivity","skin":"Default","title":"Add Activity","top":"100px","visibleStatusbar":false,"width":"300px"}, {"close":RefreshParentPage}, null, $get("ctl00_ContentPlaceHolder1_winAddActivity"));
+});
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindow, {"_dockMode":false,"behaviors":68,"clientStateFieldID":"ctl00_ContentPlaceHolder1_winView_ClientState","formID":"form1","height":"600px","iconUrl":"","minimizeIconUrl":"","modal":true,"name":"winView","skin":"Default","title":"Participant Details","top":"100px","visibleStatusbar":false,"width":"400px"}, null, null, $get("ctl00_ContentPlaceHolder1_winView"));
+});
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindow, {"_dockMode":false,"behaviors":68,"clientStateFieldID":"ctl00_ContentPlaceHolder1_winTop100_ClientState","formID":"form1","height":"600px","iconUrl":"","minimizeIconUrl":"","modal":true,"name":"winTop100","skin":"Default","title":"Top 100","top":"100px","visibleStatusbar":false,"width":"500px"}, null, null, $get("ctl00_ContentPlaceHolder1_winTop100"));
+});
+Sys.Application.add_init(function() {
+    $create(Telerik.Web.UI.RadWindowManager, {"clientStateFieldID":"ctl00_ContentPlaceHolder1_RadWindowManager1_ClientState","formID":"form1","iconUrl":"","minimizeIconUrl":"","name":"RadWindowManager1","skin":"Default","windowControls":"['ctl00_ContentPlaceHolder1_winUploadTime','ctl00_ContentPlaceHolder1_winAddActivity','ctl00_ContentPlaceHolder1_winView','ctl00_ContentPlaceHolder1_winTop100']"}, null, {"child":"ctl00_ContentPlaceHolder1_winUploadTime"}, $get("ctl00_ContentPlaceHolder1_RadWindowManager1"));
+});
+//]]>
+</script>
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script><script>tg_jq = jQuery.noConflict(true);</script> <div class="tgfloat tgBleft" style="position:fixed;bottom:0px;z-index: 999999;text-align:left;left:0px;"><img alt="Trust Guard Security Scanned" id="tg_1-bleft" class="tgfloat-inner" src="https://seal.trustguard.com/sites/itsyourrace.com/5d6fbb95f4a06109fdcba9cd.svg" style="border: 0; width: 175px; " oncontextmenu="var d = new Date(); alert('Copying Prohibited by Law - This image and all included logos are copyrighted by Trust Guard '+d.getFullYear()+'.'); return false;" /></div> <div id="tgSlideContainer"></div><script src="https://tgscript.s3.amazonaws.com/tgscript-v1.016.js" integrity="sha384-OYyvZ9WS0+acYgiltgIE5KBNF/E/1phX7oscLbBV3h2bOfygwkwxhjnybxN9roqy" crossorigin="anonymous"></script><script>document.write(tg_script_bottom_left); tg_load_animations("5d6a92075f92ba0f48ba3f06", "bottom_left");</script><link rel="stylesheet" rel="preload" href="https://tgscript.s3.amazonaws.com/cert-style-v1.011.css" integrity="sha384-n1YfSisynv0soSJM+IY37BSiVCk9RcYkupLvkkn7Id5MptKUsY+EN5Plz+Tw4dpc" crossorigin="anonymous"><style type="text/css">@media (max-width: 500px) { .tgfloat img { width:145px !important; }}</style>
+
+
+    <!-- Facebook Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+     fbq('init', '166195480738674'); 
+    fbq('track', 'PageView');
+    </script>
+    <noscript>
+     <img height="1" width="1" 
+    src="https://www.facebook.com/tr?id=166195480738674&ev=PageView
+    &noscript=1"/>
+    </noscript>
+    <!-- End Facebook Pixel Code -->
+</body>
+</html>

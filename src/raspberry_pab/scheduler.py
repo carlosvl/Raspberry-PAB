@@ -14,6 +14,7 @@ from pydantic import TypeAdapter
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.models import Alert
 from raspberry_pab.reminders import build_due_alerts
+from raspberry_pab.kiosk_clock import effective_now
 
 logger = logging.getLogger(__name__)
 _ALERT_ADAPTER = TypeAdapter(Alert)
@@ -78,7 +79,7 @@ class ReminderScheduler:
                 continue
 
     async def tick(self, now: datetime | None = None) -> list[Alert]:
-        current = now or datetime.now()
+        current = now or effective_now(self.store)
         participants = self.store.list_participants(current.date())
         rules = self.store.list_rules(enabled_only=True)
         alerts = build_due_alerts(participants, rules, current)

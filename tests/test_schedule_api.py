@@ -71,10 +71,9 @@ def test_participants_endpoint_returns_countdown(tmp_path: Path) -> None:
             },
         )
         with patch(
-            "raspberry_pab.routes.schedule.datetime",
-            wraps=datetime,
-        ) as mock_datetime:
-            mock_datetime.now.return_value = datetime(2026, 6, 21, 10, 0)
+            "raspberry_pab.routes.schedule.effective_now",
+            return_value=datetime(2026, 6, 21, 10, 0),
+        ):
             response = client.get("/api/participants?date=2026-06-21")
 
     assert created.status_code == 200

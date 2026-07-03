@@ -460,6 +460,25 @@ async function loadRaceResults() {
     .join("");
 }
 
+async function loadKioskClockStatus() {
+  const statusEl = document.getElementById("kioskClockStatus");
+  const input = document.getElementById("kioskSimDateTime");
+  if (!statusEl) return;
+  try {
+    const clock = await api("/api/admin/kiosk-clock", {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    if (input && clock.kiosk_now) {
+      input.value = clock.kiosk_now.slice(0, 16);
+    }
+    statusEl.textContent = clock.simulated
+      ? `Kiosk clock: TEST ${clock.kiosk_now}${clock.running ? " (running)" : " (paused)"}`
+      : "Kiosk clock: real time";
+  } catch (error) {
+    statusEl.textContent = error instanceof Error ? error.message : String(error);
+  }
+}
+
 async function loadAll() {
   try {
     await Promise.all([
@@ -468,6 +487,7 @@ async function loadAll() {
       loadParticipants(),
       loadRules(),
       loadRaceResults(),
+      loadKioskClockStatus(),
     ]);
     setOutput("Loaded.");
   } catch (error) {
@@ -714,6 +734,76 @@ document.querySelectorAll("[data-open-keyboard]").forEach((button) => {
 savePin?.addEventListener("click", unlock);
 pinInput?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") unlock();
+});
+
+document.getElementById("runAustinTest")?.addEventListener("click", async () => {
+  setOutput("Running Austin 2025 Roseville test scenario...");
+  try {
+    const result = await api("/api/admin/test-scenarios/austin-2025-roseville/run", {
+      method: "POST",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    await Promise.all([loadParticipants(), loadRaceResults(), loadKioskClockStatus()]);
+    setOutput(
+      `Seeded ${result.participants_seeded} riders. ` +
+        `Sat matched ${result.saturday.matched}/${result.saturday.matched + result.saturday.unmatched + result.saturday.ambiguous}, ` +
+        `Sun matched ${result.sunday.matched}/${result.sunday.matched + result.sunday.unmatched + result.sunday.ambiguous}. ` +
+        `Kiosk sim: ${result.simulated_now}`,
+    );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("applyKioskClock")?.addEventListener("click", async () => {
+  const value = document.getElementById("kioskSimDateTime")?.value;
+  if (!value) {
+    setOutput("Choose a simulated date and time first.");
+    return;
+  }
+  try {
+    const clock = await api("/api/admin/kiosk-clock", {
+      method: "PUT",
+      headers: { "X-Admin-Pin": adminPin() },
+      body: JSON.stringify({ simulated_now: value, running: true }),
+    });
+    await loadKioskClockStatus();
+    setOutput(`Kiosk clock set to ${clock.kiosk_now} (running).`);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("pauseKioskClock")?.addEventListener("click", async () => {
+  const value = document.getElementById("kioskSimDateTime")?.value;
+  if (!value) {
+    setOutput("Choose a simulated date and time first.");
+    return;
+  }
+  try {
+    const clock = await api("/api/admin/kiosk-clock", {
+      method: "PUT",
+      headers: { "X-Admin-Pin": adminPin() },
+      body: JSON.stringify({ simulated_now: value, running: false }),
+    });
+    await loadKioskClockStatus();
+    setOutput(`Kiosk clock paused at ${clock.kiosk_now}.`);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("resetKioskClock")?.addEventListener("click", async () => {
+  try {
+    await api("/api/admin/kiosk-clock", {
+      method: "DELETE",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    await loadKioskClockStatus();
+    setOutput("Kiosk clock reset to real time.");
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
 });
 
 document.getElementById("syncRaceIndex")?.addEventListener("click", async () => {

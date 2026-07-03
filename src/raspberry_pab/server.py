@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from raspberry_pab.branding import effective_display_title, logo_url
+from raspberry_pab.kiosk_clock import get_clock_state
 from raspberry_pab.buzzer_controller import BuzzerController
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
@@ -21,10 +22,12 @@ from raspberry_pab.led_controller import LedController
 from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.buzzer import router as buzzer_router
+from raspberry_pab.routes.kiosk_clock import router as kiosk_clock_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.led import router as led_router
 from raspberry_pab.routes.race_results import router as race_results_router
 from raspberry_pab.routes.schedule import router as schedule_router
+from raspberry_pab.routes.test_scenarios import router as test_scenarios_router
 from raspberry_pab.routes.touch import router as touch_router
 from raspberry_pab.scheduler import AlertBroker, ReminderScheduler
 
@@ -124,12 +127,17 @@ def create_app(settings: Settings) -> FastAPI:
         return {"status": "ok", "app": settings.app_name}
 
     @app.get("/api/config")
-    def public_config() -> dict[str, str | int | None]:
+    def public_config() -> dict[str, str | int | bool | None]:
+        clock = get_clock_state(store)
         return {
             "app_name": settings.app_name,
             "display_title": effective_display_title(settings, store),
             "logo_url": logo_url(settings, store),
             "port": settings.port,
+            "kiosk_now": clock["kiosk_now"],
+            "display_date": clock["display_date"],
+            "kiosk_simulated": clock["simulated"],
+            "kiosk_simulated_running": clock["running"],
         }
 
     @app.get("/")
@@ -173,6 +181,8 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(led_router)
     app.include_router(buzzer_router)
     app.include_router(race_results_router)
+    app.include_router(test_scenarios_router)
+    app.include_router(kiosk_clock_router)
 
     if web_dir.is_dir():
         for subdir in ("css", "js", "assets"):

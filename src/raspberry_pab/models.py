@@ -237,3 +237,51 @@ class Alert(BaseModel):
     fire_at: datetime
     message: str
     created_at: datetime
+
+
+class TestScenarioRider(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    day: str = Field(pattern=r"^(saturday|sunday)$")
+
+
+class TestScenarioDefinition(BaseModel):
+    id: str
+    label: str
+    iyr_series_id: str
+    saturday: date
+    sunday: date
+    first_start_time: str
+    stagger_minutes: int = Field(ge=1, le=120)
+    default_simulated_now: datetime
+    roster: list[TestScenarioRider]
+
+
+class TestScenarioSummary(BaseModel):
+    id: str
+    label: str
+    saturday: date
+    sunday: date
+    roster_count: int
+
+
+class TestScenarioRunResult(BaseModel):
+    scenario_id: str
+    label: str
+    participants_seeded: int
+    saturday: RaceResultsSyncSummary
+    sunday: RaceResultsSyncSummary
+    kiosk_date_suggested: date
+    simulated_now: datetime
+
+
+class KioskClockUpdate(BaseModel):
+    simulated_now: datetime
+    running: bool = True
+
+
+class KioskClockState(BaseModel):
+    simulated: bool
+    running: bool
+    anchor: str | None = None
+    kiosk_now: str
+    display_date: str

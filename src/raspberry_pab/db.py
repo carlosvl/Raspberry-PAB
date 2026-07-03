@@ -522,6 +522,15 @@ class ScheduleStore:
             conn.commit()
             return cursor.rowcount > 0
 
+    def delete_participants_for_date(self, event_date: date) -> int:
+        with self._connect() as conn:
+            cursor = conn.execute(
+                "DELETE FROM participants WHERE event_date = ?",
+                (event_date.isoformat(),),
+            )
+            conn.commit()
+            return cursor.rowcount
+
     def upsert_race_events(self, events: Iterable[object]) -> list[RaceEvent]:
         now = datetime.now().isoformat()
         stored: list[RaceEvent] = []

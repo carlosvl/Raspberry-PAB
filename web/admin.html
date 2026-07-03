@@ -40,6 +40,9 @@
         <button data-scroll-target="raceResultsPanel" type="button">
           Race Results
         </button>
+        <button data-scroll-target="testLabPanel" type="button">
+          Test Lab
+        </button>
         <button data-scroll-target="importPanel" type="button">
           Import / Export
         </button>
@@ -219,6 +222,26 @@
             <button id="clearRule" type="button">Clear</button>
           </form>
           <div class="admin__list" id="ruleList"></div>
+        </article>
+
+        <article class="panel panel--wide" id="testLabPanel">
+          <h2>Test Lab</h2>
+          <p class="branding__hint">
+            Seed the Austin 2025 Roseville roster, sync results, and run the kiosk on simulated race time for LED/buzzer testing.
+          </p>
+          <div class="form">
+            <label>
+              Simulated kiosk time
+              <input id="kioskSimDateTime" type="datetime-local" />
+            </label>
+            <div class="button-row">
+              <button id="runAustinTest" type="button">Run Austin 2025 Test</button>
+              <button id="applyKioskClock" type="button">Apply sim time</button>
+              <button id="pauseKioskClock" type="button">Pause clock</button>
+              <button id="resetKioskClock" type="button">Use real time</button>
+            </div>
+            <p class="branding__hint" id="kioskClockStatus">Kiosk clock: real time</p>
+          </div>
         </article>
 
         <article class="panel panel--wide" id="raceResultsPanel">

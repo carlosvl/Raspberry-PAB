@@ -62,12 +62,18 @@ def test_public_config_endpoint(settings: Settings) -> None:
     with TestClient(create_app(settings)) as client:
         response = client.get("/api/config")
     assert response.status_code == 200
-    assert response.json() == {
+    payload = response.json()
+    assert payload == {
         "app_name": "Raspberry-PAB",
         "display_title": "Start List",
         "logo_url": None,
         "port": 8080,
+        "kiosk_simulated": False,
+        "kiosk_simulated_running": False,
+        **{key: payload[key] for key in ("kiosk_now", "display_date")},
     }
+    assert payload["kiosk_now"]
+    assert payload["display_date"]
 
 
 def test_index_served(settings: Settings) -> None:
