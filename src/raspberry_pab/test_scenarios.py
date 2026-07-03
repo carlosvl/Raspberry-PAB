@@ -17,7 +17,20 @@ from raspberry_pab.models import (
 )
 from raspberry_pab.race_results.sync import RaceResultsSync
 
-_SCENARIOS_DIR = Path(__file__).resolve().parents[2] / "data" / "test_scenarios"
+_SCENARIOS_DIRNAME = Path("data") / "test_scenarios"
+
+
+def _resolve_scenarios_dir() -> Path:
+    cwd_scenarios = Path.cwd() / _SCENARIOS_DIRNAME
+    if cwd_scenarios.is_dir():
+        return cwd_scenarios
+    dev_scenarios = Path(__file__).resolve().parents[2] / _SCENARIOS_DIRNAME
+    if dev_scenarios.is_dir():
+        return dev_scenarios
+    return cwd_scenarios
+
+
+_SCENARIOS_DIR = _resolve_scenarios_dir()
 
 
 def scenarios_dir() -> Path:
