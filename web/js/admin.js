@@ -103,6 +103,7 @@ function populateRuleForm(rule) {
     setFieldValue("ruleBuzzerCount", String(rule.buzzer_count ?? 3));
     setFieldValue("ruleBuzzerBeepMs", String(rule.buzzer_beep_ms ?? 200));
     setFieldValue("ruleBuzzerGapMs", String(rule.buzzer_gap_ms ?? 150));
+    showPanel("rulesPanel");
     ruleForm?.scrollIntoView({ behavior: "smooth", block: "start" });
     setOutput(`Editing rule: ${rule.message_template}`);
   } catch (error) {
@@ -212,10 +213,15 @@ function registerServiceWorker() {
   }
 }
 
-function scrollToPanel(targetId) {
-  const panel = document.getElementById(targetId);
-  if (!panel) return;
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+function showPanel(targetId) {
+  if (!adminPanels) return;
+  for (const panel of adminPanels.querySelectorAll(".panel")) {
+    panel.hidden = panel.id !== targetId;
+  }
+  for (const btn of document.querySelectorAll("[data-tab-panel]")) {
+    btn.classList.toggle("is-active", btn.dataset.tabPanel === targetId);
+  }
+  window.scrollTo({ top: 0 });
 }
 
 async function api(path, options = {}) {
@@ -315,6 +321,7 @@ async function restartService() {
 
 async function revealAdmin() {
   setAdminVisible(true);
+  showPanel("participantsPanel");
   await Promise.all([loadNetworkInfo(), loadAll()]);
 }
 
@@ -892,9 +899,9 @@ ruleList?.addEventListener("click", async (event) => {
 });
 
 registerServiceWorker();
-document.querySelectorAll("[data-scroll-target]").forEach((button) => {
+document.querySelectorAll("[data-tab-panel]").forEach((button) => {
   button.addEventListener("click", () => {
-    scrollToPanel(button.dataset.scrollTarget);
+    showPanel(button.dataset.tabPanel);
   });
 });
 

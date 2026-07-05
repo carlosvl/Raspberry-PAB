@@ -375,6 +375,11 @@ body.admin-page {
   text-decoration: none;
 }
 
+.admin__nav button.is-active {
+  background: #38bdf8;
+  color: #020617;
+}
+
 .admin__nav a {
   background: #38bdf8;
   color: #020617;
@@ -443,13 +448,11 @@ body.admin-page {
 }
 
 .admin__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
+  display: block;
 }
 
-.panel--wide {
-  grid-column: 1 / -1;
+.admin__grid > .panel[hidden] {
+  display: none;
 }
 
 .form {
@@ -565,10 +568,6 @@ body.admin-page {
 }
 
 @media (max-width: 900px) {
-  .admin__grid {
-    grid-template-columns: 1fr;
-  }
-
   .admin__item {
     grid-template-columns: 1fr;
   }
