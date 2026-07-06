@@ -754,12 +754,17 @@ pinInput?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") unlock();
 });
 
-document.getElementById("runAustinTest")?.addEventListener("click", async () => {
-  setOutput("Running Austin 2025 Roseville test scenario...");
+document.getElementById("runScenarioTest")?.addEventListener("click", async () => {
+  if (!currentScenario) {
+    setOutput("No scenario selected.");
+    return;
+  }
+  const runBtn = document.getElementById("runScenarioTest");
+  runBtn.textContent = "Running...";
+  runBtn.disabled = true;
   try {
-    const result = await api("/api/admin/test-scenarios/austin-2025-roseville/run", {
+    const result = await api(`/api/admin/test-scenarios/${currentScenario.id}/run`, {
       method: "POST",
-      headers: { "X-Admin-Pin": adminPin() },
     });
     await Promise.all([loadParticipants(), loadRaceResults(), loadKioskClockStatus()]);
     setOutput(
@@ -770,6 +775,9 @@ document.getElementById("runAustinTest")?.addEventListener("click", async () => 
     );
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
+  } finally {
+    updateRunButtonLabel();
+    runBtn.disabled = false;
   }
 });
 
@@ -852,6 +860,13 @@ async function loadScenarioList() {
   }
 }
 
+function updateRunButtonLabel() {
+  const btn = document.getElementById("runScenarioTest");
+  if (btn && currentScenario) {
+    btn.textContent = `Run ${currentScenario.label}`;
+  }
+}
+
 async function loadScenario(scenarioId) {
   try {
     const scenario = await api(`/api/admin/test-scenarios/${scenarioId}`, {
@@ -859,11 +874,14 @@ async function loadScenario(scenarioId) {
     });
     currentScenario = scenario;
     DEFAULT_SIM_TIME = scenario.default_simulated_now.slice(0, 16);
+    document.getElementById("scenarioLabel").value = scenario.label;
+    document.getElementById("scenarioIyrId").value = scenario.iyr_series_id || "";
     document.getElementById("scenarioSaturday").value = scenario.saturday;
     document.getElementById("scenarioSunday").value = scenario.sunday;
     document.getElementById("scenarioFirstStart").value = scenario.first_start_time;
     document.getElementById("scenarioStagger").value = scenario.stagger_minutes;
     renderRoster(scenario.roster);
+    updateRunButtonLabel();
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }
@@ -933,12 +951,14 @@ document.getElementById("saveScenario")?.addEventListener("click", async () => {
     setOutput("No scenario loaded.");
     return;
   }
+  const label = document.getElementById("scenarioLabel")?.value?.trim();
+  const iyrId = document.getElementById("scenarioIyrId")?.value?.trim() || "";
   const saturday = document.getElementById("scenarioSaturday")?.value;
   const sunday = document.getElementById("scenarioSunday")?.value;
   const firstStart = document.getElementById("scenarioFirstStart")?.value;
   const stagger = parseInt(document.getElementById("scenarioStagger")?.value || "15", 10);
-  if (!saturday || !sunday || !firstStart) {
-    setOutput("Fill in all date and time fields.");
+  if (!label || !saturday || !sunday || !firstStart) {
+    setOutput("Fill in label and all date/time fields.");
     return;
   }
   const roster = collectRoster();
@@ -948,6 +968,8 @@ document.getElementById("saveScenario")?.addEventListener("click", async () => {
   }
   const updatedScenario = {
     ...currentScenario,
+    label,
+    iyr_series_id: iyrId,
     saturday,
     sunday,
     first_start_time: firstStart,
@@ -963,6 +985,10 @@ document.getElementById("saveScenario")?.addEventListener("click", async () => {
     });
     currentScenario = updatedScenario;
     DEFAULT_SIM_TIME = updatedScenario.default_simulated_now.slice(0, 16);
+    updateRunButtonLabel();
+    // Update the dropdown label
+    const opt = document.querySelector(`#scenarioSelect option[value="${currentScenario.id}"]`);
+    if (opt) opt.textContent = label;
     setOutput(`Scenario saved: ${roster.length} riders.`);
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
@@ -991,6 +1017,71 @@ document.getElementById("clearTestData")?.addEventListener("click", async () => 
     setOutput(
       `Cleared ${result.participants_deleted} participants, ${result.results_deleted} results. Clock reset.`,
     );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("newScenario")?.addEventListener("click", async () => {
+  const label = prompt("Scenario label (e.g. MCA 2025 Austin):");
+  if (!label) return;
+  const slug = label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  if (!slug) {
+    setOutput("Could not generate a valid id from that label.");
+    return;
+  }
+  const today = new Date();
+  const satDate = today.toISOString().slice(0, 10);
+  const sunDate = new Date(today.getTime() + 86400000).toISOString().slice(0, 10);
+  const scenario = {
+    id: slug,
+    label,
+    iyr_series_id: "",
+    saturday: satDate,
+    sunday: sunDate,
+    first_start_time: "08:00",
+    stagger_minutes: 2,
+    default_simulated_now: `${satDate}T10:25:00`,
+    roster: [],
+  };
+  setOutput("Creating scenario...");
+  try {
+    await api("/api/admin/test-scenarios", {
+      method: "POST",
+      body: JSON.stringify(scenario),
+    });
+    await loadScenarioList();
+    // select the newly created scenario
+    const select = document.getElementById("scenarioSelect");
+    if (select) {
+      select.value = slug;
+      await loadScenario(slug);
+    }
+    setOutput(`Created scenario "${label}".`);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("deleteScenario")?.addEventListener("click", async () => {
+  if (!currentScenario) {
+    setOutput("No scenario loaded.");
+    return;
+  }
+  if (!confirm(`Delete scenario "${currentScenario.label}"? This cannot be undone.`)) {
+    return;
+  }
+  setOutput("Deleting scenario...");
+  try {
+    await api(`/api/admin/test-scenarios/${currentScenario.id}`, {
+      method: "DELETE",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    await loadScenarioList();
+    setOutput("Scenario deleted.");
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }

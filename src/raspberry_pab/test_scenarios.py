@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
@@ -63,10 +64,46 @@ def load_scenario(scenario_id: str) -> TestScenarioDefinition:
     return TestScenarioDefinition.model_validate(payload)
 
 
+_SLUG_RE = re.compile(r"^[a-z0-9]([a-z0-9\-]*[a-z0-9])?$")
+
+
+def _validate_scenario_id(scenario_id: str) -> None:
+    if not _SLUG_RE.match(scenario_id):
+        raise ValueError(
+            f"Scenario id must be lowercase alphanumeric with hyphens: {scenario_id!r}"
+        )
+
+
 def save_scenario(scenario: TestScenarioDefinition) -> None:
+    """Save an existing scenario (file must already exist)."""
     path = _SCENARIOS_DIR / f"{scenario.id}.json"
     if not path.is_file():
         raise FileNotFoundError(f"Unknown test scenario: {scenario.id}")
+    _write_scenario(scenario, path)
+
+
+def create_scenario(scenario: TestScenarioDefinition) -> None:
+    """Create a new scenario file.  Raises FileExistsError if id taken."""
+    _validate_scenario_id(scenario.id)
+    path = _SCENARIOS_DIR / f"{scenario.id}.json"
+    if path.is_file():
+        raise FileExistsError(f"Scenario already exists: {scenario.id}")
+    _SCENARIOS_DIR.mkdir(parents=True, exist_ok=True)
+    _write_scenario(scenario, path)
+
+
+def delete_scenario(scenario_id: str) -> None:
+    """Delete a scenario JSON file."""
+    path = _SCENARIOS_DIR / f"{scenario_id}.json"
+    if not path.is_file():
+        raise FileNotFoundError(f"Unknown test scenario: {scenario_id}")
+    remaining = list(_SCENARIOS_DIR.glob("*.json"))
+    if len(remaining) <= 1:
+        raise ValueError("Cannot delete the last scenario")
+    path.unlink()
+
+
+def _write_scenario(scenario: TestScenarioDefinition, path: Path) -> None:
     payload = scenario.model_dump(mode="json")
     path.write_text(
         json.dumps(payload, indent=2, default=str) + "\n",

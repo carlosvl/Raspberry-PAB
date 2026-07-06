@@ -13,6 +13,8 @@ from raspberry_pab.routes.schedule import get_store, require_admin_pin
 from raspberry_pab.test_scenarios import (
     TestScenarioRunner,
     clear_scenario_data,
+    create_scenario,
+    delete_scenario,
     list_scenarios,
     load_scenario,
     save_scenario,
@@ -28,6 +30,28 @@ router = APIRouter(prefix="/api", tags=["test-scenarios"])
 )
 def get_test_scenarios() -> list[TestScenarioSummary]:
     return list_scenarios()
+
+
+@router.post(
+    "/admin/test-scenarios",
+    response_model=TestScenarioDefinition,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_pin)],
+)
+def create_test_scenario(scenario: TestScenarioDefinition) -> TestScenarioDefinition:
+    try:
+        create_scenario(scenario)
+    except FileExistsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    return scenario
 
 
 @router.get(
@@ -85,6 +109,26 @@ def run_test_scenario(request: Request, scenario_id: str) -> TestScenarioRunResu
         ) from exc
     finally:
         runner.close()
+
+
+@router.delete(
+    "/admin/test-scenarios/{scenario_id}",
+    dependencies=[Depends(require_admin_pin)],
+)
+def remove_test_scenario(scenario_id: str) -> dict[str, bool]:
+    try:
+        delete_scenario(scenario_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    return {"deleted": True}
 
 
 @router.delete(
