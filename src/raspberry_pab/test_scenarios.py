@@ -121,14 +121,14 @@ class TestScenarioRunner:
     def run(self, scenario_id: str) -> TestScenarioRunResult:
         scenario = load_scenario(scenario_id)
         participants_seeded = seed_scenario_participants(self._store, scenario)
-        self._sync.sync_index()
-        saturday_summary = self._sync.sync_date(scenario.saturday)
-        sunday_summary = self._sync.sync_date(scenario.sunday)
         simulated_now = set_simulated_now(
             self._store,
             when=scenario.default_simulated_now,
             running=True,
         )
+        self._sync.sync_index()
+        saturday_summary = self._sync.sync_date(scenario.saturday)
+        sunday_summary = self._sync.sync_date(scenario.sunday)
         return TestScenarioRunResult(
             scenario_id=scenario.id,
             label=scenario.label,
