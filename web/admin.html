@@ -227,76 +227,94 @@
         <article class="panel panel--wide" id="testLabPanel">
           <h2>Test Lab</h2>
           <p class="branding__hint">
-            Seed a test roster, sync results, and run the kiosk on simulated race time for LED/buzzer testing.
+            Pick a scenario, run it, then open the kiosk to test LED/buzzer reminders.
           </p>
-          <div class="form">
-            <label>
-              Simulated kiosk time
-              <input id="kioskSimDateTime" type="datetime-local" />
-            </label>
-            <div class="button-row">
-              <button id="runScenarioTest" type="button">Run Test</button>
-              <button id="applyKioskClock" type="button">Apply sim time</button>
-              <button id="pauseKioskClock" type="button">Pause clock</button>
-              <button id="resetKioskClock" type="button">Use real time</button>
-              <button id="openTestKiosk" type="button">Open Kiosk ⏩</button>
-              <button id="clearTestData" type="button" class="button--danger">Clear Test Data</button>
+
+          <!-- ① Scenario picker -->
+          <div class="scenario-picker">
+            <div class="scenario-picker__header">
+              <select id="scenarioSelect" aria-label="Choose scenario"></select>
+              <button id="newScenario" type="button">+ New</button>
             </div>
-            <p class="branding__hint" id="kioskClockStatus">Kiosk clock: real time</p>
+            <div class="scenario-picker__summary" id="scenarioSummary">
+              <span id="scenarioSummaryDates"></span>
+              <span id="scenarioSummaryRiders"></span>
+            </div>
           </div>
 
-          <h3>Scenario</h3>
-          <div class="form">
-            <div class="button-row" style="margin-bottom: .75rem; align-items:center">
-              <label style="display:inline-flex;align-items:center;gap:.5rem;margin:0">
-                <select id="scenarioSelect"></select>
-              </label>
-              <button id="newScenario" type="button">+ New</button>
-              <button id="deleteScenario" type="button" class="button--danger">Delete</button>
-            </div>
-            <div class="form-row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
-              <label style="flex:2;min-width:140px">
-                Label
-                <input id="scenarioLabel" type="text" placeholder="e.g. MCA 2025 Austin" />
-              </label>
-              <label style="flex:1;min-width:100px">
-                IYR Series ID
-                <input id="scenarioIyrId" type="text" placeholder="e.g. 16673" />
-              </label>
-            </div>
-            <div class="form-row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
-              <label style="flex:1;min-width:120px">
-                Saturday
-                <input id="scenarioSaturday" type="date" />
-              </label>
-              <label style="flex:1;min-width:120px">
-                Sunday
-                <input id="scenarioSunday" type="date" />
-              </label>
-              <label style="flex:1;min-width:80px">
-                First start
-                <input id="scenarioFirstStart" type="time" />
-              </label>
-              <label style="flex:1;min-width:60px">
-                Stagger (min)
-                <input id="scenarioStagger" type="number" min="1" max="120" />
-              </label>
-            </div>
-            <table class="results-table" id="rosterTable">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Day</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="rosterBody"></tbody>
-            </table>
-            <div class="button-row" style="margin-top:.5rem">
-              <button id="addRider" type="button">+ Add Rider</button>
-              <button id="saveScenario" type="button">Save Scenario</button>
-            </div>
+          <!-- ② Primary actions -->
+          <div class="testlab-actions">
+            <button id="runScenarioTest" type="button" class="button--primary">Run Test</button>
+            <button id="openTestKiosk" type="button">Open Kiosk ⏩</button>
+            <button id="clearTestData" type="button" class="button--danger">Clear Test Data</button>
           </div>
+
+          <!-- ③ Sim clock -->
+          <details class="testlab-section" open>
+            <summary>Simulated Clock</summary>
+            <div class="form">
+              <label>
+                Simulated kiosk time
+                <input id="kioskSimDateTime" type="datetime-local" />
+              </label>
+              <div class="button-row">
+                <button id="applyKioskClock" type="button">Apply sim time</button>
+                <button id="pauseKioskClock" type="button">Pause clock</button>
+                <button id="resetKioskClock" type="button">Use real time</button>
+              </div>
+              <p class="branding__hint" id="kioskClockStatus">Kiosk clock: real time</p>
+            </div>
+          </details>
+
+          <!-- ④ Scenario editor (collapsed by default) -->
+          <details class="testlab-section" id="scenarioEditor">
+            <summary>Edit Scenario</summary>
+            <div class="form">
+              <div class="form-row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
+                <label style="flex:2;min-width:140px">
+                  Label
+                  <input id="scenarioLabel" type="text" placeholder="e.g. MCA 2025 Austin" />
+                </label>
+                <label style="flex:1;min-width:100px">
+                  IYR Series ID
+                  <input id="scenarioIyrId" type="text" placeholder="e.g. 16673" />
+                </label>
+              </div>
+              <div class="form-row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
+                <label style="flex:1;min-width:120px">
+                  Saturday
+                  <input id="scenarioSaturday" type="date" />
+                </label>
+                <label style="flex:1;min-width:120px">
+                  Sunday
+                  <input id="scenarioSunday" type="date" />
+                </label>
+                <label style="flex:1;min-width:80px">
+                  First start
+                  <input id="scenarioFirstStart" type="time" />
+                </label>
+                <label style="flex:1;min-width:60px">
+                  Stagger (min)
+                  <input id="scenarioStagger" type="number" min="1" max="120" />
+                </label>
+              </div>
+              <table class="results-table" id="rosterTable">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Day</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="rosterBody"></tbody>
+              </table>
+              <div class="button-row" style="margin-top:.5rem">
+                <button id="addRider" type="button">+ Add Rider</button>
+                <button id="saveScenario" type="button">Save Scenario</button>
+                <button id="deleteScenario" type="button" class="button--danger">Delete Scenario</button>
+              </div>
+            </div>
+          </details>
         </article>
 
         <article class="panel panel--wide" id="raceResultsPanel">

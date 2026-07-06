@@ -547,13 +547,95 @@ body.admin-page {
   font: inherit;
 }
 
-#scenarioSelect {
-  padding: 0.4rem 0.5rem;
+/* --- Scenario picker --- */
+
+.scenario-picker {
+  margin-bottom: 1rem;
+  padding: 1rem;
   border: 1px solid #334155;
-  border-radius: 0.4rem;
+  border-radius: 0.75rem;
+  background: #0f172a;
+}
+
+.scenario-picker__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+#scenarioSelect {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
   background: #1e293b;
   color: #f8fafc;
   font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.scenario-picker__summary {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.6rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+/* --- Primary action bar --- */
+
+.testlab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.button--primary {
+  background: #2563eb !important;
+  color: #fff !important;
+  font-size: 1.05rem;
+  flex: 1;
+  min-width: 140px;
+}
+
+/* --- Collapsible sections --- */
+
+.testlab-section {
+  margin-bottom: 0.75rem;
+  border: 1px solid #1e293b;
+  border-radius: 0.75rem;
+  background: #0f172a;
+}
+
+.testlab-section > summary {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-weight: 700;
+  color: #94a3b8;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.testlab-section > summary::before {
+  content: "▸";
+  display: inline-block;
+  transition: transform 0.15s;
+}
+
+.testlab-section[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.testlab-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.testlab-section > .form {
+  padding: 0 1rem 1rem;
 }
 
 .branding__logo {
@@ -936,5 +1018,27 @@ body.admin-page {
 
   .ff-toolbar__clock {
     font-size: 0.82rem;
+  }
+
+  .scenario-picker {
+    padding: 0.65rem;
+  }
+
+  .scenario-picker__summary {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .testlab-actions {
+    gap: 0.5rem;
+  }
+
+  .testlab-section > summary {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .testlab-section > .form {
+    padding: 0 0.75rem 0.75rem;
   }
 }

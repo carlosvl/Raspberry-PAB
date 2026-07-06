@@ -882,8 +882,21 @@ async function loadScenario(scenarioId) {
     document.getElementById("scenarioStagger").value = scenario.stagger_minutes;
     renderRoster(scenario.roster);
     updateRunButtonLabel();
+    updateScenarioSummary(scenario);
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
+  }
+}
+
+function updateScenarioSummary(scenario) {
+  const datesEl = document.getElementById("scenarioSummaryDates");
+  const ridersEl = document.getElementById("scenarioSummaryRiders");
+  if (datesEl) {
+    datesEl.textContent = `📅 ${scenario.saturday} / ${scenario.sunday}`;
+  }
+  if (ridersEl) {
+    const count = scenario.roster ? scenario.roster.length : 0;
+    ridersEl.textContent = `👤 ${count} rider${count !== 1 ? "s" : ""}`;
   }
 }
 
@@ -986,6 +999,7 @@ document.getElementById("saveScenario")?.addEventListener("click", async () => {
     currentScenario = updatedScenario;
     DEFAULT_SIM_TIME = updatedScenario.default_simulated_now.slice(0, 16);
     updateRunButtonLabel();
+    updateScenarioSummary(updatedScenario);
     // Update the dropdown label
     const opt = document.querySelector(`#scenarioSelect option[value="${currentScenario.id}"]`);
     if (opt) opt.textContent = label;
