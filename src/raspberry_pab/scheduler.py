@@ -1,4 +1,4 @@
-"""Background reminder scheduler and alert broadcast broker."""
+"""Background reminder scheduler, alert broadcast broker, and race-results sync."""
 
 from __future__ import annotations
 
@@ -18,6 +18,8 @@ from raspberry_pab.kiosk_clock import effective_now
 
 logger = logging.getLogger(__name__)
 _ALERT_ADAPTER = TypeAdapter(Alert)
+
+DEFAULT_RESULTS_SYNC_MINUTES = 10
 
 
 class AlertBroker:
@@ -90,6 +92,59 @@ class ReminderScheduler:
             await self.broker.publish(alert)
             published.append(alert)
         return published
+
+
+class RaceResultsSyncScheduler:
+    """Periodically syncs race results in the background."""
+
+    def __init__(
+        self,
+        store: ScheduleStore,
+        interval_minutes: int = DEFAULT_RESULTS_SYNC_MINUTES,
+    ) -> None:
+        self._store = store
+        self._interval_minutes = interval_minutes
+        self._task: asyncio.Task[None] | None = None
+        self._stop_event = asyncio.Event()
+
+    def start(self) -> None:
+        if self._task is None or self._task.done():
+            self._stop_event = asyncio.Event()
+            self._task = asyncio.create_task(
+                self._run(), name="race-results-sync-scheduler"
+            )
+
+    async def stop(self) -> None:
+        self._stop_event.set()
+        if self._task is not None:
+            await self._task
+
+    async def _run(self) -> None:
+        while not self._stop_event.is_set():
+            try:
+                await asyncio.wait_for(
+                    self._stop_event.wait(),
+                    timeout=self._interval_minutes * 60,
+                )
+            except TimeoutError:
+                pass
+            if self._stop_event.is_set():
+                break
+            try:
+                await asyncio.to_thread(self._sync_today)
+            except Exception:
+                logger.exception("Race results sync tick failed")
+
+    def _sync_today(self) -> None:
+        from raspberry_pab.race_results.sync import RaceResultsSync
+
+        now = effective_now(self._store)
+        sync = RaceResultsSync(self._store)
+        try:
+            sync.sync_date(now.date())
+            logger.info("Race results auto-sync complete for %s", now.date())
+        finally:
+            sync.close()
 
 
 def sse_payload(alert: Alert) -> str:

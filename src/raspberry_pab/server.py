@@ -29,7 +29,7 @@ from raspberry_pab.routes.race_results import router as race_results_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.routes.test_scenarios import router as test_scenarios_router
 from raspberry_pab.routes.touch import router as touch_router
-from raspberry_pab.scheduler import AlertBroker, ReminderScheduler
+from raspberry_pab.scheduler import AlertBroker, RaceResultsSyncScheduler, ReminderScheduler
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +62,7 @@ def create_app(settings: Settings) -> FastAPI:
     store = ScheduleStore(settings.db_path)
     broker = AlertBroker()
     scheduler = ReminderScheduler(store, broker)
+    results_scheduler = RaceResultsSyncScheduler(store)
     led_controller = LedController(settings)
     buzzer_controller = BuzzerController(settings)
 
@@ -97,6 +98,7 @@ def create_app(settings: Settings) -> FastAPI:
             hardware_listener(), name="hardware-alert-listener"
         )
         scheduler.start()
+        results_scheduler.start()
         try:
             yield
         finally:
@@ -106,6 +108,7 @@ def create_app(settings: Settings) -> FastAPI:
                 await hardware_task
             await led_controller.shutdown()
             await buzzer_controller.shutdown()
+            await results_scheduler.stop()
             await scheduler.stop()
 
     app = FastAPI(

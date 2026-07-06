@@ -145,6 +145,11 @@ body.admin-page {
   font-weight: 800;
 }
 
+.schedule__result {
+  font-weight: 700;
+  color: #22c55e;
+}
+
 .schedule__row--next {
   background: rgb(56 189 248 / 18%);
 }

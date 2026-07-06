@@ -147,20 +147,19 @@ function rowClass(item, nextId) {
   return classes.join(" ");
 }
 
-function formatResult(item) {
-  if (item.finish_place != null) {
-    const time = item.finish_time ? ` · ${item.finish_time}` : "";
-    const category = item.result_category ? ` · ${item.result_category}` : "";
-    return `P${item.finish_place}${time}${category}`;
-  }
-  return formatCountdown(item.countdown_seconds);
+function formatResultCol(item) {
+  if (item.finish_place == null) return "";
+  const parts = [`P${item.finish_place}`];
+  if (item.finish_time) parts.push(item.finish_time);
+  if (item.result_category) parts.push(item.result_category);
+  return parts.join(" · ");
 }
 
 function renderSchedule(items) {
   if (!scheduleBody) return;
 
   if (items.length === 0) {
-    scheduleBody.innerHTML = '<tr><td colspan="4">No starts scheduled today.</td></tr>';
+    scheduleBody.innerHTML = '<tr><td colspan="5">No starts scheduled today.</td></tr>';
     return;
   }
 
@@ -174,7 +173,8 @@ function renderSchedule(items) {
           <td class="schedule__name">${item.name}</td>
           <td>${formatDate(item.event_date)}</td>
           <td>${formatTime(item.start_time)}</td>
-          <td class="schedule__countdown">${formatResult(item)}</td>
+          <td class="schedule__countdown">${formatCountdown(item.countdown_seconds)}</td>
+          <td class="schedule__result">${formatResultCol(item)}</td>
         </tr>
       `,
     )
