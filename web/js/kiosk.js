@@ -149,8 +149,12 @@ function rowClass(item, nextId) {
 
 function formatResultCol(item) {
   if (item.finish_place == null) return "";
-  const parts = [`P${item.finish_place}`];
-  if (item.finish_time) parts.push(item.finish_time);
+  const place = String(item.finish_place).padStart(2, "0");
+  const parts = [place];
+  if (item.finish_time) {
+    const time = item.finish_time.replace(/\.\d+$/, "");
+    parts.push(time);
+  }
   if (item.result_category) parts.push(item.result_category);
   return parts.join(" · ");
 }
