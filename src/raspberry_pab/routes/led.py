@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import cast
 
@@ -37,14 +38,22 @@ async def test_led_strip(request: Request, body: LedStripTest) -> dict[str, obje
             ),
         )
     controller = get_led_controller(request)
+    total_seconds = body.led_flash_duration_seconds + (body.led_chase_duration_seconds or 0)
+    timeout = max(total_seconds + 15, 30)  # BLE connect + flash + buffer
     try:
-        await controller.flash_test_sync(
-            led_red=body.led_red,
-            led_green=body.led_green,
-            led_blue=body.led_blue,
-            led_flash_interval_ms=body.led_flash_interval_ms,
-            led_flash_duration_seconds=body.led_flash_duration_seconds,
-            led_chase_duration_seconds=body.led_chase_duration_seconds,
+        async with asyncio.timeout(timeout):
+            await controller.flash_test_sync(
+                led_red=body.led_red,
+                led_green=body.led_green,
+                led_blue=body.led_blue,
+                led_flash_interval_ms=body.led_flash_interval_ms,
+                led_flash_duration_seconds=body.led_flash_duration_seconds,
+                led_chase_duration_seconds=body.led_chase_duration_seconds,
+            )
+    except TimeoutError:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail=f"LED test timed out after {timeout}s — BLE device may be unreachable",
         )
     except Exception as exc:
         logger.exception("LED test failed")
