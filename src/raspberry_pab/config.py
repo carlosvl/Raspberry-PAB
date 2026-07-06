@@ -41,7 +41,7 @@ class Settings:
     web_dir: Path = Path(_default_web_dir())
     led_enabled: bool = False
     led_address: str = ""
-    led_name: str = "MELKL-OT21 CB"
+    led_name: str = "MELK-OT21   CB"
     buzzer_enabled: bool = False
     buzzer_port: str = ""
     buzzer_mode: str = "active"
