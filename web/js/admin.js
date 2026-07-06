@@ -471,6 +471,8 @@ async function loadRaceResults() {
     .join("");
 }
 
+const DEFAULT_SIM_TIME = "2025-08-23T10:25";
+
 async function loadKioskClockStatus() {
   const statusEl = document.getElementById("kioskClockStatus");
   const input = document.getElementById("kioskSimDateTime");
@@ -479,8 +481,10 @@ async function loadKioskClockStatus() {
     const clock = await api("/api/admin/kiosk-clock", {
       headers: { "X-Admin-Pin": adminPin() },
     });
-    if (input && clock.kiosk_now) {
-      input.value = clock.kiosk_now.slice(0, 16);
+    if (input) {
+      input.value = clock.simulated
+        ? clock.kiosk_now.slice(0, 16)
+        : DEFAULT_SIM_TIME;
     }
     statusEl.textContent = clock.simulated
       ? `Kiosk clock: TEST ${clock.kiosk_now}${clock.running ? " (running)" : " (paused)"}`
@@ -815,6 +819,10 @@ document.getElementById("resetKioskClock")?.addEventListener("click", async () =
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }
+});
+
+document.getElementById("openTestKiosk")?.addEventListener("click", () => {
+  window.location.href = "/?testlab=1";
 });
 
 document.getElementById("syncRaceIndex")?.addEventListener("click", async () => {
