@@ -235,7 +235,14 @@ async function api(path, options = {}) {
   });
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(body || `Request failed: ${response.status}`);
+    let msg = body || `Request failed: ${response.status}`;
+    try {
+      const parsed = JSON.parse(body);
+      if (parsed.detail) msg = parsed.detail;
+    } catch {
+      /* not JSON, use raw text */
+    }
+    throw new Error(msg);
   }
   if (response.status === 204) return null;
   return response.json();
