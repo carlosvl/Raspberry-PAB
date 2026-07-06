@@ -729,21 +729,23 @@ document.getElementById("testRuleBuzzer")?.addEventListener("click", async () =>
 
 document.getElementById("testRuleLed")?.addEventListener("click", async () => {
   const ledSettings = readRuleLedSettings();
-  setOutput("Testing LED strip...");
+  const totalSeconds =
+    ledSettings.led_flash_duration_seconds + (ledSettings.led_chase_duration_seconds || 0);
+  setOutput(`Connecting to LED strip… (test will run ~${totalSeconds}s)`);
   try {
-    await api("/api/admin/led/test", {
+    const result = await api("/api/admin/led/test", {
       method: "POST",
       body: JSON.stringify(ledSettings),
     });
     setOutput(
-      `LED test started (${ledSettings.led_flash_duration_seconds}s flash, ${ledSettings.led_flash_interval_ms}ms interval` +
+      `✅ LED test complete (${ledSettings.led_flash_duration_seconds}s flash, ${ledSettings.led_flash_interval_ms}ms interval` +
         (ledSettings.led_chase_duration_seconds > 0
           ? `, then ${ledSettings.led_chase_duration_seconds}s chase`
           : "") +
-        ").",
+        `)${result.address ? " — device " + result.address : ""}.`,
     );
   } catch (error) {
-    setOutput(error instanceof Error ? error.message : String(error));
+    setOutput("❌ " + (error instanceof Error ? error.message : String(error)));
   }
 });
 document.getElementById("participantDate")?.addEventListener("change", loadParticipants);

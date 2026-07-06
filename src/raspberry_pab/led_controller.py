@@ -104,6 +104,56 @@ class LedController:
         )
         await self._start_flash(rule)
 
+    async def flash_test_sync(
+        self,
+        *,
+        led_red: int,
+        led_green: int,
+        led_blue: int,
+        led_flash_interval_ms: int,
+        led_flash_duration_seconds: int,
+        led_chase_duration_seconds: int = 10,
+    ) -> None:
+        """Run flash directly (not in background) so errors propagate."""
+        if not self._settings.led_enabled or not self._settings.led_address:
+            return
+        rule = ReminderRule(
+            id=0,
+            offset_minutes=0,
+            message_template="LED test",
+            led_enabled=True,
+            led_red=led_red,
+            led_green=led_green,
+            led_blue=led_blue,
+            led_flash_interval_ms=led_flash_interval_ms,
+            led_flash_duration_seconds=led_flash_duration_seconds,
+            led_chase_duration_seconds=led_chase_duration_seconds,
+        )
+        # Cancel any existing flash then run synchronously
+        if self._flash_task and not self._flash_task.done():
+            self._flash_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._flash_task
+        # Run directly — exceptions propagate to caller
+        async with self._lock:
+            lamp: _LampProtocol | None = None
+            try:
+                lamp = await self._lamp_factory(self._settings)
+                await lamp.connect()
+                logger.info(
+                    "LED test connected to %s (%s)",
+                    self._settings.led_name,
+                    self._settings.led_address,
+                )
+                await self._run_flash_pulse(lamp, rule)
+                await self._run_chase(lamp, rule)
+            finally:
+                if lamp is not None:
+                    with contextlib.suppress(Exception):
+                        await lamp.power_off()
+                    with contextlib.suppress(Exception):
+                        await lamp.disconnect()
+
     async def _start_flash(self, rule: ReminderRule) -> None:
         if self._flash_task and not self._flash_task.done():
             self._flash_task.cancel()

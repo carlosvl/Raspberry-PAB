@@ -1,6 +1,5 @@
 """API tests for admin LED strip testing."""
 
-import asyncio
 from pathlib import Path
 from typing import cast
 
@@ -115,12 +114,8 @@ def test_led_test_triggers_controller(tmp_path: Path) -> None:
             },
         )
 
-        async def wait_for_flash() -> None:
-            if controller._flash_task is not None:
-                await controller._flash_task
-
-        client.portal.call(wait_for_flash)
-
     assert response.status_code == 200
-    assert response.json() == {"testing": True}
+    data = response.json()
+    assert data["testing"] is True
+    assert data["address"] == "BE:28:79:00:06:CB"
     assert calls
