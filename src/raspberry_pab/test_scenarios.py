@@ -63,6 +63,31 @@ def load_scenario(scenario_id: str) -> TestScenarioDefinition:
     return TestScenarioDefinition.model_validate(payload)
 
 
+def save_scenario(scenario: TestScenarioDefinition) -> None:
+    path = _SCENARIOS_DIR / f"{scenario.id}.json"
+    if not path.is_file():
+        raise FileNotFoundError(f"Unknown test scenario: {scenario.id}")
+    payload = scenario.model_dump(mode="json")
+    path.write_text(
+        json.dumps(payload, indent=2, default=str) + "\n",
+        encoding="utf-8",
+    )
+
+
+def clear_scenario_data(store: ScheduleStore, scenario_id: str) -> dict[str, int]:
+    scenario = load_scenario(scenario_id)
+    participants_deleted = 0
+    for event_date in (scenario.saturday, scenario.sunday):
+        participants_deleted += store.delete_participants_for_date(event_date)
+    results_deleted = store.delete_race_results_for_dates(
+        [scenario.saturday, scenario.sunday]
+    )
+    return {
+        "participants_deleted": participants_deleted,
+        "results_deleted": results_deleted,
+    }
+
+
 def _parse_time(value: str) -> time:
     hour, minute = value.split(":")
     return time(int(hour), int(minute))

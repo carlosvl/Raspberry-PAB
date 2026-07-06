@@ -508,6 +508,49 @@ body.admin-page {
   gap: 1rem;
 }
 
+.button--danger {
+  background: #ef4444 !important;
+  color: #fff !important;
+}
+
+.roster-remove {
+  background: transparent !important;
+  color: #ef4444 !important;
+  font-size: 1.2rem;
+  padding: 0.25rem 0.5rem !important;
+  border: 1px solid #ef4444 !important;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.roster-input {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #334155;
+  border-radius: 0.4rem;
+  background: #1e293b;
+  color: #f8fafc;
+  font: inherit;
+}
+
+#rosterTable select {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #334155;
+  border-radius: 0.4rem;
+  background: #1e293b;
+  color: #f8fafc;
+  font: inherit;
+}
+
+#scenarioSelect {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #334155;
+  border-radius: 0.4rem;
+  background: #1e293b;
+  color: #f8fafc;
+  font: inherit;
+}
+
 .branding__logo {
   display: flex;
   flex-direction: column;

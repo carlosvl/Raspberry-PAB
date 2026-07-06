@@ -531,6 +531,29 @@ class ScheduleStore:
             conn.commit()
             return cursor.rowcount
 
+    def delete_race_results_for_dates(self, dates: list[date]) -> int:
+        """Delete race results linked to participants on the given dates.
+
+        Note: race_results has ON DELETE CASCADE from participants, so
+        deleting participants already cascades.  This method is for
+        explicitly removing results while keeping participants.
+        """
+        if not dates:
+            return 0
+        placeholders = ",".join("?" for _ in dates)
+        with self._connect() as conn:
+            cursor = conn.execute(
+                f"""
+                DELETE FROM race_results
+                WHERE participant_id IN (
+                    SELECT id FROM participants WHERE event_date IN ({placeholders})
+                )
+                """,
+                [d.isoformat() for d in dates],
+            )
+            conn.commit()
+            return cursor.rowcount
+
     def upsert_race_events(self, events: Iterable[object]) -> list[RaceEvent]:
         now = datetime.now().isoformat()
         stored: list[RaceEvent] = []

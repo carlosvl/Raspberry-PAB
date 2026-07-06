@@ -240,8 +240,51 @@
               <button id="pauseKioskClock" type="button">Pause clock</button>
               <button id="resetKioskClock" type="button">Use real time</button>
               <button id="openTestKiosk" type="button">Open Kiosk ⏩</button>
+              <button id="clearTestData" type="button" class="button--danger">Clear Test Data</button>
             </div>
             <p class="branding__hint" id="kioskClockStatus">Kiosk clock: real time</p>
+          </div>
+
+          <h3>Scenario Roster</h3>
+          <div class="form">
+            <div class="button-row" style="margin-bottom: .75rem">
+              <label style="display:inline-flex;align-items:center;gap:.5rem;margin:0">
+                Scenario
+                <select id="scenarioSelect"></select>
+              </label>
+            </div>
+            <div class="form-row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
+              <label style="flex:1;min-width:120px">
+                Saturday
+                <input id="scenarioSaturday" type="date" />
+              </label>
+              <label style="flex:1;min-width:120px">
+                Sunday
+                <input id="scenarioSunday" type="date" />
+              </label>
+              <label style="flex:1;min-width:80px">
+                First start
+                <input id="scenarioFirstStart" type="time" />
+              </label>
+              <label style="flex:1;min-width:60px">
+                Stagger (min)
+                <input id="scenarioStagger" type="number" min="1" max="120" />
+              </label>
+            </div>
+            <table class="results-table" id="rosterTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Day</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="rosterBody"></tbody>
+            </table>
+            <div class="button-row" style="margin-top:.5rem">
+              <button id="addRider" type="button">+ Add Rider</button>
+              <button id="saveScenario" type="button">Save Scenario</button>
+            </div>
           </div>
         </article>
 

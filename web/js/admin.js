@@ -471,7 +471,8 @@ async function loadRaceResults() {
     .join("");
 }
 
-const DEFAULT_SIM_TIME = "2025-08-23T10:25";
+let DEFAULT_SIM_TIME = "2025-08-23T10:25";
+let currentScenario = null;
 
 async function loadKioskClockStatus() {
   const statusEl = document.getElementById("kioskClockStatus");
@@ -503,6 +504,7 @@ async function loadAll() {
       loadRules(),
       loadRaceResults(),
       loadKioskClockStatus(),
+      loadScenarioList(),
     ]);
     setOutput("Loaded.");
   } catch (error) {
@@ -823,6 +825,174 @@ document.getElementById("resetKioskClock")?.addEventListener("click", async () =
 
 document.getElementById("openTestKiosk")?.addEventListener("click", () => {
   window.location.href = "/?testlab=1";
+});
+
+// --- Scenario roster management ---
+
+async function loadScenarioList() {
+  const select = document.getElementById("scenarioSelect");
+  if (!select) return;
+  try {
+    const scenarios = await api("/api/admin/test-scenarios", {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    select.innerHTML = "";
+    for (const s of scenarios) {
+      const opt = document.createElement("option");
+      opt.value = s.id;
+      opt.textContent = s.label;
+      select.appendChild(opt);
+    }
+    if (scenarios.length > 0) {
+      await loadScenario(scenarios[0].id);
+    }
+  } catch {
+    // scenarios not available
+  }
+}
+
+async function loadScenario(scenarioId) {
+  try {
+    const scenario = await api(`/api/admin/test-scenarios/${scenarioId}`, {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    currentScenario = scenario;
+    DEFAULT_SIM_TIME = scenario.default_simulated_now.slice(0, 16);
+    document.getElementById("scenarioSaturday").value = scenario.saturday;
+    document.getElementById("scenarioSunday").value = scenario.sunday;
+    document.getElementById("scenarioFirstStart").value = scenario.first_start_time;
+    document.getElementById("scenarioStagger").value = scenario.stagger_minutes;
+    renderRoster(scenario.roster);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+}
+
+function renderRoster(roster) {
+  const tbody = document.getElementById("rosterBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  for (let i = 0; i < roster.length; i++) {
+    const rider = roster[i];
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td><input type="text" value="${rider.name}" data-field="name" data-index="${i}" class="roster-input" /></td>` +
+      `<td><select data-field="day" data-index="${i}">` +
+      `<option value="saturday"${rider.day === "saturday" ? " selected" : ""}>Saturday</option>` +
+      `<option value="sunday"${rider.day === "sunday" ? " selected" : ""}>Sunday</option>` +
+      `</select></td>` +
+      `<td><button type="button" class="roster-remove" data-index="${i}">✕</button></td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function collectRoster() {
+  const tbody = document.getElementById("rosterBody");
+  if (!tbody) return [];
+  const roster = [];
+  const rows = tbody.querySelectorAll("tr");
+  for (const row of rows) {
+    const nameInput = row.querySelector("[data-field='name']");
+    const daySelect = row.querySelector("[data-field='day']");
+    if (nameInput && daySelect && nameInput.value.trim()) {
+      roster.push({ name: nameInput.value.trim(), day: daySelect.value });
+    }
+  }
+  return roster;
+}
+
+document.getElementById("scenarioSelect")?.addEventListener("change", (e) => {
+  loadScenario(e.target.value);
+});
+
+document.getElementById("rosterBody")?.addEventListener("click", (e) => {
+  if (e.target.classList.contains("roster-remove")) {
+    e.target.closest("tr").remove();
+  }
+});
+
+document.getElementById("addRider")?.addEventListener("click", () => {
+  const tbody = document.getElementById("rosterBody");
+  if (!tbody) return;
+  const index = tbody.querySelectorAll("tr").length;
+  const tr = document.createElement("tr");
+  tr.innerHTML =
+    `<td><input type="text" value="" data-field="name" data-index="${index}" class="roster-input" placeholder="Rider name" /></td>` +
+    `<td><select data-field="day" data-index="${index}">` +
+    `<option value="saturday">Saturday</option>` +
+    `<option value="sunday">Sunday</option>` +
+    `</select></td>` +
+    `<td><button type="button" class="roster-remove" data-index="${index}">✕</button></td>`;
+  tbody.appendChild(tr);
+  tr.querySelector("input")?.focus();
+});
+
+document.getElementById("saveScenario")?.addEventListener("click", async () => {
+  if (!currentScenario) {
+    setOutput("No scenario loaded.");
+    return;
+  }
+  const saturday = document.getElementById("scenarioSaturday")?.value;
+  const sunday = document.getElementById("scenarioSunday")?.value;
+  const firstStart = document.getElementById("scenarioFirstStart")?.value;
+  const stagger = parseInt(document.getElementById("scenarioStagger")?.value || "15", 10);
+  if (!saturday || !sunday || !firstStart) {
+    setOutput("Fill in all date and time fields.");
+    return;
+  }
+  const roster = collectRoster();
+  if (roster.length === 0) {
+    setOutput("Roster is empty.");
+    return;
+  }
+  const updatedScenario = {
+    ...currentScenario,
+    saturday,
+    sunday,
+    first_start_time: firstStart,
+    stagger_minutes: stagger,
+    default_simulated_now: `${saturday}T${firstStart}:00`,
+    roster,
+  };
+  setOutput("Saving scenario...");
+  try {
+    await api(`/api/admin/test-scenarios/${currentScenario.id}`, {
+      method: "PUT",
+      body: JSON.stringify(updatedScenario),
+    });
+    currentScenario = updatedScenario;
+    DEFAULT_SIM_TIME = updatedScenario.default_simulated_now.slice(0, 16);
+    setOutput(`Scenario saved: ${roster.length} riders.`);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("clearTestData")?.addEventListener("click", async () => {
+  if (!currentScenario) {
+    setOutput("No scenario loaded.");
+    return;
+  }
+  if (!confirm(`Clear all test participants and results for ${currentScenario.label}?`)) {
+    return;
+  }
+  setOutput("Clearing test data...");
+  try {
+    const result = await api(`/api/admin/test-scenarios/${currentScenario.id}/data`, {
+      method: "DELETE",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    await api("/api/admin/kiosk-clock", {
+      method: "DELETE",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    await Promise.all([loadParticipants(), loadRaceResults(), loadKioskClockStatus()]);
+    setOutput(
+      `Cleared ${result.participants_deleted} participants, ${result.results_deleted} results. Clock reset.`,
+    );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
 });
 
 document.getElementById("syncRaceIndex")?.addEventListener("click", async () => {

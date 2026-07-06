@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import date, time
 from pathlib import Path
 
@@ -12,8 +13,10 @@ from raspberry_pab.kiosk_clock import effective_now, is_simulated
 from raspberry_pab.models import RaceResultsSyncSummary
 from raspberry_pab.test_scenarios import (
     TestScenarioRunner,
+    clear_scenario_data,
     list_scenarios,
     load_scenario,
+    save_scenario,
     seed_scenario_participants,
 )
 from tests.race_results_helpers import make_austin_fetch_text
@@ -85,3 +88,36 @@ def test_run_austin_with_fixtures_matches_ryan(tmp_path: Path) -> None:
         assert ryan.place == 2
     finally:
         runner.close()
+
+
+def test_clear_scenario_data_removes_participants(tmp_path: Path) -> None:
+    store = ScheduleStore(tmp_path / "schedule.db")
+    store.initialize()
+    scenario = load_scenario("austin-2025-roseville")
+    seed_scenario_participants(store, scenario)
+    assert len(store.list_participants(date(2025, 8, 23))) == 8
+    result = clear_scenario_data(store, "austin-2025-roseville")
+    assert result["participants_deleted"] == 19
+    assert len(store.list_participants(date(2025, 8, 23))) == 0
+    assert len(store.list_participants(date(2025, 8, 24))) == 0
+
+
+def test_save_scenario_updates_json(tmp_path: Path) -> None:
+    # Copy the scenario file to a temp dir so we don't modify the real one
+    import raspberry_pab.test_scenarios as ts
+
+    original_dir = ts._SCENARIOS_DIR
+    temp_scenarios = tmp_path / "data" / "test_scenarios"
+    temp_scenarios.mkdir(parents=True)
+    src = original_dir / "austin-2025-roseville.json"
+    dst = temp_scenarios / "austin-2025-roseville.json"
+    dst.write_text(src.read_text())
+    ts._SCENARIOS_DIR = temp_scenarios
+    try:
+        scenario = load_scenario("austin-2025-roseville")
+        scenario.stagger_minutes = 20
+        save_scenario(scenario)
+        reloaded = load_scenario("austin-2025-roseville")
+        assert reloaded.stagger_minutes == 20
+    finally:
+        ts._SCENARIOS_DIR = original_dir
