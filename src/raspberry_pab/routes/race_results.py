@@ -6,6 +6,7 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request
+from pydantic import BaseModel, Field
 
 from raspberry_pab.models import (
     ManualRaceResultLink,
@@ -16,8 +17,13 @@ from raspberry_pab.models import (
 )
 from raspberry_pab.race_results.sync import RaceResultsSync
 from raspberry_pab.routes.schedule import get_store, require_admin_pin
+from raspberry_pab.scheduler import DEFAULT_RESULTS_SYNC_MINUTES, RESULTS_SYNC_INTERVAL_KEY
 
 router = APIRouter(prefix="/api", tags=["race-results"])
+
+
+class SyncIntervalUpdate(BaseModel):
+    interval_minutes: int = Field(ge=0, le=1440)
 
 
 def get_sync(request: Request) -> RaceResultsSync:
@@ -95,3 +101,37 @@ def link_race_result_manual(
     body: ManualRaceResultLink,
 ) -> RaceResult:
     return get_store(request).link_race_result_manual(body)
+
+
+@router.get(
+    "/admin/race-results/sync-interval",
+    dependencies=[Depends(require_admin_pin)],
+)
+def get_sync_interval(request: Request) -> dict[str, int]:
+    store = get_store(request)
+    raw = store.get_setting(RESULTS_SYNC_INTERVAL_KEY)
+    interval = DEFAULT_RESULTS_SYNC_MINUTES
+    if raw is not None:
+        try:
+            val = int(raw)
+            if val >= 0:
+                interval = val
+        except ValueError:
+            pass
+    return {"interval_minutes": interval}
+
+
+@router.put(
+    "/admin/race-results/sync-interval",
+    dependencies=[Depends(require_admin_pin)],
+)
+def set_sync_interval(
+    request: Request,
+    body: SyncIntervalUpdate,
+) -> dict[str, int]:
+    store = get_store(request)
+    if body.interval_minutes == DEFAULT_RESULTS_SYNC_MINUTES:
+        store.delete_setting(RESULTS_SYNC_INTERVAL_KEY)
+    else:
+        store.set_setting(RESULTS_SYNC_INTERVAL_KEY, str(body.interval_minutes))
+    return {"interval_minutes": body.interval_minutes}

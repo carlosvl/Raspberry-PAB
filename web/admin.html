@@ -303,6 +303,16 @@
               <button id="syncRaceResults" type="button">Sync results for date</button>
             </div>
           </div>
+          <div class="form" style="margin-top:1rem">
+            <label>
+              Auto-sync interval (minutes, 0 = off)
+              <input id="syncIntervalMinutes" type="number" min="0" max="1440" step="1" />
+            </label>
+            <div class="button-row">
+              <button id="saveSyncInterval" type="button">Save interval</button>
+            </div>
+            <p class="branding__hint" id="syncIntervalStatus"></p>
+          </div>
           <div class="admin__list" id="raceResultsList"></div>
         </article>
 

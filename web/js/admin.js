@@ -505,6 +505,7 @@ async function loadAll() {
       loadRaceResults(),
       loadKioskClockStatus(),
       loadScenarioList(),
+      loadSyncInterval(),
     ]);
     setOutput("Loaded.");
   } catch (error) {
@@ -1020,6 +1021,46 @@ document.getElementById("syncRaceResults")?.addEventListener("click", async () =
     setOutput(
       `Matched ${summary.matched}, unmatched ${summary.unmatched}, ambiguous ${summary.ambiguous}, sessions ${summary.sessions_synced}.`,
     );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+// --- Sync interval management ---
+
+async function loadSyncInterval() {
+  const input = document.getElementById("syncIntervalMinutes");
+  const statusEl = document.getElementById("syncIntervalStatus");
+  if (!input) return;
+  try {
+    const data = await api("/api/admin/race-results/sync-interval", {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    input.value = data.interval_minutes;
+    if (statusEl) {
+      statusEl.textContent = data.interval_minutes > 0
+        ? `Auto-sync every ${data.interval_minutes} min`
+        : "Auto-sync disabled";
+    }
+  } catch {
+    // not available
+  }
+}
+
+document.getElementById("saveSyncInterval")?.addEventListener("click", async () => {
+  const input = document.getElementById("syncIntervalMinutes");
+  const val = parseInt(input?.value || "10", 10);
+  if (isNaN(val) || val < 0) {
+    setOutput("Enter a valid interval (0 = off, or 1–1440 minutes).");
+    return;
+  }
+  try {
+    await api("/api/admin/race-results/sync-interval", {
+      method: "PUT",
+      body: JSON.stringify({ interval_minutes: val }),
+    });
+    await loadSyncInterval();
+    setOutput(val > 0 ? `Auto-sync set to every ${val} minutes.` : "Auto-sync disabled.");
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }

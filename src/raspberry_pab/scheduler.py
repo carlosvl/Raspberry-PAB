@@ -94,6 +94,9 @@ class ReminderScheduler:
         return published
 
 
+RESULTS_SYNC_INTERVAL_KEY = "results_sync_interval_minutes"
+
+
 class RaceResultsSyncScheduler:
     """Periodically syncs race results in the background."""
 
@@ -103,9 +106,21 @@ class RaceResultsSyncScheduler:
         interval_minutes: int = DEFAULT_RESULTS_SYNC_MINUTES,
     ) -> None:
         self._store = store
-        self._interval_minutes = interval_minutes
+        self._default_interval = interval_minutes
         self._task: asyncio.Task[None] | None = None
         self._stop_event = asyncio.Event()
+
+    @property
+    def interval_minutes(self) -> int:
+        raw = self._store.get_setting(RESULTS_SYNC_INTERVAL_KEY)
+        if raw is not None:
+            try:
+                val = int(raw)
+                if val >= 1:
+                    return val
+            except ValueError:
+                pass
+        return self._default_interval
 
     def start(self) -> None:
         if self._task is None or self._task.done():
@@ -121,10 +136,17 @@ class RaceResultsSyncScheduler:
 
     async def _run(self) -> None:
         while not self._stop_event.is_set():
+            interval = self.interval_minutes
+            if interval <= 0:
+                try:
+                    await asyncio.wait_for(self._stop_event.wait(), timeout=60)
+                except TimeoutError:
+                    pass
+                continue
             try:
                 await asyncio.wait_for(
                     self._stop_event.wait(),
-                    timeout=self._interval_minutes * 60,
+                    timeout=interval * 60,
                 )
             except TimeoutError:
                 pass
