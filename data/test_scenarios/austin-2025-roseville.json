@@ -6,7 +6,7 @@
   "sunday": "2025-08-24",
   "first_start_time": "10:30",
   "stagger_minutes": 15,
-  "default_simulated_now": "2025-08-24T10:25:00",
+  "default_simulated_now": "2025-08-23T10:25:00",
   "roster": [
     { "name": "Owen Bianchet", "day": "sunday" },
     { "name": "Allison Claydon", "day": "sunday" },

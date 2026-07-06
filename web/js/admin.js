@@ -221,6 +221,10 @@ function showPanel(targetId) {
   for (const btn of document.querySelectorAll("[data-tab-panel]")) {
     btn.classList.toggle("is-active", btn.dataset.tabPanel === targetId);
   }
+  const navKioskLink = adminNav?.querySelector("a[href]");
+  if (navKioskLink) {
+    navKioskLink.href = targetId === "testLabPanel" ? "/?testlab=1" : "/";
+  }
   window.scrollTo({ top: 0 });
 }
 

@@ -299,6 +299,82 @@ function configureControlHotspot() {
   hotspot.addEventListener("pointerleave", cancel);
 }
 
+// ── Fast-forward toolbar (only when ?testlab=1) ──
+const isTestLab = new URLSearchParams(window.location.search).has("testlab");
+const ffToolbar = document.getElementById("ffToolbar");
+const ffAdvance = document.getElementById("ffAdvance");
+const ffBack = document.getElementById("ffBack");
+const ffClock = document.getElementById("ffClock");
+
+const FF_HOLD_DELAY_MS = 400;
+const FF_HOLD_INTERVAL_MS = 200;
+const FF_HOLD_MINUTES = 1;
+let ffHoldTimer = null;
+let ffHoldInterval = null;
+
+async function advanceClock(minutes) {
+  try {
+    const response = await fetch("/api/kiosk-clock/advance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ minutes }),
+    });
+    if (!response.ok) return;
+    const state = await response.json();
+    kioskNowIso = state.kiosk_now;
+    kioskSimulated = state.simulated;
+    kioskSimulatedRunning = state.running;
+    displayDate = state.display_date;
+    updateClock();
+    updateFfClock();
+    loadSchedule();
+  } catch {
+    // Network glitch — the next poll will catch up.
+  }
+}
+
+function updateFfClock() {
+  if (!ffClock) return;
+  const now = kioskSimulated ? new Date(kioskNowIso) : new Date();
+  ffClock.textContent = now.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+}
+
+function startFfHold() {
+  ffAdvance?.classList.add("is-holding");
+  ffHoldTimer = setTimeout(() => {
+    ffHoldInterval = setInterval(() => advanceClock(FF_HOLD_MINUTES), FF_HOLD_INTERVAL_MS);
+  }, FF_HOLD_DELAY_MS);
+}
+
+function stopFfHold() {
+  ffAdvance?.classList.remove("is-holding");
+  clearTimeout(ffHoldTimer);
+  ffHoldTimer = null;
+  clearInterval(ffHoldInterval);
+  ffHoldInterval = null;
+}
+
+function configureFfToolbar() {
+  if (!isTestLab || !ffToolbar) return;
+  ffToolbar.hidden = false;
+
+  ffAdvance?.addEventListener("click", () => {
+    if (!ffHoldInterval) advanceClock(1);
+  });
+  ffAdvance?.addEventListener("pointerdown", startFfHold);
+  ffAdvance?.addEventListener("pointerup", stopFfHold);
+  ffAdvance?.addEventListener("pointerleave", stopFfHold);
+
+  ffBack?.addEventListener("click", () => {
+    window.location.href = "/admin";
+  });
+}
+
 dismissAlert?.addEventListener("click", hideAlert);
 closeMenu?.addEventListener("click", hideControlMenu);
 reloadApp?.addEventListener("click", () => window.location.reload());
@@ -308,9 +384,11 @@ controlMenu?.addEventListener("click", (event) => {
 });
 configureAdminBrandTrigger();
 configureControlHotspot();
+configureFfToolbar();
 registerServiceWorker();
 loadAppConfig().then(() => {
   loadSchedule();
+  updateFfClock();
 });
 updateClock();
 loadNetworkInfo();
@@ -318,6 +396,7 @@ connectAlertStream();
 setInterval(async () => {
   await loadAppConfig();
   updateClock();
+  updateFfClock();
 }, 1000);
 setInterval(loadNetworkInfo, 60000);
 setInterval(loadSchedule, 1000);

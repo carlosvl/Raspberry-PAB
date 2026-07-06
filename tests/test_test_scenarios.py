@@ -64,7 +64,7 @@ def test_run_austin_scenario_seeds_sync_and_sets_clock(tmp_path: Path) -> None:
     result = runner.run("austin-2025-roseville")
     assert result.participants_seeded == 19
     assert is_simulated(store)
-    assert effective_now(store).date() == date(2025, 8, 24)
+    assert effective_now(store).date() == date(2025, 8, 23)
 
 
 def test_run_austin_with_fixtures_matches_ryan(tmp_path: Path) -> None:

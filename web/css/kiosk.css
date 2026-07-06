@@ -573,6 +573,60 @@ body.admin-page {
   }
 }
 
+.ff-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: rgb(17 28 51 / 95%);
+  backdrop-filter: blur(0.5rem);
+  border-top: 2px solid #f59e0b;
+  z-index: 8;
+}
+
+.ff-toolbar[hidden] {
+  display: none;
+}
+
+.ff-toolbar__button {
+  padding: 0.65rem 1.1rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: #334155;
+  color: #f8fafc;
+  font: inherit;
+  font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ff-toolbar__button--ff {
+  background: #f59e0b;
+  color: #020617;
+}
+
+.ff-toolbar__button--ff.is-holding {
+  background: #ef4444;
+  animation: ff-pulse 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes ff-pulse {
+  from { opacity: 1; }
+  to { opacity: 0.7; }
+}
+
+.ff-toolbar__clock {
+  margin-left: auto;
+  font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+  font-variant-numeric: tabular-nums;
+  color: #f59e0b;
+  font-weight: 700;
+}
+
 @media (max-width: 540px), (max-height: 400px) {
   html,
   body {
@@ -820,5 +874,19 @@ body.admin-page {
   .admin__output {
     min-height: 5rem;
     padding: 0.65rem;
+  }
+
+  .ff-toolbar {
+    gap: 0.35rem;
+    padding: 0.45rem 0.5rem;
+  }
+
+  .ff-toolbar__button {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.82rem;
+  }
+
+  .ff-toolbar__clock {
+    font-size: 0.82rem;
   }
 }

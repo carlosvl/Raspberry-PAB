@@ -7,6 +7,7 @@ from pathlib import Path
 
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.kiosk_clock import (
+    advance_simulated_clock,
     clear_simulated_clock,
     effective_now,
     get_clock_state,
@@ -22,6 +23,22 @@ def test_simulated_clock_freezes_when_paused(tmp_path: Path) -> None:
     set_simulated_now(store, when=anchor, running=False)
     assert effective_now(store) == anchor
     assert is_simulated(store)
+
+
+def test_advance_simulated_clock_jumps_forward(tmp_path: Path) -> None:
+    store = ScheduleStore(tmp_path / "schedule.db")
+    store.initialize()
+    anchor = datetime(2025, 8, 23, 10, 25, 0)
+    set_simulated_now(store, when=anchor, running=False)
+    result = advance_simulated_clock(store, minutes=5)
+    assert result == datetime(2025, 8, 23, 10, 30, 0)
+    assert effective_now(store) == datetime(2025, 8, 23, 10, 30, 0)
+
+
+def test_advance_returns_none_when_not_simulated(tmp_path: Path) -> None:
+    store = ScheduleStore(tmp_path / "schedule.db")
+    store.initialize()
+    assert advance_simulated_clock(store, minutes=5) is None
 
 
 def test_clear_simulated_clock_uses_real_time(tmp_path: Path) -> None:

@@ -279,6 +279,10 @@ class KioskClockUpdate(BaseModel):
     running: bool = True
 
 
+class KioskClockAdvance(BaseModel):
+    minutes: int = 1
+
+
 class KioskClockState(BaseModel):
     simulated: bool
     running: bool

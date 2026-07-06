@@ -50,6 +50,25 @@ def set_simulated_now(
     return when
 
 
+def advance_simulated_clock(
+    store: ScheduleStore,
+    *,
+    minutes: int = 1,
+) -> datetime | None:
+    """Jump the simulated clock forward by *minutes*.
+
+    Returns the new effective time, or ``None`` when the clock is not
+    in simulated mode.
+    """
+    if not is_simulated(store):
+        return None
+    now = effective_now(store)
+    new_time = now + _seconds_to_timedelta(minutes * 60)
+    running = is_running(store)
+    set_simulated_now(store, when=new_time, running=running)
+    return new_time
+
+
 def clear_simulated_clock(store: ScheduleStore) -> None:
     store.delete_setting(SIMULATED_NOW_KEY)
     store.delete_setting(SIMULATED_RUNNING_KEY)
