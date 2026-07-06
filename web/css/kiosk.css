@@ -497,7 +497,8 @@ body.admin-page {
 .form button,
 .admin__pin button,
 .button-row button,
-.admin__item button {
+.admin__item button,
+.testlab-actions button {
   padding: 0.75rem 1rem;
   border: 0;
   border-radius: 0.7rem;
@@ -598,6 +599,19 @@ body.admin-page {
   font-size: 1.05rem;
   flex: 1;
   min-width: 140px;
+}
+
+/* --- Hardware status warning --- */
+
+.hardware-status {
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid #f59e0b;
+  border-radius: 0.5rem;
+  background: #451a03;
+  color: #fbbf24;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 /* --- Collapsible sections --- */
@@ -986,7 +1000,8 @@ body.admin-page {
   .form button,
   .admin__pin button,
   .button-row button,
-  .admin__item button {
+  .admin__item button,
+  .testlab-actions button {
     padding: 0.55rem 0.7rem;
     border-radius: 0.55rem;
     font-size: 0.9rem;

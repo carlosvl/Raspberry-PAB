@@ -506,6 +506,7 @@ async function loadAll() {
       loadKioskClockStatus(),
       loadScenarioList(),
       loadSyncInterval(),
+      loadHardwareStatus(),
     ]);
     setOutput("Loaded.");
   } catch (error) {
@@ -1149,6 +1150,29 @@ async function loadSyncInterval() {
     }
   } catch {
     // not available
+  }
+}
+
+async function loadHardwareStatus() {
+  const el = document.getElementById("hardwareStatus");
+  if (!el) return;
+  try {
+    const hw = await api("/api/admin/hardware-status", {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    const issues = [];
+    if (!hw.buzzer_enabled) issues.push("Buzzer disabled (PAB_BUZZER_ENABLED)");
+    else if (!hw.buzzer_port) issues.push("Buzzer port not set (PAB_BUZZER_PORT)");
+    if (!hw.led_enabled) issues.push("LED disabled (PAB_LED_ENABLED)");
+    else if (!hw.led_address) issues.push("LED address not set (PAB_LED_ADDRESS)");
+    if (issues.length > 0) {
+      el.textContent = "⚠ " + issues.join(" · ");
+      el.hidden = false;
+    } else {
+      el.hidden = true;
+    }
+  } catch {
+    // endpoint not available
   }
 }
 

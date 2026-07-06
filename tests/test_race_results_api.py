@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from datetime import date, time
 from pathlib import Path
-from unittest.mock import patch
-
 from fastapi.testclient import TestClient
 
 from raspberry_pab.server import create_app
@@ -47,11 +45,6 @@ def test_race_results_api(tmp_path: Path) -> None:
     assert index_response.status_code == 200
     assert len(index_response.json()) > 0
 
-    participants = client.get("/api/participants?date=2025-10-05")
-    assert participants.status_code == 200
-    with patch(
-        "raspberry_pab.routes.schedule.show_participant_on_board",
-        return_value=True,
-    ):
-        visible = client.get("/api/participants?date=2025-10-05")
+    visible = client.get("/api/participants?date=2025-10-05")
+    assert visible.status_code == 200
     assert visible.json()[0]["finish_place"] == 15

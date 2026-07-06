@@ -21,7 +21,7 @@ from raspberry_pab.models import (
     ScheduleImport,
 )
 from raspberry_pab.kiosk_clock import effective_now
-from raspberry_pab.reminders import participant_status, show_participant_on_board
+from raspberry_pab.reminders import participant_status
 
 router = APIRouter(prefix="/api", tags=["schedule"])
 
@@ -51,6 +51,17 @@ def verify_admin_pin() -> dict[str, bool]:
     return {"authenticated": True}
 
 
+@router.get("/admin/hardware-status", dependencies=[Depends(require_admin_pin)])
+def hardware_status(request: Request) -> dict[str, object]:
+    settings = get_settings(request)
+    return {
+        "buzzer_enabled": settings.buzzer_enabled,
+        "buzzer_port": settings.buzzer_port or "",
+        "led_enabled": settings.led_enabled,
+        "led_address": settings.led_address or "",
+    }
+
+
 @router.get("/participants", response_model=list[ParticipantStatus])
 def list_participants(
     request: Request,
@@ -75,8 +86,7 @@ def list_participants(
                     "results_url": match.results_url,
                 }
             )
-        if show_participant_on_board(status.countdown_seconds):
-            results.append(status)
+        results.append(status)
     return results
 
 
