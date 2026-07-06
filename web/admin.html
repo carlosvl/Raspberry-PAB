@@ -148,6 +148,35 @@
 
         <article class="panel" id="rulesPanel">
           <h2>Reminder Rules</h2>
+
+          <details class="testlab-section">
+            <summary>LED Strip Configuration</summary>
+            <div class="form">
+              <p class="led-status" id="ledStatus">LED: checking…</p>
+              <label class="checkbox">
+                <input id="ledConfigEnabled" type="checkbox" />
+                Enable LED strip
+              </label>
+              <label>
+                Device address (MAC)
+                <div style="display:flex;gap:0.5rem;align-items:center">
+                  <input id="ledConfigAddress" type="text" placeholder="BE:28:79:00:06:CB" style="flex:1" />
+                  <button id="scanBle" type="button" style="white-space:nowrap">Scan BLE</button>
+                </div>
+              </label>
+              <select id="bleScanResults" hidden>
+                <option value="">— select a device —</option>
+              </select>
+              <label>
+                Device name
+                <input id="ledConfigName" type="text" placeholder="MELK-OT21   CB" />
+              </label>
+              <div class="button-row">
+                <button id="saveLedConfig" type="button">Save LED Config</button>
+              </div>
+            </div>
+          </details>
+
           <form class="form" id="ruleForm">
             <input id="ruleId" type="hidden" />
             <label>

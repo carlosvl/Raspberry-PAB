@@ -514,6 +514,7 @@ async function loadAll() {
       loadScenarioList(),
       loadSyncInterval(),
       loadHardwareStatus(),
+      loadLedConfig(),
     ]);
     setOutput("Loaded.");
   } catch (error) {
@@ -1184,6 +1185,91 @@ async function loadHardwareStatus() {
     // endpoint not available
   }
 }
+
+// --- LED strip config ---
+
+async function loadLedConfig() {
+  const statusEl = document.getElementById("ledStatus");
+  const enabledEl = document.getElementById("ledConfigEnabled");
+  const addressEl = document.getElementById("ledConfigAddress");
+  const nameEl = document.getElementById("ledConfigName");
+  if (!statusEl) return;
+  try {
+    const cfg = await api("/api/admin/led/config", {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    if (enabledEl) enabledEl.checked = cfg.led_enabled;
+    if (addressEl) addressEl.value = cfg.led_address || "";
+    if (nameEl) nameEl.value = cfg.led_name || "";
+    if (cfg.led_enabled && cfg.led_address) {
+      statusEl.textContent = `LED: ✅ enabled — ${cfg.led_address}`;
+      statusEl.style.color = "#4ade80";
+    } else if (cfg.led_address) {
+      statusEl.textContent = `LED: ⚠ disabled — ${cfg.led_address}`;
+      statusEl.style.color = "#fbbf24";
+    } else {
+      statusEl.textContent = "LED: ❌ not configured";
+      statusEl.style.color = "#f87171";
+    }
+  } catch {
+    statusEl.textContent = "LED: unavailable";
+    statusEl.style.color = "#94a3b8";
+  }
+}
+
+document.getElementById("saveLedConfig")?.addEventListener("click", async () => {
+  const enabled = document.getElementById("ledConfigEnabled")?.checked || false;
+  const address = document.getElementById("ledConfigAddress")?.value?.trim() || "";
+  const name = document.getElementById("ledConfigName")?.value?.trim() || "";
+  if (enabled && !address) {
+    setOutput("Enter a BLE MAC address or scan for devices first.");
+    return;
+  }
+  try {
+    await api("/api/admin/led/config", {
+      method: "PUT",
+      body: JSON.stringify({ led_enabled: enabled, led_address: address, led_name: name }),
+    });
+    await loadLedConfig();
+    await loadHardwareStatus();
+    setOutput(enabled ? `LED strip saved: ${address}` : "LED strip disabled.");
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("scanBle")?.addEventListener("click", async () => {
+  const selectEl = document.getElementById("bleScanResults");
+  setOutput("Scanning for BLE devices… (10 seconds)");
+  try {
+    const devices = await api("/api/admin/led/scan", {
+      method: "POST",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    if (!selectEl) return;
+    selectEl.innerHTML = '<option value="">— select a device —</option>';
+    for (const d of devices) {
+      const opt = document.createElement("option");
+      opt.value = d.address;
+      opt.textContent = `${d.name} (${d.address})`;
+      opt.dataset.name = d.name;
+      selectEl.appendChild(opt);
+    }
+    selectEl.hidden = false;
+    setOutput(`Found ${devices.length} BLE device(s).`);
+  } catch (error) {
+    setOutput("❌ " + (error instanceof Error ? error.message : String(error)));
+  }
+});
+
+document.getElementById("bleScanResults")?.addEventListener("change", (e) => {
+  const opt = e.target.selectedOptions[0];
+  if (!opt || !opt.value) return;
+  const addressEl = document.getElementById("ledConfigAddress");
+  const nameEl = document.getElementById("ledConfigName");
+  if (addressEl) addressEl.value = opt.value;
+  if (nameEl && opt.dataset.name) nameEl.value = opt.dataset.name;
+});
 
 document.getElementById("saveSyncInterval")?.addEventListener("click", async () => {
   const input = document.getElementById("syncIntervalMinutes");

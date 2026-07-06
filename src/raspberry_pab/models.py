@@ -185,6 +185,12 @@ class LedStripTest(BaseModel):
     led_chase_duration_seconds: int = Field(default=10, ge=0, le=120)
 
 
+class LedConfig(BaseModel):
+    led_enabled: bool = False
+    led_address: str = ""
+    led_name: str = ""
+
+
 class ScheduleParticipantImport(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     start_time: time
