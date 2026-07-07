@@ -25,6 +25,7 @@ let alertTimer = null;
 let controlMenuTimer = null;
 let adminTapCount = 0;
 let adminTapResetTimer = null;
+let lastAdminTapActivation = 0;
 
 function resolveClockEl() {
   return (
@@ -283,11 +284,27 @@ function registerAdminTap() {
   }, ADMIN_TAP_WINDOW_MS);
 }
 
+function activateAdminTapOnce() {
+  const now = Date.now();
+  if (now - lastAdminTapActivation < 250) return;
+  lastAdminTapActivation = now;
+  registerAdminTap();
+}
+
 function configureAdminBrandTrigger() {
   const adminBrandTrigger = resolveAdminBrandTrigger();
   if (!adminBrandTrigger) return;
 
-  adminBrandTrigger.addEventListener("click", registerAdminTap);
+  const run = () => activateAdminTapOnce();
+  adminBrandTrigger.addEventListener("pointerup", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    run();
+  });
+  adminBrandTrigger.addEventListener("mouseup", (event) => {
+    if (event.button !== 0) return;
+    run();
+  });
+  adminBrandTrigger.addEventListener("click", run);
 }
 
 function configureControlHotspot() {

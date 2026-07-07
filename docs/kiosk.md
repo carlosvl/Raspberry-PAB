@@ -100,6 +100,12 @@ The admin screen supports:
 
 On the Pi touchscreen, tap **Keyboard** on the admin PIN screen or admin header to open the OS on-screen keyboard. The installer tries to install `wvkbd`, `matchbox-keyboard`, or `onboard`; the app launches whichever is available for the active desktop session.
 
+### USB gamepad as mouse
+
+Plug a USB game controller into the Pi. In **Admin → Touch**, enable **Gamepad as mouse** and save. The left stick moves the HDMI cursor; the primary face button (usually index `1` on generic USB pads) is a left click and the next button is a right click. Override with `PAB_GAMEPAD_BTN_LEFT` / `PAB_GAMEPAD_BTN_RIGHT` in `touch-map.conf` if your pad differs.
+
+The helper runs as `~/bin/gamepad-mouse.py` and is started automatically when the kiosk service starts (or when you save touch settings). Tune pointer speed and stick deadzone in the same panel. Logs: `/tmp/gamepad-mouse.log`.
+
 Example import file: `data/schedule.example.json`.
 
 ## 5. Remote iOS app and fallback hotspot

@@ -125,6 +125,13 @@ fi
 
 chmod +x scripts/kiosk.sh scripts/touch-keyboard.sh scripts/keep-awake.sh scripts/run-server.sh
 
+echo "==> Installing input helper scripts..."
+BIN_DIR="${HOME}/bin"
+mkdir -p "${BIN_DIR}"
+install -m 0755 scripts/touch-trackpad.py "${BIN_DIR}/touch-trackpad.py"
+install -m 0755 scripts/gamepad-mouse.py "${BIN_DIR}/gamepad-mouse.py"
+install -m 0755 scripts/setup-touch-input.sh "${BIN_DIR}/setup-touch-input.sh"
+
 echo ""
 echo "Kiosk installation complete."
 echo ""

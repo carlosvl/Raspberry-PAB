@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from raspberry_pab.gamepad_config import find_gamepad_js_device
+
 DEFAULTS: dict[str, str] = {
     "PAB_TOUCH_MAP": "trackpad",
     "PAB_TOUCH_LCD": "guide",
@@ -14,6 +16,12 @@ DEFAULTS: dict[str, str] = {
     "PAB_TOUCH_MULTI_TAP": "1",
     "PAB_TOUCH_MULTI_TAP_SECONDS": "0.45",
     "PAB_TOUCH_CLICK_DELAY_MS": "80",
+    "PAB_GAMEPAD_ENABLED": "1",
+    "PAB_GAMEPAD_SENS": "8",
+    "PAB_GAMEPAD_DEADZONE": "0.15",
+    "PAB_GAMEPAD_DEVICE": "auto",
+    "PAB_GAMEPAD_BTN_LEFT": "1",
+    "PAB_GAMEPAD_BTN_RIGHT": "2",
 }
 
 TUNABLE_KEYS = (
@@ -21,6 +29,9 @@ TUNABLE_KEYS = (
     "PAB_TOUCH_DRAG_START",
     "PAB_TOUCH_MULTI_TAP_SECONDS",
     "PAB_TOUCH_SENS",
+    "PAB_GAMEPAD_ENABLED",
+    "PAB_GAMEPAD_SENS",
+    "PAB_GAMEPAD_DEADZONE",
 )
 
 
@@ -64,13 +75,21 @@ def save_touch_config(updates: dict[str, str], path: Path | None = None) -> dict
         f"PAB_TOUCH_MULTI_TAP_SECONDS={current['PAB_TOUCH_MULTI_TAP_SECONDS']}",
         f"PAB_TOUCH_CLICK_DELAY_MS={current.get('PAB_TOUCH_CLICK_DELAY_MS', '80')}",
         "",
+        f"PAB_GAMEPAD_ENABLED={current.get('PAB_GAMEPAD_ENABLED', '1')}",
+        f"PAB_GAMEPAD_SENS={current.get('PAB_GAMEPAD_SENS', '8')}",
+        f"PAB_GAMEPAD_DEADZONE={current.get('PAB_GAMEPAD_DEADZONE', '0.15')}",
+        f"PAB_GAMEPAD_DEVICE={current.get('PAB_GAMEPAD_DEVICE', 'auto')}",
+        f"PAB_GAMEPAD_BTN_LEFT={current.get('PAB_GAMEPAD_BTN_LEFT', '1')}",
+        f"PAB_GAMEPAD_BTN_RIGHT={current.get('PAB_GAMEPAD_BTN_RIGHT', '2')}",
+        "",
     ]
     config_path.write_text("\n".join(lines), encoding="utf-8")
     return current
 
 
-def touch_response(path: Path | None = None) -> dict[str, str | float | int]:
+def touch_response(path: Path | None = None) -> dict[str, str | float | int | bool | None]:
     values = load_touch_config(path)
+    detected = find_gamepad_js_device()
     return {
         "touch_map": values.get("PAB_TOUCH_MAP", "trackpad"),
         "touch_lcd": values.get("PAB_TOUCH_LCD", "guide"),
@@ -78,4 +97,8 @@ def touch_response(path: Path | None = None) -> dict[str, str | float | int]:
         "drag_start": int(values.get("PAB_TOUCH_DRAG_START", "12")),
         "multi_tap_seconds": float(values.get("PAB_TOUCH_MULTI_TAP_SECONDS", "0.45")),
         "sensitivity": float(values.get("PAB_TOUCH_SENS", "0.5")),
+        "gamepad_enabled": values.get("PAB_GAMEPAD_ENABLED", "1") == "1",
+        "gamepad_sensitivity": float(values.get("PAB_GAMEPAD_SENS", "8")),
+        "gamepad_deadzone": float(values.get("PAB_GAMEPAD_DEADZONE", "0.15")),
+        "gamepad_device": detected,
     }

@@ -221,6 +221,9 @@ class TouchConfigUpdate(BaseModel):
     drag_start: int = Field(default=12, ge=1, le=60)
     multi_tap_seconds: float = Field(default=0.45, ge=0.15, le=1.0)
     sensitivity: float = Field(default=0.5, ge=0.1, le=2.0)
+    gamepad_enabled: bool = True
+    gamepad_sensitivity: float = Field(default=8.0, ge=1.0, le=30.0)
+    gamepad_deadzone: float = Field(default=0.15, ge=0.0, le=0.5)
 
 
 class TouchConfigResponse(BaseModel):
@@ -230,6 +233,10 @@ class TouchConfigResponse(BaseModel):
     drag_start: int
     multi_tap_seconds: float
     sensitivity: float
+    gamepad_enabled: bool
+    gamepad_sensitivity: float
+    gamepad_deadzone: float
+    gamepad_device: str | None = None
 
 
 class Alert(BaseModel):

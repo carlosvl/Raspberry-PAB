@@ -58,6 +58,24 @@ _ensure_touch_trackpad() {
     echo "$(date -Iseconds) restarted touch-trackpad (was missing)" >>/tmp/touch-watchdog.log
 }
 
+_ensure_gamepad_mouse() {
+    local conf="${HOME}/.config/raspberry-pab/touch-map.conf"
+    [[ -f "${conf}" ]] || return 0
+
+    # shellcheck disable=SC1090
+    source "${conf}"
+    [[ "${PAB_GAMEPAD_ENABLED:-1}" == "1" ]] || return 0
+    pgrep -f 'gamepad-mouse.py' >/dev/null 2>&1 && return 0
+
+    local script="${HOME}/bin/gamepad-mouse.py"
+    [[ -x "${script}" ]] || return 0
+
+    pkill -f 'gamepad-mouse.py' 2>/dev/null || true
+    export DISPLAY="${DISPLAY:-:0}"
+    nohup "${script}" >>/tmp/gamepad-mouse.log 2>&1 &
+    echo "$(date -Iseconds) restarted gamepad-mouse (was missing)" >>/tmp/touch-watchdog.log
+}
+
 apply_keep_awake() {
     local display
 
@@ -71,6 +89,7 @@ apply_keep_awake() {
     fi
 
     _ensure_touch_trackpad
+    _ensure_gamepad_mouse
 }
 
 daemon_keep_awake() {

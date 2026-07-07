@@ -268,6 +268,33 @@ function appendPinDigit(digit) {
   setPinMessage("");
 }
 
+let lastPinActivation = { key: "", at: 0 };
+
+function activatePinOnce(key, action) {
+  const now = Date.now();
+  if (lastPinActivation.key === key && now - lastPinActivation.at < 250) {
+    return;
+  }
+  lastPinActivation = { key, at: now };
+  action();
+}
+
+function bindPinActivation(button, key, action) {
+  if (!button) return;
+  const run = () => activatePinOnce(key, action);
+  button.addEventListener("pointerup", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    run();
+  });
+  button.addEventListener("mouseup", (event) => {
+    if (event.button !== 0) return;
+    run();
+  });
+  button.addEventListener("click", () => {
+    run();
+  });
+}
+
 function deletePinDigit() {
   updatePin((pinInput?.value || "").slice(0, -1));
 }
@@ -528,6 +555,10 @@ function renderTouchConfig(config) {
   const dragStart = document.getElementById("touchDragStart");
   const multiTapSeconds = document.getElementById("touchMultiTapSeconds");
   const sensitivity = document.getElementById("touchSensitivity");
+  const gamepadStatus = document.getElementById("gamepadStatus");
+  const gamepadEnabled = document.getElementById("gamepadEnabled");
+  const gamepadSensitivity = document.getElementById("gamepadSensitivity");
+  const gamepadDeadzone = document.getElementById("gamepadDeadzone");
   if (modeInfo) {
     modeInfo.textContent = `Mode: ${config.touch_map} · LCD: ${config.touch_lcd}`;
   }
@@ -535,6 +566,14 @@ function renderTouchConfig(config) {
   if (dragStart) dragStart.value = String(config.drag_start);
   if (multiTapSeconds) multiTapSeconds.value = String(config.multi_tap_seconds);
   if (sensitivity) sensitivity.value = String(config.sensitivity);
+  if (gamepadEnabled) gamepadEnabled.checked = Boolean(config.gamepad_enabled);
+  if (gamepadSensitivity) gamepadSensitivity.value = String(config.gamepad_sensitivity);
+  if (gamepadDeadzone) gamepadDeadzone.value = String(config.gamepad_deadzone);
+  if (gamepadStatus) {
+    gamepadStatus.textContent = config.gamepad_device
+      ? `Gamepad: connected (${config.gamepad_device})`
+      : "Gamepad: not detected";
+  }
 }
 
 async function loadTouchConfig() {
@@ -549,6 +588,9 @@ async function saveTouchConfig(event) {
     drag_start: Number(document.getElementById("touchDragStart")?.value),
     multi_tap_seconds: Number(document.getElementById("touchMultiTapSeconds")?.value),
     sensitivity: Number(document.getElementById("touchSensitivity")?.value),
+    gamepad_enabled: Boolean(document.getElementById("gamepadEnabled")?.checked),
+    gamepad_sensitivity: Number(document.getElementById("gamepadSensitivity")?.value),
+    gamepad_deadzone: Number(document.getElementById("gamepadDeadzone")?.value),
   };
   try {
     const config = await api("/api/admin/touch", {
@@ -556,7 +598,7 @@ async function saveTouchConfig(event) {
       body: JSON.stringify(payload),
     });
     renderTouchConfig(config);
-    setOutput("Touch settings saved and applied.");
+    setOutput("Touch and gamepad settings saved and applied.");
   } catch (error) {
     setOutput(error.message);
   }
@@ -702,6 +744,7 @@ ruleForm?.addEventListener("submit", async (event) => {
 
 document.getElementById("brandingForm")?.addEventListener("submit", saveBrandingTitle);
 document.getElementById("touchForm")?.addEventListener("submit", saveTouchConfig);
+document.getElementById("gamepadForm")?.addEventListener("submit", saveTouchConfig);
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
@@ -751,16 +794,25 @@ document.getElementById("testRuleLed")?.addEventListener("click", async () => {
 });
 document.getElementById("participantDate")?.addEventListener("change", loadParticipants);
 document.querySelectorAll("[data-pin-digit]").forEach((button) => {
-  button.addEventListener("click", () => {
-    appendPinDigit(button.dataset.pinDigit || "");
-  });
+  const digit = button.dataset.pinDigit || "";
+  bindPinActivation(button, `digit-${digit}`, () => appendPinDigit(digit));
 });
-document.querySelector("[data-pin-delete]")?.addEventListener("click", deletePinDigit);
-document.querySelector("[data-pin-clear]")?.addEventListener("click", clearPinDigits);
+bindPinActivation(
+  document.querySelector("[data-pin-delete]"),
+  "delete",
+  deletePinDigit,
+);
+bindPinActivation(
+  document.querySelector("[data-pin-clear]"),
+  "clear",
+  clearPinDigits,
+);
+if (savePin) {
+  bindPinActivation(savePin, "unlock", unlock);
+}
 document.querySelectorAll("[data-open-keyboard]").forEach((button) => {
   button.addEventListener("click", openKeyboard);
 });
-savePin?.addEventListener("click", unlock);
 pinInput?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") unlock();
 });
