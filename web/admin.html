@@ -73,126 +73,142 @@
       </section>
 
       <section class="admin__grid" id="adminPanels" hidden>
-        <article class="panel panel--wide" id="brandingPanel">
+        <article class="panel" id="brandingPanel">
           <h2>Kiosk Branding</h2>
-          <form class="form" id="brandingForm">
-            <label>
-              Display Title
-              <input id="brandingTitle" maxlength="120" required />
-            </label>
-            <button type="submit">Save Title</button>
-          </form>
-          <div class="branding__logo">
-            <img alt="Current logo preview" class="branding__preview" id="logoPreview" hidden />
-            <p class="branding__hint" id="logoStatus">No logo uploaded.</p>
-            <label>
-              Logo (PNG, max 512 KB)
-              <input accept="image/png" id="logoUpload" type="file" />
-            </label>
-            <div class="button-row">
-              <button id="uploadLogo" type="button">Upload Logo</button>
-              <button id="removeLogo" type="button">Remove Logo</button>
+          <details class="admin-section">
+            <summary>Title</summary>
+            <form class="form" id="brandingForm">
+              <label>
+                Display Title
+                <input id="brandingTitle" maxlength="120" required />
+              </label>
+              <button type="submit">Save Title</button>
+            </form>
+          </details>
+          <details class="admin-section">
+            <summary>Logo</summary>
+            <div class="branding__logo">
+              <img alt="Current logo preview" class="branding__preview" id="logoPreview" hidden />
+              <p class="branding__hint" id="logoStatus">No logo uploaded.</p>
+              <label>
+                Logo (PNG, max 512 KB)
+                <input accept="image/png" id="logoUpload" type="file" />
+              </label>
+              <div class="button-row">
+                <button id="uploadLogo" type="button">Upload Logo</button>
+                <button id="removeLogo" type="button">Remove Logo</button>
+              </div>
             </div>
-          </div>
+          </details>
         </article>
 
-        <article class="panel panel--wide" id="touchPanel">
+        <article class="panel" id="touchPanel">
           <h2>Touch Tuning</h2>
           <p class="branding__hint" id="touchModeInfo">Trackpad mode</p>
-          <form class="form" id="touchForm">
-            <label>
-              Tap slop
-              <input id="touchTapSlop" min="1" max="40" required type="number" />
-              <span class="branding__hint">Still tiny jump on tap? Raise this (try 10–14).</span>
-            </label>
-            <label>
-              Drag start
-              <input id="touchDragStart" min="1" max="60" required type="number" />
-              <span class="branding__hint">Tap sometimes becomes drag? Raise this (try 16–20).</span>
-            </label>
-            <label>
-              Multi-tap window (seconds)
-              <input id="touchMultiTapSeconds" min="0.15" max="1" required step="0.05" type="number" />
-              <span class="branding__hint">Double-tap too hard: raise (try 0.55). Too easy: lower (try 0.35).</span>
-            </label>
-            <label>
-              Sensitivity
-              <input id="touchSensitivity" min="0.1" max="2" required step="0.1" type="number" />
-              <span class="branding__hint">Overall pad speed. 1.0 = full pad width crosses full HDMI width.</span>
-            </label>
-            <button type="submit">Save Touch Settings</button>
-          </form>
-          <hr />
-          <h3>Gamepad as mouse</h3>
-          <p class="branding__hint" id="gamepadStatus">Gamepad: checking…</p>
-          <form class="form" id="gamepadForm">
-            <label class="checkbox-row">
-              <input id="gamepadEnabled" type="checkbox" />
-              Enable gamepad-as-mouse
-            </label>
-            <label>
-              Pointer speed
-              <input id="gamepadSensitivity" min="1" max="30" required step="1" type="number" />
-              <span class="branding__hint">Pixels per stick tick at full tilt (default 8).</span>
-            </label>
-            <label>
-              Stick deadzone
-              <input id="gamepadDeadzone" min="0" max="0.5" required step="0.05" type="number" />
-              <span class="branding__hint">Ignore small stick drift (0.15 = 15%).</span>
-            </label>
-            <label>
-              Edge scroll margin (pixels)
-              <input id="gamepadEdgeMargin" min="4" max="64" required step="1" type="number" />
-              <span class="branding__hint">When the cursor is this close to the screen edge, pushing the stick scrolls the page.</span>
-            </label>
-            <label>
-              Edge scroll speed
-              <input id="gamepadScrollSensitivity" min="0.05" max="2" required step="0.05" type="number" />
-              <span class="branding__hint">Higher values scroll faster when the cursor is pinned to an edge.</span>
-            </label>
-            <p class="branding__hint">Left stick or D-pad moves the cursor while held. Primary face button = left click.</p>
-            <div class="button-row">
-              <button class="button--primary" id="saveGamepadSettings" type="submit">
-                Save Gamepad Settings
-              </button>
-            </div>
-          </form>
+          <details class="admin-section">
+            <summary>Touchpad</summary>
+            <form class="form" id="touchForm">
+              <label>
+                Tap slop
+                <input id="touchTapSlop" min="1" max="40" required type="number" />
+                <span class="branding__hint">Still tiny jump on tap? Raise this (try 10–14).</span>
+              </label>
+              <label>
+                Drag start
+                <input id="touchDragStart" min="1" max="60" required type="number" />
+                <span class="branding__hint">Tap sometimes becomes drag? Raise this (try 16–20).</span>
+              </label>
+              <label>
+                Multi-tap window (seconds)
+                <input id="touchMultiTapSeconds" min="0.15" max="1" required step="0.05" type="number" />
+                <span class="branding__hint">Double-tap too hard: raise (try 0.55). Too easy: lower (try 0.35).</span>
+              </label>
+              <label>
+                Sensitivity
+                <input id="touchSensitivity" min="0.1" max="2" required step="0.1" type="number" />
+                <span class="branding__hint">Overall pad speed. 1.0 = full pad width crosses full HDMI width.</span>
+              </label>
+              <button type="submit">Save Touch Settings</button>
+            </form>
+          </details>
+          <details class="admin-section">
+            <summary>Gamepad as mouse</summary>
+            <form class="form" id="gamepadForm">
+              <p class="branding__hint" id="gamepadStatus">Gamepad: checking…</p>
+              <label class="checkbox-row">
+                <input id="gamepadEnabled" type="checkbox" />
+                Enable gamepad-as-mouse
+              </label>
+              <label>
+                Pointer speed
+                <input id="gamepadSensitivity" min="1" max="30" required step="1" type="number" />
+                <span class="branding__hint">Pixels per stick tick at full tilt (default 8).</span>
+              </label>
+              <label>
+                Stick deadzone
+                <input id="gamepadDeadzone" min="0" max="0.5" required step="0.05" type="number" />
+                <span class="branding__hint">Ignore small stick drift (0.15 = 15%).</span>
+              </label>
+              <label>
+                Edge scroll margin (pixels)
+                <input id="gamepadEdgeMargin" min="4" max="64" required step="1" type="number" />
+                <span class="branding__hint">When the cursor is this close to the screen edge, pushing the stick scrolls the page.</span>
+              </label>
+              <label>
+                Edge scroll speed
+                <input id="gamepadScrollSensitivity" min="0.05" max="2" required step="0.05" type="number" />
+                <span class="branding__hint">Higher values scroll faster when the cursor is pinned to an edge.</span>
+              </label>
+              <p class="branding__hint">Left stick or D-pad moves the cursor while held. Primary face button = left click.</p>
+              <div class="button-row">
+                <button class="button--primary" id="saveGamepadSettings" type="submit">
+                  Save Gamepad Settings
+                </button>
+              </div>
+            </form>
+          </details>
         </article>
 
         <article class="panel" id="participantsPanel">
           <h2>Participants</h2>
-          <form class="form" id="participantForm">
-            <input id="participantId" type="hidden" />
-            <label>
-              Name
-              <input id="participantName" required />
-            </label>
-            <label>
-              Date
-              <input id="participantDate" required type="date" />
-            </label>
-            <label>
-              Start Time
-              <input id="participantTime" required type="time" />
-            </label>
-            <button type="submit">Save Participant</button>
-            <button id="clearParticipant" type="button">Clear</button>
-          </form>
-          <div class="admin__list" id="participantList"></div>
+          <details class="admin-section">
+            <summary>Add / edit</summary>
+            <form class="form" id="participantForm">
+              <input id="participantId" type="hidden" />
+              <label>
+                Name
+                <input id="participantName" required />
+              </label>
+              <label>
+                Date
+                <input id="participantDate" required type="date" />
+              </label>
+              <label>
+                Start Time
+                <input id="participantTime" required type="time" />
+              </label>
+              <button type="submit">Save Participant</button>
+              <button id="clearParticipant" type="button">Clear</button>
+            </form>
+          </details>
+          <details class="admin-section">
+            <summary>Participants list</summary>
+            <div class="admin__list" id="participantList"></div>
+          </details>
         </article>
 
         <article class="panel" id="rulesPanel">
           <h2>Reminder Rules</h2>
 
-          <details class="testlab-section">
-            <summary>LED Matrix (Arduino WS2812)</summary>
+          <details class="admin-section">
+            <summary>LED Matrix</summary>
             <div class="form">
               <p class="led-status" id="matrixStatus">Matrix: checking…</p>
               <p class="branding__hint">
                 On reminders, the matrix <strong>scrolls the message template</strong>
                 (with <code>{name}</code> filled in) in the rule LED color for
-                flash + chase duration. <strong>Test matrix</strong> scrolls the
-                message currently in the form.
+                flash + chase duration. <strong>Test matrix</strong> uses the message
+                and light settings from the reminder sections below.
               </p>
               <div class="button-row">
                 <button id="testRuleMatrix" type="button">Test matrix</button>
@@ -200,8 +216,8 @@
             </div>
           </details>
 
-          <details class="testlab-section">
-            <summary>LED Strip Configuration</summary>
+          <details class="admin-section">
+            <summary>BLE LED strip</summary>
             <div class="form">
               <p class="led-status" id="ledStatus">LED: checking…</p>
               <label class="checkbox">
@@ -224,94 +240,121 @@
               </label>
               <div class="button-row">
                 <button id="saveLedConfig" type="button">Save LED Config</button>
+                <button id="testRuleLed" type="button">Test BLE strip</button>
               </div>
             </div>
           </details>
 
-          <form class="form" id="ruleForm">
+          <form id="ruleForm">
             <input id="ruleId" type="hidden" />
-            <label>
-              Offset Minutes
-              <input id="ruleOffset" min="0" required type="number" />
-            </label>
-            <label>
-              Message Template
-              <input id="ruleMessage" placeholder="Warm Up {name}" required />
-            </label>
-            <label>
-              Repeat Every Minutes
-              <input id="ruleRepeat" min="1" type="number" />
-            </label>
-            <label class="checkbox">
-              <input id="ruleEnabled" checked type="checkbox" />
-              Enabled
-            </label>
-            <label class="checkbox">
-              <input id="ruleLedEnabled" type="checkbox" />
-              Flash LED on reminder
-            </label>
-            <label>
-              LED color
-              <input id="ruleLedColor" type="color" value="#ffc800" />
-            </label>
-            <label>
-              Flash interval (ms)
-              <input id="ruleLedInterval" min="100" max="5000" step="50" type="number" value="500" />
-            </label>
-            <label>
-              Flash duration (seconds)
-              <input id="ruleLedDuration" min="1" max="120" type="number" value="10" />
-            </label>
-            <label>
-              Chase duration (seconds)
-              <input id="ruleLedChaseDuration" min="0" max="120" type="number" value="10" />
-            </label>
-            <p class="branding__hint">Chase runs back-and-forth on the strip after flashing. Set to 0 to skip.</p>
-            <label class="checkbox">
-              <input id="ruleBuzzerEnabled" type="checkbox" />
-              Play buzzer
-            </label>
-            <label>
-              Buzzer pitch (Hz)
-              <input id="ruleBuzzerPitch" min="100" max="10000" step="50" type="number" value="2500" />
-            </label>
-            <label>
-              Buzzer volume (0-100)
-              <input id="ruleBuzzerVolume" min="0" max="100" type="number" value="80" />
-            </label>
-            <label>
-              Buzzer count
-              <input id="ruleBuzzerCount" min="1" max="50" type="number" value="3" />
-            </label>
-            <label>
-              Beep length (ms)
-              <input id="ruleBuzzerBeepMs" min="10" max="5000" type="number" value="200" />
-            </label>
-            <label>
-              Gap between beeps (ms)
-              <input id="ruleBuzzerGapMs" min="0" max="5000" type="number" value="150" />
-            </label>
-            <p class="branding__hint">Pitch applies to passive piezo buzzers. Active modules use fixed tone; volume and count still apply.</p>
-            <div class="button-row">
-              <button id="testRuleBuzzer" type="button">Test buzzer</button>
-            </div>
-            <div class="button-row">
-              <button id="testRuleLed" type="button">Test BLE strip</button>
-            </div>
-            <button type="submit">Save Rule</button>
-            <button id="clearRule" type="button">Clear</button>
+
+            <details class="admin-section">
+              <summary>Edit reminder</summary>
+              <div class="form">
+                <label>
+                  Offset Minutes
+                  <input id="ruleOffset" min="0" required type="number" />
+                </label>
+                <label>
+                  Message Template
+                  <input id="ruleMessage" placeholder="Warm Up {name}" required />
+                </label>
+                <label>
+                  Repeat Every Minutes
+                  <input id="ruleRepeat" min="1" type="number" />
+                </label>
+                <label class="checkbox">
+                  <input id="ruleEnabled" checked type="checkbox" />
+                  Enabled
+                </label>
+                <div class="button-row">
+                  <button type="submit">Save Rule</button>
+                  <button id="clearRule" type="button">Clear</button>
+                </div>
+              </div>
+            </details>
+
+            <details class="admin-section">
+              <summary>Reminder lights</summary>
+              <div class="form">
+                <label class="checkbox">
+                  <input id="ruleLedEnabled" type="checkbox" />
+                  Flash LED on reminder
+                </label>
+                <label>
+                  LED color
+                  <input id="ruleLedColor" type="color" value="#ffc800" />
+                </label>
+                <label>
+                  Flash interval (ms)
+                  <input id="ruleLedInterval" min="100" max="5000" step="50" type="number" value="500" />
+                </label>
+                <label>
+                  Flash duration (seconds)
+                  <input id="ruleLedDuration" min="1" max="120" type="number" value="10" />
+                </label>
+                <label>
+                  Chase duration (seconds)
+                  <input id="ruleLedChaseDuration" min="0" max="120" type="number" value="10" />
+                </label>
+                <p class="branding__hint">
+                  Chase runs back-and-forth on the <strong>BLE strip</strong> after flashing
+                  (set to 0 to skip). The <strong>matrix</strong> scrolls the message for
+                  flash + chase duration total — it does not run a separate chase.
+                  Test from the LED Matrix / BLE LED strip sections above.
+                </p>
+              </div>
+            </details>
+
+            <details class="admin-section">
+              <summary>Reminder buzzer</summary>
+              <div class="form">
+                <label class="checkbox">
+                  <input id="ruleBuzzerEnabled" type="checkbox" />
+                  Play buzzer
+                </label>
+                <label>
+                  Buzzer pitch (Hz)
+                  <input id="ruleBuzzerPitch" min="100" max="10000" step="50" type="number" value="2500" />
+                </label>
+                <label>
+                  Buzzer volume (0-100)
+                  <input id="ruleBuzzerVolume" min="0" max="100" type="number" value="80" />
+                </label>
+                <label>
+                  Buzzer count
+                  <input id="ruleBuzzerCount" min="1" max="50" type="number" value="3" />
+                </label>
+                <label>
+                  Beep length (ms)
+                  <input id="ruleBuzzerBeepMs" min="10" max="5000" type="number" value="200" />
+                </label>
+                <label>
+                  Gap between beeps (ms)
+                  <input id="ruleBuzzerGapMs" min="0" max="5000" type="number" value="150" />
+                </label>
+                <p class="branding__hint">Pitch applies to passive piezo buzzers. Active modules use fixed tone; volume and count still apply.</p>
+                <div class="button-row">
+                  <button id="testRuleBuzzer" type="button">Test buzzer</button>
+                </div>
+              </div>
+            </details>
+
           </form>
-          <div class="admin__list" id="ruleList"></div>
+
+          <details class="admin-section">
+            <summary>Saved rules</summary>
+            <div class="admin__list" id="ruleList"></div>
+          </details>
         </article>
 
-        <article class="panel panel--wide" id="testLabPanel">
+        <article class="panel" id="testLabPanel">
           <h2>Test Lab</h2>
           <p class="branding__hint">
             Pick a scenario, run it, then open the kiosk to test LED/buzzer reminders.
           </p>
           <p class="hardware-status" id="hardwareStatus" hidden></p>
 
-          <!-- ① Scenario picker -->
           <div class="scenario-picker">
             <div class="scenario-picker__header">
               <select id="scenarioSelect" aria-label="Choose scenario"></select>
@@ -323,15 +366,13 @@
             </div>
           </div>
 
-          <!-- ② Primary actions -->
           <div class="testlab-actions">
             <button id="runScenarioTest" type="button" class="button--primary">Run Test</button>
             <button id="openTestKiosk" type="button">Open Kiosk ⏩</button>
             <button id="clearTestData" type="button" class="button--danger">Clear Test Data</button>
           </div>
 
-          <!-- ③ Sim clock -->
-          <details class="testlab-section" open>
+          <details class="admin-section">
             <summary>Simulated Clock</summary>
             <div class="form">
               <label>
@@ -347,8 +388,7 @@
             </div>
           </details>
 
-          <!-- ④ Scenario editor (collapsed by default) -->
-          <details class="testlab-section" id="scenarioEditor">
+          <details class="admin-section" id="scenarioEditor">
             <summary>Edit Scenario</summary>
             <div class="form">
               <div class="form-row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
@@ -398,50 +438,62 @@
           </details>
         </article>
 
-        <article class="panel panel--wide" id="raceResultsPanel">
+        <article class="panel" id="raceResultsPanel">
           <h2>Race Results</h2>
           <p class="branding__hint">
             Sync the MCA index from Precision Race, then pull ITS YOUR RACE results for a race day.
           </p>
-          <div class="form">
-            <label>
-              Event Date
-              <input id="raceResultsDate" type="date" />
-            </label>
-            <div class="button-row">
-              <button id="syncRaceIndex" type="button">Sync MCA index</button>
-              <button id="syncRaceResults" type="button">Sync results for date</button>
+          <details class="admin-section">
+            <summary>Sync for date</summary>
+            <div class="form">
+              <label>
+                Event Date
+                <input id="raceResultsDate" type="date" />
+              </label>
+              <div class="button-row">
+                <button id="syncRaceIndex" type="button">Sync MCA index</button>
+                <button id="syncRaceResults" type="button">Sync results for date</button>
+              </div>
             </div>
-          </div>
-          <div class="form" style="margin-top:1rem">
-            <label>
-              Auto-sync interval (minutes, 0 = off)
-              <input id="syncIntervalMinutes" type="number" min="0" max="1440" step="1" />
-            </label>
-            <div class="button-row">
-              <button id="saveSyncInterval" type="button">Save interval</button>
+          </details>
+          <details class="admin-section">
+            <summary>Auto-sync</summary>
+            <div class="form">
+              <label>
+                Auto-sync interval (minutes, 0 = off)
+                <input id="syncIntervalMinutes" type="number" min="0" max="1440" step="1" />
+              </label>
+              <div class="button-row">
+                <button id="saveSyncInterval" type="button">Save interval</button>
+              </div>
+              <p class="branding__hint" id="syncIntervalStatus"></p>
             </div>
-            <p class="branding__hint" id="syncIntervalStatus"></p>
-          </div>
-          <div class="admin__list" id="raceResultsList"></div>
+          </details>
+          <details class="admin-section">
+            <summary>Results</summary>
+            <div class="admin__list" id="raceResultsList"></div>
+          </details>
         </article>
 
-        <article class="panel panel--wide" id="importPanel">
+        <article class="panel" id="importPanel">
           <h2>Import / Export</h2>
-          <div class="form">
-            <label>
-              Event Date
-              <input id="importDate" type="date" />
-            </label>
-            <label>
-              Paste Schedule JSON
-              <textarea id="importJson" rows="10"></textarea>
-            </label>
-            <div class="button-row">
-              <button id="importSchedule" type="button">Import JSON</button>
-              <button id="exportSchedule" type="button">Export Selected Date</button>
+          <details class="admin-section">
+            <summary>Import / export</summary>
+            <div class="form">
+              <label>
+                Event Date
+                <input id="importDate" type="date" />
+              </label>
+              <label>
+                Paste Schedule JSON
+                <textarea id="importJson" rows="10"></textarea>
+              </label>
+              <div class="button-row">
+                <button id="importSchedule" type="button">Import JSON</button>
+                <button id="exportSchedule" type="button">Export Selected Date</button>
+              </div>
             </div>
-          </div>
+          </details>
         </article>
         <pre class="admin__output" id="adminOutput"></pre>
       </section>

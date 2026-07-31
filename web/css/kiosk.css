@@ -498,7 +498,8 @@ body.admin-page {
 .admin__pin button,
 .button-row button,
 .admin__item button,
-.testlab-actions button {
+.testlab-actions button,
+.admin-section__actions button {
   padding: 0.75rem 1rem;
   border: 0;
   border-radius: 0.7rem;
@@ -614,16 +615,16 @@ body.admin-page {
   font-weight: 600;
 }
 
-/* --- Collapsible sections --- */
+/* --- Collapsible sections (admin tabs) --- */
 
-.testlab-section {
+.admin-section {
   margin-bottom: 0.75rem;
   border: 1px solid #1e293b;
   border-radius: 0.75rem;
   background: #0f172a;
 }
 
-.testlab-section > summary {
+.admin-section > summary {
   padding: 0.75rem 1rem;
   cursor: pointer;
   font-weight: 700;
@@ -634,22 +635,40 @@ body.admin-page {
   gap: 0.5rem;
 }
 
-.testlab-section > summary::before {
+.admin-section > summary::before {
   content: "▸";
   display: inline-block;
   transition: transform 0.15s;
 }
 
-.testlab-section[open] > summary::before {
+.admin-section[open] > summary::before {
   transform: rotate(90deg);
 }
 
-.testlab-section > summary::-webkit-details-marker {
+.admin-section > summary::-webkit-details-marker {
   display: none;
 }
 
-.testlab-section > .form {
+.admin-section > .form,
+.admin-section > .admin__list,
+.admin-section > .branding__logo {
   padding: 0 1rem 1rem;
+}
+
+.admin-section__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.admin-section__actions button {
+  cursor: pointer;
+}
+
+/* Logo block inside a section already has padding from .admin-section */
+.admin-section > .branding__logo {
+  margin-top: 0;
 }
 
 .branding__logo {
@@ -1001,7 +1020,8 @@ body.admin-page {
   .admin__pin button,
   .button-row button,
   .admin__item button,
-  .testlab-actions button {
+  .testlab-actions button,
+  .admin-section__actions button {
     padding: 0.55rem 0.7rem;
     border-radius: 0.55rem;
     font-size: 0.9rem;
@@ -1048,12 +1068,14 @@ body.admin-page {
     gap: 0.5rem;
   }
 
-  .testlab-section > summary {
+  .admin-section > summary {
     padding: 0.6rem 0.75rem;
     font-size: 0.9rem;
   }
 
-  .testlab-section > .form {
+  .admin-section > .form,
+  .admin-section > .admin__list,
+  .admin-section > .branding__logo {
     padding: 0 0.75rem 0.75rem;
   }
 }
