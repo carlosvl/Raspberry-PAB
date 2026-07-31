@@ -15,13 +15,16 @@ from fastapi.staticfiles import StaticFiles
 
 from raspberry_pab.branding import effective_display_title, logo_url
 from raspberry_pab.kiosk_clock import get_clock_state
+from raspberry_pab.arduino_serial import HARDWARE_SERIAL_LOCK
 from raspberry_pab.buzzer_controller import BuzzerController
+from raspberry_pab.matrix_controller import MatrixController
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.led_controller import LedController
 from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.buzzer import router as buzzer_router
+from raspberry_pab.routes.matrix import router as matrix_router
 from raspberry_pab.routes.kiosk_clock import router as kiosk_clock_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.led import router as led_router
@@ -64,7 +67,15 @@ def create_app(settings: Settings) -> FastAPI:
     scheduler = ReminderScheduler(store, broker)
     results_scheduler = RaceResultsSyncScheduler(store)
     led_controller = LedController(settings)
-    buzzer_controller = BuzzerController(settings)
+    hardware_lock = HARDWARE_SERIAL_LOCK
+    buzzer_controller = BuzzerController(
+        settings,
+        hardware_lock=hardware_lock,
+    )
+    matrix_controller = MatrixController(
+        settings,
+        hardware_lock=hardware_lock,
+    )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -88,6 +99,12 @@ def create_app(settings: Settings) -> FastAPI:
                             "LED listener failed for alert %s", alert.id
                         )
                     try:
+                        await matrix_controller.show(rule, alert.message)
+                    except Exception:
+                        logger.exception(
+                            "Matrix listener failed for alert %s", alert.id
+                        )
+                    try:
                         await buzzer_controller.beep(rule)
                     except Exception:
                         logger.exception(
@@ -107,6 +124,7 @@ def create_app(settings: Settings) -> FastAPI:
             with contextlib.suppress(asyncio.CancelledError):
                 await hardware_task
             await led_controller.shutdown()
+            await matrix_controller.shutdown()
             await buzzer_controller.shutdown()
             await results_scheduler.stop()
             await scheduler.stop()
@@ -122,6 +140,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.alert_broker = broker
     app.state.reminder_scheduler = scheduler
     app.state.led_controller = led_controller
+    app.state.matrix_controller = matrix_controller
     app.state.buzzer_controller = buzzer_controller
     web_dir = settings.web_dir
 
@@ -183,6 +202,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(kiosk_router)
     app.include_router(led_router)
     app.include_router(buzzer_router)
+    app.include_router(matrix_router)
     app.include_router(race_results_router)
     app.include_router(test_scenarios_router)
     app.include_router(kiosk_clock_router)

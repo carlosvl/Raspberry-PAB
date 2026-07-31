@@ -46,6 +46,12 @@ class Settings:
     buzzer_port: str = ""
     buzzer_mode: str = "active"
     buzzer_baud: int = 115200
+    matrix_enabled: bool = False
+    matrix_port: str = ""
+    matrix_width: int = 64  # two daisy-chained 8x32 panels
+    matrix_height: int = 8
+    matrix_brightness: int = 64
+    matrix_baud: int = 115200
 
     @property
     def kiosk_url(self) -> str:
@@ -84,4 +90,14 @@ class Settings:
             buzzer_port=os.getenv("PAB_BUZZER_PORT", cls.buzzer_port),
             buzzer_mode=os.getenv("PAB_BUZZER_MODE", cls.buzzer_mode),
             buzzer_baud=int(os.getenv("PAB_BUZZER_BAUD", str(cls.buzzer_baud))),
+            matrix_enabled=_env_bool("PAB_MATRIX_ENABLED", cls.matrix_enabled),
+            matrix_port=os.getenv("PAB_MATRIX_PORT", cls.matrix_port),
+            matrix_width=int(os.getenv("PAB_MATRIX_WIDTH", str(cls.matrix_width))),
+            matrix_height=int(
+                os.getenv("PAB_MATRIX_HEIGHT", str(cls.matrix_height))
+            ),
+            matrix_brightness=int(
+                os.getenv("PAB_MATRIX_BRIGHTNESS", str(cls.matrix_brightness))
+            ),
+            matrix_baud=int(os.getenv("PAB_MATRIX_BAUD", str(cls.matrix_baud))),
         )

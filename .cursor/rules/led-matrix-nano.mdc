@@ -1,0 +1,33 @@
+---
+description: Nano SRAM and serial constraints for the dual WS2812 LED matrix
+globs: hardware/arduino/**/*,src/raspberry_pab/**/*matrix*,src/raspberry_pab/arduino_serial.py,scripts/upload-*matrix*,scripts/upload-hardware*
+alwaysApply: false
+---
+
+# LED matrix on Arduino Nano (ATmega328P)
+
+## Hard limits
+
+- Nano has **2 KB SRAM**. Dual 8×32 panels = **512 LEDs × 3 = 1536 B** pixel buffer (heap via NeoPixel).
+- After ~220 B BSS, only ~**250–300 B stack** remains. Exceeding that silently corrupts pixels or hangs (commands may still return `OK`).
+- Prefer `Adafruit_NeoPixel` only — **do not** pull NeoMatrix/GFX for 512 LEDs.
+
+## Firmware rules
+
+- Keep globals near **matrix_test** (~220 B). Measure with `arduino-cli` “Global variables use …”.
+- Put command strings / formats in **flash**: `PSTR`, `strcmp_P`, `F()`. Never leave `"SCROLL %d…"` literals in `.data`.
+- **Never use `sscanf` / `scanf`** — stack blows the pixel buffer. Parse with tiny `strtol` helpers.
+- Handshake banner may be `READY` or `READY PIXELS 512 FREE …`. Python must accept `startswith("READY")`.
+- Scroll timing: `show()` disables interrupts so `millis()` drifts; prefer **frame counts**, and give Python **≥ ~2× duration + 5s** to wait for `OK`.
+
+## Python / product behavior
+
+- Shared USB port with buzzer (`HARDWARE_SERIAL_LOCK`); matrix port defaults to buzzer port.
+- Keep SCROLL lines under **64-byte** RX: sanitize message to ~**40** chars.
+- Admin **Test matrix** scrolls the rule message for flash+chase duration — it is **not** BLE strip flash→chase.
+- Validate on device with `INFO` → `PIXELS 512` and positive `FREE` before claiming LEDs work.
+
+## Verify
+
+- `matrix_test` lights panels → wiring/power OK.
+- Production sketch: compile BSS ~220 B, boot `PIXELS 512`, SOLID then SCROLL visible on both panels.

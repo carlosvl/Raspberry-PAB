@@ -9,6 +9,7 @@ import time
 from collections.abc import Callable
 from typing import Protocol
 
+from raspberry_pab.arduino_serial import HARDWARE_SERIAL_LOCK, handshake
 from raspberry_pab.config import Settings
 from raspberry_pab.models import ReminderRule
 
@@ -71,9 +72,11 @@ class BuzzerController:
         settings: Settings,
         *,
         serial_factory: SerialFactory | None = None,
+        hardware_lock: asyncio.Lock | None = None,
     ) -> None:
         self._settings = settings
         self._serial_factory = serial_factory or _default_serial_factory
+        self._hardware_lock = hardware_lock or HARDWARE_SERIAL_LOCK
         self._lock = asyncio.Lock()
         self._beep_task: asyncio.Task[None] | None = None
 
@@ -160,51 +163,19 @@ class BuzzerController:
     ) -> None:
         async with self._lock:
             try:
-                await asyncio.to_thread(
-                    self._execute_beep_sequence,
-                    pitch_hz=pitch_hz,
-                    volume=volume,
-                    count=count,
-                    beep_ms=beep_ms,
-                    gap_ms=gap_ms,
-                )
+                async with self._hardware_lock:
+                    await asyncio.to_thread(
+                        self._execute_beep_sequence,
+                        pitch_hz=pitch_hz,
+                        volume=volume,
+                        count=count,
+                        beep_ms=beep_ms,
+                        gap_ms=gap_ms,
+                    )
             except asyncio.CancelledError:
                 raise
             except Exception:
                 logger.exception("Buzzer beep failed")
-
-    def _transact_line(
-        self,
-        port: _SerialPort,
-        command: str,
-        expected: set[str],
-        *,
-        attempts: int,
-    ) -> str:
-        payload = f"{command}\n" if not command.endswith("\n") else command
-        for _ in range(attempts):
-            port.write(payload.encode("ascii"))
-            port.flush()
-            deadline = time.monotonic() + 1.0
-            while time.monotonic() < deadline:
-                line = port.readline().decode("ascii", errors="replace").strip()
-                if not line or not line.isprintable():
-                    continue
-                if line in expected:
-                    return line
-        return ""
-
-    def _wait_for_boot(self, port: _SerialPort, *, timeout: float = 2.5) -> list[str]:
-        boot_lines: list[str] = []
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            line = port.readline().decode("ascii", errors="replace").strip()
-            if not line or not line.isprintable():
-                continue
-            boot_lines.append(line)
-            if line == "READY":
-                return boot_lines
-        return boot_lines
 
     def _execute_beep_sequence(
         self,
@@ -216,18 +187,9 @@ class BuzzerController:
         gap_ms: int,
     ) -> str:
         port = self._serial_factory(self._settings)
-        boot_lines: list[str] = []
         response_lines: list[str] = []
         try:
-            boot_lines = self._wait_for_boot(port)
-            if "READY" not in boot_lines:
-                raise RuntimeError(
-                    f"Arduino did not send READY (got {boot_lines!r})"
-                )
-
-            pong = self._transact_line(port, "PING", {"PONG"}, attempts=5)
-            if pong != "PONG":
-                raise RuntimeError(f"Arduino did not respond to PING (got {pong!r})")
+            handshake(port)
 
             beep_cmd = build_beep_command(
                 pitch_hz=pitch_hz,

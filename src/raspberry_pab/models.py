@@ -183,6 +183,7 @@ class LedStripTest(BaseModel):
     led_flash_interval_ms: int = Field(default=500, ge=100, le=5000)
     led_flash_duration_seconds: int = Field(default=3, ge=1, le=120)
     led_chase_duration_seconds: int = Field(default=10, ge=0, le=120)
+    message: str = Field(default="Matrix test", min_length=1, max_length=80)
 
 
 class LedConfig(BaseModel):
@@ -224,6 +225,8 @@ class TouchConfigUpdate(BaseModel):
     gamepad_enabled: bool = True
     gamepad_sensitivity: float = Field(default=8.0, ge=1.0, le=30.0)
     gamepad_deadzone: float = Field(default=0.15, ge=0.0, le=0.5)
+    gamepad_edge_margin: int = Field(default=16, ge=4, le=64)
+    gamepad_scroll_sensitivity: float = Field(default=0.35, ge=0.05, le=2.0)
 
 
 class TouchConfigResponse(BaseModel):
@@ -236,6 +239,8 @@ class TouchConfigResponse(BaseModel):
     gamepad_enabled: bool
     gamepad_sensitivity: float
     gamepad_deadzone: float
+    gamepad_edge_margin: int
+    gamepad_scroll_sensitivity: float
     gamepad_device: str | None = None
 
 

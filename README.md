@@ -143,6 +143,12 @@ The admin **Race Results** panel syncs the [Precision Race MCA index](https://ww
 | `PAB_BUZZER_PORT`      | *(empty)*                      | Serial port for Arduino Nano                 |
 | `PAB_BUZZER_MODE`      | `active`                       | `active` or `passive` buzzer module          |
 | `PAB_BUZZER_BAUD`      | `115200`                       | Serial baud rate                             |
+| `PAB_MATRIX_ENABLED`   | `false`                        | Enable WS2812 matrix on reminder alerts      |
+| `PAB_MATRIX_PORT`      | *(empty)*                      | Serial port; defaults to `PAB_BUZZER_PORT`   |
+| `PAB_MATRIX_WIDTH`     | `64`                           | Matrix width (two 8×32 panels daisy-chained) |
+| `PAB_MATRIX_HEIGHT`    | `8`                            | Matrix height in pixels                      |
+| `PAB_MATRIX_BRIGHTNESS`| `64`                           | Max matrix brightness (0–255)              |
+| `PAB_MATRIX_BAUD`      | `115200`                       | Matrix serial baud rate                      |
 
 On the Pi touchscreen, tap **Keyboard** on the admin PIN screen to open the installed OS on-screen keyboard. `scripts/install.sh` tries to install common keyboard packages (`wvkbd`, `matchbox-keyboard`, `onboard`) and `scripts/touch-keyboard.sh` launches whichever is available for the current desktop session.
 

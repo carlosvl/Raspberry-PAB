@@ -140,8 +140,22 @@
               <input id="gamepadDeadzone" min="0" max="0.5" required step="0.05" type="number" />
               <span class="branding__hint">Ignore small stick drift (0.15 = 15%).</span>
             </label>
-            <p class="branding__hint">Left stick or D-pad moves the cursor while held. Button 0 = left click, button 1 = right click.</p>
-            <button type="submit">Save Gamepad Settings</button>
+            <label>
+              Edge scroll margin (pixels)
+              <input id="gamepadEdgeMargin" min="4" max="64" required step="1" type="number" />
+              <span class="branding__hint">When the cursor is this close to the screen edge, pushing the stick scrolls the page.</span>
+            </label>
+            <label>
+              Edge scroll speed
+              <input id="gamepadScrollSensitivity" min="0.05" max="2" required step="0.05" type="number" />
+              <span class="branding__hint">Higher values scroll faster when the cursor is pinned to an edge.</span>
+            </label>
+            <p class="branding__hint">Left stick or D-pad moves the cursor while held. Primary face button = left click.</p>
+            <div class="button-row">
+              <button class="button--primary" id="saveGamepadSettings" type="submit">
+                Save Gamepad Settings
+              </button>
+            </div>
           </form>
         </article>
 
@@ -169,6 +183,22 @@
 
         <article class="panel" id="rulesPanel">
           <h2>Reminder Rules</h2>
+
+          <details class="testlab-section">
+            <summary>LED Matrix (Arduino WS2812)</summary>
+            <div class="form">
+              <p class="led-status" id="matrixStatus">Matrix: checking…</p>
+              <p class="branding__hint">
+                On reminders, the matrix <strong>scrolls the message template</strong>
+                (with <code>{name}</code> filled in) in the rule LED color for
+                flash + chase duration. <strong>Test matrix</strong> scrolls the
+                message currently in the form.
+              </p>
+              <div class="button-row">
+                <button id="testRuleMatrix" type="button">Test matrix</button>
+              </div>
+            </div>
+          </details>
 
           <details class="testlab-section">
             <summary>LED Strip Configuration</summary>
@@ -218,7 +248,7 @@
             </label>
             <label class="checkbox">
               <input id="ruleLedEnabled" type="checkbox" />
-              Flash LED strip
+              Flash LED on reminder
             </label>
             <label>
               LED color
@@ -266,7 +296,7 @@
               <button id="testRuleBuzzer" type="button">Test buzzer</button>
             </div>
             <div class="button-row">
-              <button id="testRuleLed" type="button">Test LED strip</button>
+              <button id="testRuleLed" type="button">Test BLE strip</button>
             </div>
             <button type="submit">Save Rule</button>
             <button id="clearRule" type="button">Clear</button>

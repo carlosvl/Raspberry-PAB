@@ -158,7 +158,6 @@ function ruleLedSummary(rule) {
       ? `, then chase ${rule.led_chase_duration_seconds}s`
       : "");
 }
-
 function adminPin() {
   return sessionStorage.getItem("pabAdminPin") || "";
 }
@@ -542,11 +541,26 @@ async function loadAll() {
       loadSyncInterval(),
       loadHardwareStatus(),
       loadLedConfig(),
+      loadMatrixStatus(),
     ]);
     setOutput("Loaded.");
   } catch (error) {
     setOutput(error.message);
   }
+}
+
+function readTouchConfigPayload() {
+  return {
+    tap_slop: Number(document.getElementById("touchTapSlop")?.value),
+    drag_start: Number(document.getElementById("touchDragStart")?.value),
+    multi_tap_seconds: Number(document.getElementById("touchMultiTapSeconds")?.value),
+    sensitivity: Number(document.getElementById("touchSensitivity")?.value),
+    gamepad_enabled: Boolean(document.getElementById("gamepadEnabled")?.checked),
+    gamepad_sensitivity: Number(document.getElementById("gamepadSensitivity")?.value),
+    gamepad_deadzone: Number(document.getElementById("gamepadDeadzone")?.value),
+    gamepad_edge_margin: Number(document.getElementById("gamepadEdgeMargin")?.value),
+    gamepad_scroll_sensitivity: Number(document.getElementById("gamepadScrollSensitivity")?.value),
+  };
 }
 
 function renderTouchConfig(config) {
@@ -559,6 +573,8 @@ function renderTouchConfig(config) {
   const gamepadEnabled = document.getElementById("gamepadEnabled");
   const gamepadSensitivity = document.getElementById("gamepadSensitivity");
   const gamepadDeadzone = document.getElementById("gamepadDeadzone");
+  const gamepadEdgeMargin = document.getElementById("gamepadEdgeMargin");
+  const gamepadScrollSensitivity = document.getElementById("gamepadScrollSensitivity");
   if (modeInfo) {
     modeInfo.textContent = `Mode: ${config.touch_map} · LCD: ${config.touch_lcd}`;
   }
@@ -569,6 +585,10 @@ function renderTouchConfig(config) {
   if (gamepadEnabled) gamepadEnabled.checked = Boolean(config.gamepad_enabled);
   if (gamepadSensitivity) gamepadSensitivity.value = String(config.gamepad_sensitivity);
   if (gamepadDeadzone) gamepadDeadzone.value = String(config.gamepad_deadzone);
+  if (gamepadEdgeMargin) gamepadEdgeMargin.value = String(config.gamepad_edge_margin);
+  if (gamepadScrollSensitivity) {
+    gamepadScrollSensitivity.value = String(config.gamepad_scroll_sensitivity);
+  }
   if (gamepadStatus) {
     gamepadStatus.textContent = config.gamepad_device
       ? `Gamepad: connected (${config.gamepad_device})`
@@ -583,22 +603,27 @@ async function loadTouchConfig() {
 
 async function saveTouchConfig(event) {
   event.preventDefault();
-  const payload = {
-    tap_slop: Number(document.getElementById("touchTapSlop")?.value),
-    drag_start: Number(document.getElementById("touchDragStart")?.value),
-    multi_tap_seconds: Number(document.getElementById("touchMultiTapSeconds")?.value),
-    sensitivity: Number(document.getElementById("touchSensitivity")?.value),
-    gamepad_enabled: Boolean(document.getElementById("gamepadEnabled")?.checked),
-    gamepad_sensitivity: Number(document.getElementById("gamepadSensitivity")?.value),
-    gamepad_deadzone: Number(document.getElementById("gamepadDeadzone")?.value),
-  };
   try {
     const config = await api("/api/admin/touch", {
       method: "PUT",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(readTouchConfigPayload()),
     });
     renderTouchConfig(config);
-    setOutput("Touch and gamepad settings saved and applied.");
+    setOutput("Touch settings saved and applied.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+}
+
+async function saveGamepadConfig(event) {
+  event.preventDefault();
+  try {
+    const config = await api("/api/admin/touch", {
+      method: "PUT",
+      body: JSON.stringify(readTouchConfigPayload()),
+    });
+    renderTouchConfig(config);
+    setOutput("Gamepad settings saved and applied.");
   } catch (error) {
     setOutput(error.message);
   }
@@ -744,7 +769,7 @@ ruleForm?.addEventListener("submit", async (event) => {
 
 document.getElementById("brandingForm")?.addEventListener("submit", saveBrandingTitle);
 document.getElementById("touchForm")?.addEventListener("submit", saveTouchConfig);
-document.getElementById("gamepadForm")?.addEventListener("submit", saveTouchConfig);
+document.getElementById("gamepadForm")?.addEventListener("submit", saveGamepadConfig);
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
@@ -792,6 +817,27 @@ document.getElementById("testRuleLed")?.addEventListener("click", async () => {
     setOutput("❌ " + (error instanceof Error ? error.message : String(error)));
   }
 });
+
+document.getElementById("testRuleMatrix")?.addEventListener("click", async () => {
+  const ledSettings = readRuleLedSettings();
+  const message =
+    document.getElementById("ruleMessage")?.value?.trim() || "Matrix test";
+  const totalSeconds =
+    ledSettings.led_flash_duration_seconds + (ledSettings.led_chase_duration_seconds || 0);
+  setOutput(`Testing matrix scroll (“${message}”, ~${totalSeconds}s)…`);
+  try {
+    await api("/api/admin/matrix/test", {
+      method: "POST",
+      body: JSON.stringify({ ...ledSettings, message }),
+    });
+    setOutput(
+      `Matrix test started — scrolling “${message}” for ~${totalSeconds}s`,
+    );
+  } catch (error) {
+    setOutput("❌ " + (error instanceof Error ? error.message : String(error)));
+  }
+});
+
 document.getElementById("participantDate")?.addEventListener("change", loadParticipants);
 document.querySelectorAll("[data-pin-digit]").forEach((button) => {
   const digit = button.dataset.pinDigit || "";
@@ -1225,8 +1271,10 @@ async function loadHardwareStatus() {
     const issues = [];
     if (!hw.buzzer_enabled) issues.push("Buzzer disabled (PAB_BUZZER_ENABLED)");
     else if (!hw.buzzer_port) issues.push("Buzzer port not set (PAB_BUZZER_PORT)");
-    if (!hw.led_enabled) issues.push("LED disabled (PAB_LED_ENABLED)");
-    else if (!hw.led_address) issues.push("LED address not set (PAB_LED_ADDRESS)");
+    if (!hw.led_enabled) issues.push("BLE LED disabled (PAB_LED_ENABLED)");
+    else if (!hw.led_address) issues.push("BLE LED address not set (PAB_LED_ADDRESS)");
+    if (!hw.matrix_enabled) issues.push("Matrix disabled (PAB_MATRIX_ENABLED)");
+    else if (!hw.matrix_port) issues.push("Matrix port not set (PAB_MATRIX_PORT)");
     if (issues.length > 0) {
       el.textContent = "⚠ " + issues.join(" · ");
       el.hidden = false;
@@ -1239,6 +1287,30 @@ async function loadHardwareStatus() {
 }
 
 // --- LED strip config ---
+
+async function loadMatrixStatus() {
+  const statusEl = document.getElementById("matrixStatus");
+  if (!statusEl) return;
+  try {
+    const hw = await api("/api/admin/hardware-status", {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    if (hw.matrix_enabled && hw.matrix_port) {
+      statusEl.textContent =
+        `Matrix: ✅ enabled — ${hw.matrix_port} (brightness ${hw.matrix_brightness})`;
+      statusEl.style.color = "#4ade80";
+    } else if (hw.matrix_port) {
+      statusEl.textContent = `Matrix: ⚠ disabled — ${hw.matrix_port}`;
+      statusEl.style.color = "#fbbf24";
+    } else {
+      statusEl.textContent = "Matrix: ❌ not configured";
+      statusEl.style.color = "#f87171";
+    }
+  } catch {
+    statusEl.textContent = "Matrix: unavailable";
+    statusEl.style.color = "#94a3b8";
+  }
+}
 
 async function loadLedConfig() {
   const statusEl = document.getElementById("ledStatus");

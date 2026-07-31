@@ -7,6 +7,7 @@ from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
 
+from raspberry_pab.arduino_serial import effective_matrix_port
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.models import (
@@ -59,6 +60,9 @@ def hardware_status(request: Request) -> dict[str, object]:
         "buzzer_port": settings.buzzer_port or "",
         "led_enabled": settings.led_enabled,
         "led_address": settings.led_address or "",
+        "matrix_enabled": settings.matrix_enabled,
+        "matrix_port": effective_matrix_port(settings) or "",
+        "matrix_brightness": settings.matrix_brightness,
     }
 
 

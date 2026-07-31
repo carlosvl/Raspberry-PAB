@@ -39,7 +39,11 @@ Thumbs.db
 logs/
 run/
 tmp-deploy/
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+!.cursor/skills/
+!.cursor/skills/**
 
 # Packaging
 *.deb
