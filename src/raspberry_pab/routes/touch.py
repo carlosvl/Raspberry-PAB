@@ -67,6 +67,8 @@ def update_touch_config(request: Request, update: TouchConfigUpdate) -> TouchCon
             "PAB_GAMEPAD_ENABLED": "1" if update.gamepad_enabled else "0",
             "PAB_GAMEPAD_SENS": str(update.gamepad_sensitivity),
             "PAB_GAMEPAD_DEADZONE": str(update.gamepad_deadzone),
+            "PAB_GAMEPAD_EDGE_MARGIN": str(update.gamepad_edge_margin),
+            "PAB_GAMEPAD_SCROLL_SENS": str(update.gamepad_scroll_sensitivity),
         }
     )
     _apply_touch_config()

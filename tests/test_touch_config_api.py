@@ -40,6 +40,8 @@ def test_get_touch_config_defaults(client: TestClient) -> None:
     assert payload["gamepad_enabled"] is True
     assert payload["gamepad_sensitivity"] == 8.0
     assert payload["gamepad_deadzone"] == 0.15
+    assert payload["gamepad_edge_margin"] == 16
+    assert payload["gamepad_scroll_sensitivity"] == 0.35
     assert "gamepad_device" in payload
 
 
@@ -72,6 +74,8 @@ def test_update_touch_config_writes_file_and_restarts(
             "gamepad_enabled": False,
             "gamepad_sensitivity": 10,
             "gamepad_deadzone": 0.2,
+            "gamepad_edge_margin": 20,
+            "gamepad_scroll_sensitivity": 0.5,
         },
         headers={"X-Admin-Pin": "9999"},
     )
@@ -84,6 +88,8 @@ def test_update_touch_config_writes_file_and_restarts(
     assert "PAB_GAMEPAD_ENABLED=0" in saved
     assert "PAB_GAMEPAD_SENS=10" in saved
     assert "PAB_GAMEPAD_DEADZONE=0.2" in saved
+    assert "PAB_GAMEPAD_EDGE_MARGIN=20" in saved
+    assert "PAB_GAMEPAD_SCROLL_SENS=0.5" in saved
     assert calls == [["bash", str(setup_script)]]
 
 
@@ -98,6 +104,8 @@ def test_update_touch_config_rejects_invalid_drag_start(client: TestClient) -> N
             "gamepad_enabled": True,
             "gamepad_sensitivity": 8,
             "gamepad_deadzone": 0.15,
+            "gamepad_edge_margin": 16,
+            "gamepad_scroll_sensitivity": 0.35,
         },
         headers={"X-Admin-Pin": "9999"},
     )

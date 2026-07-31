@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import glob
 import os
+import re
 import select
 import struct
 import subprocess
@@ -23,6 +24,9 @@ POLL_SECONDS = 0.03
 AXIS_MAX = 32767.0
 CLICK_PAUSE_SECONDS = 0.12
 click_paused_until = 0.0
+EDGE_MARGIN = int(os.environ.get("PAB_GAMEPAD_EDGE_MARGIN", "16"))
+SCROLL_SENS = float(os.environ.get("PAB_GAMEPAD_SCROLL_SENS", "0.35"))
+SCROLL_DELAY_MS = int(os.environ.get("PAB_GAMEPAD_SCROLL_DELAY_MS", "10"))
 
 JS_EVENT_BUTTON = 0x01
 JS_EVENT_AXIS = 0x02
@@ -98,6 +102,89 @@ def axis_delta(value: int) -> int:
     return int(round(direction * scaled * SENS))
 
 
+def parse_mouse_location(text: str) -> tuple[int, int] | None:
+    match = re.search(r"x:(\d+)\s+y:(\d+)", text)
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def screen_size() -> tuple[int, int]:
+    env_w = os.environ.get("PAB_GAMEPAD_SCREEN_W") or os.environ.get("PAB_TOUCH_SCREEN_W")
+    env_h = os.environ.get("PAB_GAMEPAD_SCREEN_H") or os.environ.get("PAB_TOUCH_SCREEN_H")
+    if env_w and env_h:
+        return int(env_w), int(env_h)
+
+    result = run("xdotool", "getdisplaygeometry")
+    parts = result.stdout.strip().split()
+    if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
+        return int(parts[0]), int(parts[1])
+    return 1920, 1080
+
+
+def clamp_pointer_move(
+    x: int,
+    y: int,
+    dx: int,
+    dy: int,
+    *,
+    screen_w: int,
+    screen_h: int,
+) -> tuple[int, int, int, int]:
+    new_x = max(0, min(screen_w - 1, x + dx))
+    new_y = max(0, min(screen_h - 1, y + dy))
+    return new_x, new_y, dx - (new_x - x), dy - (new_y - y)
+
+
+def edge_scroll_clicks(
+    x: int,
+    y: int,
+    overflow_x: int,
+    overflow_y: int,
+    *,
+    screen_w: int,
+    screen_h: int,
+    edge_margin: int = EDGE_MARGIN,
+    scroll_sens: float = SCROLL_SENS,
+    move_sens: float = SENS,
+) -> tuple[int, int]:
+    """Return (vertical_clicks, horizontal_clicks); negative means scroll up/left."""
+    vertical = 0
+    horizontal = 0
+
+    if overflow_y > 0 and y >= screen_h - edge_margin:
+        vertical = scroll_repeat_count(overflow_y, scroll_sens=scroll_sens, move_sens=move_sens)
+    elif overflow_y < 0 and y <= edge_margin:
+        vertical = -scroll_repeat_count(-overflow_y, scroll_sens=scroll_sens, move_sens=move_sens)
+
+    if overflow_x > 0 and x >= screen_w - edge_margin:
+        horizontal = scroll_repeat_count(overflow_x, scroll_sens=scroll_sens, move_sens=move_sens)
+    elif overflow_x < 0 and x <= edge_margin:
+        horizontal = -scroll_repeat_count(-overflow_x, scroll_sens=scroll_sens, move_sens=move_sens)
+
+    return vertical, horizontal
+
+
+def scroll_repeat_count(magnitude: int, *, scroll_sens: float, move_sens: float) -> int:
+    if magnitude <= 0:
+        return 0
+    if move_sens <= 0:
+        return 1
+    return max(1, int(round(magnitude * scroll_sens / move_sens)))
+
+
+def xdotool_scroll(vertical: int, horizontal: int) -> None:
+    if vertical > 0:
+        xdotool("click", "--repeat", str(vertical), "--delay", str(SCROLL_DELAY_MS), "5")
+    elif vertical < 0:
+        xdotool("click", "--repeat", str(-vertical), "--delay", str(SCROLL_DELAY_MS), "4")
+
+    if horizontal > 0:
+        xdotool("click", "--repeat", str(horizontal), "--delay", str(SCROLL_DELAY_MS), "7")
+    elif horizontal < 0:
+        xdotool("click", "--repeat", str(horizontal), "--delay", str(SCROLL_DELAY_MS), "6")
+
+
 class GamepadState:
     def __init__(self) -> None:
         self.axis_values: dict[int, int] = {}
@@ -157,8 +244,39 @@ def apply_movement(state: GamepadState) -> None:
     if time.monotonic() < click_paused_until:
         return
     dx, dy = state.movement()
-    if dx or dy:
+    if not dx and not dy:
+        return
+
+    screen_w, screen_h = screen_size()
+    location = parse_mouse_location(run("xdotool", "getmouselocation").stdout.strip())
+    if location is None:
         xdotool("mousemove_relative", "--", str(dx), str(dy))
+        return
+
+    x, y = location
+    new_x, new_y, overflow_x, overflow_y = clamp_pointer_move(
+        x,
+        y,
+        dx,
+        dy,
+        screen_w=screen_w,
+        screen_h=screen_h,
+    )
+    move_x = new_x - x
+    move_y = new_y - y
+    if move_x or move_y:
+        xdotool("mousemove_relative", "--", str(move_x), str(move_y))
+
+    scroll_y, scroll_x = edge_scroll_clicks(
+        new_x,
+        new_y,
+        overflow_x,
+        overflow_y,
+        screen_w=screen_w,
+        screen_h=screen_h,
+    )
+    if scroll_y or scroll_x:
+        xdotool_scroll(scroll_y, scroll_x)
 
 
 def drain_events(fd: int, state: GamepadState) -> None:
@@ -185,7 +303,10 @@ def main() -> None:
         log("no gamepad device found; exiting")
         sys.exit(0)
 
-    log(f"using {device} sens={SENS} deadzone={DEADZONE} display={DISPLAY}")
+    log(
+        f"using {device} sens={SENS} deadzone={DEADZONE} "
+        f"edge_margin={EDGE_MARGIN} scroll_sens={SCROLL_SENS} display={DISPLAY}"
+    )
     fd = os.open(device, os.O_RDONLY)
     state = GamepadState()
 
