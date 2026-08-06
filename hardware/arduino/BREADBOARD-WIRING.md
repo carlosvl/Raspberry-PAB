@@ -25,10 +25,12 @@ It matches **your actual board layout** (see photo below):
 | Arduino Nano | USB-C clone (pin labels as on **your** board) |
 | Active buzzer module | 3 pins: **VCC**, **I/O**, **GND** |
 | Two 8×32 WS2812 LED matrices | Daisy-chain: panel1 **DOUT** → panel2 **DIN** |
-| 5V power supply | **2–3 A** wall adapter for testing |
+| 5V power supply | **2–3 A** wall adapter for testing (bench only) |
 | Jumper wires | Dupont wires (male–male, male–female) |
 | USB cable | Pi → Nano (data USB, not charge-only) |
 | Optional | 330 Ω resistor (D6 → DIN), 1000 µF capacitor (+/− rails) |
+
+**Field / battery:** This guide uses a wall **5V** PSU. For a mobile cart ([BLUETTI AC2A](https://www.bluettipower.com/products/solar-generator-ac2a), ~3–4 h), see **[MOBILE-POWER.md](../power/MOBILE-POWER.md)**.
 
 ---
 

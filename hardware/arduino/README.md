@@ -36,7 +36,9 @@ Hardware sketches for a **low-level-trigger** active buzzer on **D3** and **two 
 | GND        | Same PSU **GND** |
 | Center RED / BLACK | Same PSU 5V / GND |
 
-**Power:** Use at least a **5V 3–5 A** supply for testing (keep brightness low). For full brightness on 512 LEDs, plan for **5V 15–20 A**.
+**Power (bench):** Use at least a **5V 3–5 A** wall supply for testing (keep brightness low). For full brightness on 512 LEDs, plan for **5V 15–20 A**.
+
+**Power (field / battery):** Wall PSU for bench; for cart / field (~3–4 h on AC2A), see **[MOBILE-POWER.md](../power/MOBILE-POWER.md)** (BLUETTI AC2A).
 
 **Recommended:** 1000 µF capacitor across 5V/GND near each panel’s power inject; tie PSU GND, Arduino GND, and both matrix GNDs together.
 
@@ -97,7 +99,7 @@ PAB_BUZZER_PORT=/dev/cu.usbserial-110 ./scripts/upload-hardware.sh
 | `BEEP <freq> <vol> <count> <beepMs> <gapMs>` | `OK` | Buzzer pattern |
 | `STOP` | `OK` | Silence buzzer, clear matrix |
 | `BRIGHT <0-255>` | `OK` | Set matrix max brightness |
-| `SCROLL <r> <g> <b> <durationMs> <text>` | `OK` | Scroll text in color for duration (reminders) |
+| `SCROLL <r> <g> <b> <durationMs> [mode] <text>` | `OK` | Scroll text; optional mode `0` solid, `1` rainbow, `2` pulse |
 | `SOLID <r> <g> <b> <durationMs>` | `OK` | Solid color for duration (debug) |
 | `FLASH <r> <g> <b> <durationMs> <intervalMs>` | `OK` | Blink solid color |
 | `CHASE <r> <g> <b> <durationMs>` | `OK` | Running-dot chase |
@@ -108,7 +110,9 @@ Test over serial monitor:
 ```text
 PING
 BRIGHT 64
-SCROLL 255 200 0 10000 Warm Up Ada
+SCROLL 255 200 0 10000 0 Warm Up Ada
+SCROLL 0 0 0 8000 1 HELLO
+SCROLL 255 255 255 8000 2 PULSE
 CLEAR
 ```
 

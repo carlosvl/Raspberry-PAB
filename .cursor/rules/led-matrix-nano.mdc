@@ -11,6 +11,7 @@ alwaysApply: false
 - Nano has **2 KB SRAM**. Dual 8×32 panels = **512 LEDs × 3 = 1536 B** pixel buffer (heap via NeoPixel).
 - After ~220 B BSS, only ~**250–300 B stack** remains. Exceeding that silently corrupts pixels or hangs (commands may still return `OK`).
 - Prefer `Adafruit_NeoPixel` only — **do not** pull NeoMatrix/GFX for 512 LEDs.
+- **Three panels (768 LEDs)** need **2304 B** — impossible on Nano. Field power for 3 panels: `hardware/power/MOBILE-POWER.md`; matrix MCU migration is a separate task.
 
 ## Firmware rules
 
@@ -19,6 +20,7 @@ alwaysApply: false
 - **Never use `sscanf` / `scanf`** — stack blows the pixel buffer. Parse with tiny `strtol` helpers.
 - Handshake banner may be `READY` or `READY PIXELS 512 FREE …`. Python must accept `startswith("READY")`.
 - Scroll timing: `show()` disables interrupts so `millis()` drifts; prefer **frame counts**, and give Python **≥ ~2× duration + 5s** to wait for `OK`.
+- `SCROLL r g b ms [mode] text` — mode `0` solid, `1` rainbow, `2` pulse (optional for legacy).
 
 ## Python / product behavior
 

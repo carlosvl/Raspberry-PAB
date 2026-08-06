@@ -19,8 +19,11 @@ description: >-
 | Serial helpers | `src/raspberry_pab/arduino_serial.py` (shared with buzzer) |
 | App driver | `src/raspberry_pab/matrix_controller.py`, `routes/matrix.py` |
 | Wiring docs | `hardware/arduino/BREADBOARD-WIRING.md`, `hardware/arduino/README.md` |
+| Mobile / battery | `hardware/power/MOBILE-POWER.md` — Ryobi 40V dual-rail; **3 panels need a non-Nano driver** |
 
 Daisy-chain: panel1 **DOUT →** panel2 **DIN**, shared 5V/GND → one **8×64** (512 LED) strip. Env: `PAB_MATRIX_ENABLED`, width **64**, port empty → uses buzzer port.
+
+**Three panels (768 LEDs):** pixel buffer is **2304 B** — does **not** fit Nano SRAM. Do not bump `LED_COUNT` to 768 on ATmega328P; move matrix to ESP32/Pi (see MOBILE-POWER follow-up).
 
 ## SRAM budget (root cause of most “dark panel” bugs)
 
@@ -45,13 +48,15 @@ Nano **2048 B** total:
 - New protocol tokens: `PSTR` / `strcmp_P` / `F()` only — check `.data` with `avr-objdump -s -j .data` if unsure.
 - Parse ints with small `strtol` helpers — never `scanf` family.
 - Prefer effects that reuse the existing buffer; avoid large RAM framebuffers or fonts.
+- Scroll effects (`rainbow` / `pulse`) must stay stack-local (see `runScroll` modes).
 - If you need more RAM, options are: fewer LEDs, a bigger MCU, or dual-buffer strategies that still fit ~300 B stack.
 - After firmware change: confirm compile line `Global variables use ~220 bytes` and runtime `INFO` → `PIXELS 512 FREE <positive>`.
 
 ## Serial protocol (current)
 
-Commands (newline-terminated): `PING`, `INFO`, `STOP`/`CLEAR`, `BEEP …`, `BRIGHT n`, `SOLID r g b ms`, `FLASH r g b ms interval`, `CHASE r g b ms`, `SCROLL r g b ms text`.
+Commands (newline-terminated): `PING`, `INFO`, `STOP`/`CLEAR`, `BEEP …`, `BRIGHT n`, `SOLID r g b ms`, `FLASH r g b ms interval`, `CHASE r g b ms`, `SCROLL r g b ms [mode] text`.
 
+- `SCROLL` optional `mode`: `0` solid (default / legacy), `1` rainbow, `2` pulse. Keep new effects stack-local — no large buffers.
 - Replies: `PONG`, `PIXELS n FREE m`, `OK`, `ERR …`
 - Handshake: accept any line `READY` or starting with `READY `; then `PING`→`PONG`.
 - Opening the port may USB-reset the Nano; wait up to ~4s for READY.
@@ -65,13 +70,14 @@ scroll_timeout = max(duration_ms / 1000 * 2 + 5, 15)
 
 Firmware scroll should advance by **frame count** (`ms / SCROLL_MS`), not raw `millis()` end time.
 
-SCROLL payload must fit 64-byte RX — sanitize to ~40 printable ASCII chars (`MAX_MATRIX_MESSAGE_CHARS`).
+SCROLL payload must fit 64-byte RX — sanitize to ~36 printable ASCII chars (`MAX_MATRIX_MESSAGE_CHARS`) after the mode digit.
 
 ## Product behavior
 
 - Reminders / **Test matrix**: scroll rendered message for `flash_duration + chase_duration` seconds.
+- Per-rule `matrix_effect`: `solid` | `rainbow` | `pulse`; color presets (Amber/Red/Lime/White) set `led_*` RGB shared with BLE strip.
 - That is **not** BLE strip flash-then-chase; chase duration only extends matrix scroll time.
-- Color/brightness from rule + `PAB_MATRIX_BRIGHTNESS`.
+- Brightness from `PAB_MATRIX_BRIGHTNESS`.
 
 ## Deploy / verify on kiosk Pi
 
