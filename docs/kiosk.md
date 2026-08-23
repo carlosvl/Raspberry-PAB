@@ -102,11 +102,20 @@ On the Pi touchscreen, tap **Keyboard** on the admin PIN screen or admin header 
 
 ### USB gamepad as mouse
 
-Plug a USB game controller into the Pi. In **Admin → Touch**, enable **Gamepad as mouse** and save. The left stick moves the HDMI cursor; the primary face button (usually index `1` on generic USB pads) is a left click and the next button is a right click. Override with `PAB_GAMEPAD_BTN_LEFT` / `PAB_GAMEPAD_BTN_RIGHT` in `touch-map.conf` if your pad differs.
-
-The helper runs as `~/bin/gamepad-mouse.py` and is started automatically when the kiosk service starts (or when you save touch settings). Tune pointer speed and stick deadzone in the same panel. When the cursor reaches the screen edge and you keep pushing the stick, the page scrolls (`PAB_GAMEPAD_EDGE_MARGIN`, `PAB_GAMEPAD_SCROLL_SENS` in `touch-map.conf`). Logs: `/tmp/gamepad-mouse.log`.
+Plug a USB game controller into the Pi. In **Admin → Touch → Gamepad as mouse**, enable the gamepad and adjust **Cursor speed** (1–30, default 8). Save to restart the helper with the new speed. Also tune stick deadzone, edge scroll margin, and edge scroll speed in the same panel.
 
 Example import file: `data/schedule.example.json`.
+
+### Reloading the UI
+
+| Action | Where | What it does |
+|--------|-------|--------------|
+| **Reload Kiosk Display** | Admin footer (works from Mac/iPhone too) | Sends Ctrl+Shift+R to the HDMI Chromium window, or restarts `kiosk.sh` if xdotool cannot find it |
+| **Reload Admin** | Admin footer | Clears the service-worker cache and hard-reloads this admin page |
+| **Reload App** | Kiosk control menu (triple-tap logo → menu) | Hard-reloads the board on the HDMI display only |
+| **Restart Service** | Admin footer | Restarts the FastAPI backend (`systemctl restart raspberry-pab`) — use after code deploy |
+
+On your Mac browser: **Cmd+Shift+R** (Safari/Chrome) forces a cache-bypass reload of `/admin`.
 
 ## 5. Remote iOS app and fallback hotspot
 

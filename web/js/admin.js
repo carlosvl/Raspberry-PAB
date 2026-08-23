@@ -13,6 +13,8 @@ const adminOutput = document.getElementById("adminOutput");
 const adminFooter = document.getElementById("adminFooter");
 const remoteInfoEl = document.getElementById("remoteInfo");
 const restartServiceButton = document.getElementById("restartService");
+const reloadKioskDisplayButton = document.getElementById("reloadKioskDisplay");
+const reloadAdminPageButton = document.getElementById("reloadAdminPage");
 
 const TIME_CLOCK_OPTIONS = {
   hour: "numeric",
@@ -323,6 +325,32 @@ async function openKeyboard() {
   }
 }
 
+async function reloadKioskDisplay() {
+  setOutput("Reloading HDMI kiosk display...");
+  if (reloadKioskDisplayButton) reloadKioskDisplayButton.disabled = true;
+  try {
+    await api("/api/kiosk/reload-display", { method: "POST" });
+    setOutput("Kiosk display reload sent. The board should refresh in a few seconds.");
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  } finally {
+    if (reloadKioskDisplayButton) reloadKioskDisplayButton.disabled = false;
+  }
+}
+
+async function hardReloadAdminPage() {
+  setOutput("Reloading admin page...");
+  if ("serviceWorker" in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+  }
+  if ("caches" in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((key) => caches.delete(key)));
+  }
+  window.location.reload();
+}
+
 async function restartService() {
   if (
     !window.confirm(
@@ -593,6 +621,10 @@ function renderTouchConfig(config) {
   if (sensitivity) sensitivity.value = String(config.sensitivity);
   if (gamepadEnabled) gamepadEnabled.checked = Boolean(config.gamepad_enabled);
   if (gamepadSensitivity) gamepadSensitivity.value = String(config.gamepad_sensitivity);
+  const gamepadSensitivityRange = document.getElementById("gamepadSensitivityRange");
+  if (gamepadSensitivityRange) {
+    gamepadSensitivityRange.value = String(config.gamepad_sensitivity);
+  }
   if (gamepadDeadzone) gamepadDeadzone.value = String(config.gamepad_deadzone);
   if (gamepadEdgeMargin) gamepadEdgeMargin.value = String(config.gamepad_edge_margin);
   if (gamepadScrollSensitivity) {
@@ -618,7 +650,7 @@ async function saveTouchConfig(event) {
       body: JSON.stringify(readTouchConfigPayload()),
     });
     renderTouchConfig(config);
-    setOutput("Touch settings saved and applied.");
+    setOutput("Touch settings saved. HDMI input helpers restarted.");
   } catch (error) {
     setOutput(error.message);
   }
@@ -632,7 +664,7 @@ async function saveGamepadConfig(event) {
       body: JSON.stringify(readTouchConfigPayload()),
     });
     renderTouchConfig(config);
-    setOutput("Gamepad settings saved and applied.");
+    setOutput("Gamepad settings saved. HDMI cursor restarted with new speed.");
   } catch (error) {
     setOutput(error.message);
   }
@@ -779,6 +811,39 @@ ruleForm?.addEventListener("submit", async (event) => {
 document.getElementById("brandingForm")?.addEventListener("submit", saveBrandingTitle);
 document.getElementById("touchForm")?.addEventListener("submit", saveTouchConfig);
 document.getElementById("gamepadForm")?.addEventListener("submit", saveGamepadConfig);
+
+function initTouchSteppers() {
+  document.querySelectorAll("[data-touch-stepper]").forEach((wrapper) => {
+    const input = wrapper.querySelector(".touch-stepper__value");
+    if (!input) return;
+
+    wrapper.querySelectorAll("[data-touch-stepper-delta]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const delta = Number(button.getAttribute("data-touch-stepper-delta") || "0");
+        const step = Number(input.step || "1") || 1;
+        const min = input.min === "" ? Number.NEGATIVE_INFINITY : Number(input.min);
+        const max = input.max === "" ? Number.POSITIVE_INFINITY : Number(input.max);
+        const decimals = (String(step).split(".")[1] || "").length;
+        const next = Math.min(max, Math.max(min, Number(input.value || "0") + delta * step));
+        input.value = decimals ? next.toFixed(decimals) : String(next);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    });
+  });
+}
+
+const gamepadSensitivity = document.getElementById("gamepadSensitivity");
+const gamepadSensitivityRange = document.getElementById("gamepadSensitivityRange");
+if (gamepadSensitivity && gamepadSensitivityRange) {
+  gamepadSensitivityRange.addEventListener("input", () => {
+    gamepadSensitivity.value = gamepadSensitivityRange.value;
+  });
+  gamepadSensitivity.addEventListener("input", () => {
+    gamepadSensitivityRange.value = gamepadSensitivity.value;
+  });
+}
+
+initTouchSteppers();
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
@@ -1457,6 +1522,8 @@ document.getElementById("exportSchedule")?.addEventListener("click", async () =>
 });
 
 restartServiceButton?.addEventListener("click", restartService);
+reloadKioskDisplayButton?.addEventListener("click", reloadKioskDisplay);
+reloadAdminPageButton?.addEventListener("click", hardReloadAdminPage);
 
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;

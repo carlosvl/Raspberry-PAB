@@ -13,10 +13,8 @@ import sys
 import time
 
 DISPLAY = os.environ.get("DISPLAY", ":0")
-SENS = float(os.environ.get("PAB_GAMEPAD_SENS", "8"))
-DEADZONE = float(os.environ.get("PAB_GAMEPAD_DEADZONE", "0.15"))
-DEVICE_OVERRIDE = os.environ.get("PAB_GAMEPAD_DEVICE", "auto")
 LOG_PATH = "/tmp/gamepad-mouse.log"
+DEFAULT_TOUCH_MAP = os.path.expanduser("~/.config/raspberry-pab/touch-map.conf")
 
 JS_EVENT_FORMAT = "IhBB"
 JS_EVENT_SIZE = struct.calcsize(JS_EVENT_FORMAT)
@@ -24,9 +22,60 @@ POLL_SECONDS = 0.03
 AXIS_MAX = 32767.0
 CLICK_PAUSE_SECONDS = 0.12
 click_paused_until = 0.0
-EDGE_MARGIN = int(os.environ.get("PAB_GAMEPAD_EDGE_MARGIN", "16"))
-SCROLL_SENS = float(os.environ.get("PAB_GAMEPAD_SCROLL_SENS", "0.35"))
-SCROLL_DELAY_MS = int(os.environ.get("PAB_GAMEPAD_SCROLL_DELAY_MS", "10"))
+
+SENS = 8.0
+DEADZONE = 0.15
+DEVICE_OVERRIDE = "auto"
+EDGE_MARGIN = 16
+SCROLL_SENS = 0.35
+SCROLL_DELAY_MS = 10
+BTN_LEFT = 1
+BTN_RIGHT = 2
+
+# Common d-pad-as-button layouts on generic USB pads.
+DPAD_BUTTON_VECTORS: dict[int, tuple[int, int]] = {
+    4: (0, -1),
+    5: (0, 1),
+    6: (-1, 0),
+    7: (1, 0),
+}
+
+
+def read_touch_map_conf(path: str | None = None) -> dict[str, str]:
+    conf_path = path or DEFAULT_TOUCH_MAP
+    values: dict[str, str] = {}
+    try:
+        with open(conf_path, encoding="utf-8") as handle:
+            for line in handle:
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#") or "=" not in stripped:
+                    continue
+                key, value = stripped.split("=", 1)
+                values[key.strip()] = value.strip()
+    except OSError:
+        pass
+    return values
+
+
+def configure_from_touch_map(conf: dict[str, str] | None = None) -> None:
+    """Load gamepad tuning from touch-map.conf; env vars override file values."""
+    global SENS, DEADZONE, DEVICE_OVERRIDE, EDGE_MARGIN, SCROLL_SENS, SCROLL_DELAY_MS
+    global BTN_LEFT, BTN_RIGHT
+
+    file_vals = conf if conf is not None else read_touch_map_conf()
+
+    def pick(key: str, default: str) -> str:
+        return os.environ.get(key, file_vals.get(key, default))
+
+    SENS = float(pick("PAB_GAMEPAD_SENS", "8"))
+    DEADZONE = float(pick("PAB_GAMEPAD_DEADZONE", "0.15"))
+    DEVICE_OVERRIDE = pick("PAB_GAMEPAD_DEVICE", "auto")
+    EDGE_MARGIN = int(pick("PAB_GAMEPAD_EDGE_MARGIN", "16"))
+    SCROLL_SENS = float(pick("PAB_GAMEPAD_SCROLL_SENS", "0.35"))
+    SCROLL_DELAY_MS = int(pick("PAB_GAMEPAD_SCROLL_DELAY_MS", "10"))
+    BTN_LEFT = int(pick("PAB_GAMEPAD_BTN_LEFT", "1"))
+    BTN_RIGHT = int(pick("PAB_GAMEPAD_BTN_RIGHT", "2"))
+
 
 JS_EVENT_BUTTON = 0x01
 JS_EVENT_AXIS = 0x02
@@ -36,16 +85,6 @@ AXIS_X = 0
 AXIS_Y = 1
 HAT_X = 6
 HAT_Y = 7
-BTN_LEFT = int(os.environ.get("PAB_GAMEPAD_BTN_LEFT", "1"))
-BTN_RIGHT = int(os.environ.get("PAB_GAMEPAD_BTN_RIGHT", "2"))
-
-# Common d-pad-as-button layouts on generic USB pads.
-DPAD_BUTTON_VECTORS: dict[int, tuple[int, int]] = {
-    4: (0, -1),
-    5: (0, 1),
-    6: (-1, 0),
-    7: (1, 0),
-}
 
 
 def log(message: str) -> None:
@@ -298,6 +337,7 @@ def drain_events(fd: int, state: GamepadState) -> None:
 
 
 def main() -> None:
+    configure_from_touch_map()
     device = find_gamepad_device()
     if device is None:
         log("no gamepad device found; exiting")

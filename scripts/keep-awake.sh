@@ -45,7 +45,9 @@ _ensure_touch_trackpad() {
     [[ -f "${conf}" ]] || return 0
 
     # shellcheck disable=SC1090
+    set -a
     source "${conf}"
+    set +a
     [[ "${PAB_TOUCH_MAP:-mirror}" == "trackpad" ]] || return 0
     pgrep -f 'touch-trackpad.py' >/dev/null 2>&1 && return 0
 
@@ -63,7 +65,9 @@ _ensure_gamepad_mouse() {
     [[ -f "${conf}" ]] || return 0
 
     # shellcheck disable=SC1090
+    set -a
     source "${conf}"
+    set +a
     [[ "${PAB_GAMEPAD_ENABLED:-1}" == "1" ]] || return 0
     pgrep -f 'gamepad-mouse.py' >/dev/null 2>&1 && return 0
 

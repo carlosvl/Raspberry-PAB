@@ -27,6 +27,13 @@ def _keyboard_script() -> Path:
     return Path(__file__).resolve().parents[3] / "scripts" / "touch-keyboard.sh"
 
 
+def _reload_display_script() -> Path:
+    installed = Path.home() / "bin" / "reload-kiosk-display.sh"
+    if installed.is_file():
+        return installed
+    return Path(__file__).resolve().parents[3] / "scripts" / "reload-kiosk-display.sh"
+
+
 @router.post("/exit-browser")
 def exit_browser(request: Request) -> dict[str, bool]:
     """Close the fullscreen Chromium kiosk browser on the local Pi."""
@@ -60,3 +67,16 @@ def restart_service() -> dict[str, bool]:
         start_new_session=True,
     )
     return {"restarting": True}
+
+
+@router.post("/reload-display", dependencies=[Depends(require_admin_pin)])
+def reload_display() -> dict[str, bool]:
+    """Hard-reload the HDMI kiosk Chromium window (local or remote admin)."""
+    script = _reload_display_script()
+    if not script.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Kiosk reload script is not installed",
+        )
+    subprocess.Popen(["bash", str(script)], start_new_session=True)
+    return {"reloading": True}

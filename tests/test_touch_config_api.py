@@ -58,10 +58,10 @@ def test_update_touch_config_writes_file_and_restarts(
         assert start_new_session
         return type("Process", (), {"pid": 1234})()
 
-    setup_script = tmp_path / "setup-touch-input.sh"
-    setup_script.write_text("#!/bin/bash\n", encoding="utf-8")
-    setup_script.chmod(0o755)
-    monkeypatch.setattr("raspberry_pab.routes.touch._setup_script", lambda: setup_script)
+    apply_script = tmp_path / "apply-input-config.sh"
+    apply_script.write_text("#!/bin/bash\n", encoding="utf-8")
+    apply_script.chmod(0o755)
+    monkeypatch.setattr("raspberry_pab.routes.touch._apply_script", lambda: apply_script)
     monkeypatch.setattr("raspberry_pab.routes.touch.subprocess.Popen", fake_popen)
 
     response = client.put(
@@ -90,7 +90,38 @@ def test_update_touch_config_writes_file_and_restarts(
     assert "PAB_GAMEPAD_DEADZONE=0.2" in saved
     assert "PAB_GAMEPAD_EDGE_MARGIN=20" in saved
     assert "PAB_GAMEPAD_SCROLL_SENS=0.5" in saved
-    assert calls == [["bash", str(setup_script)]]
+    assert calls == [["bash", str(apply_script)]]
+
+
+def test_update_touch_config_works_from_remote_client(
+    client: TestClient,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = tmp_path / "touch-map.conf"
+    apply_script = tmp_path / "apply-input-config.sh"
+    apply_script.write_text("#!/bin/bash\n", encoding="utf-8")
+    apply_script.chmod(0o755)
+    monkeypatch.setattr("raspberry_pab.routes.touch._apply_script", lambda: apply_script)
+    monkeypatch.setattr(touch_config, "touch_config_path", lambda: config_path)
+
+    response = client.put(
+        "/api/admin/touch",
+        json={
+            "tap_slop": 8,
+            "drag_start": 12,
+            "multi_tap_seconds": 0.45,
+            "sensitivity": 0.5,
+            "gamepad_enabled": True,
+            "gamepad_sensitivity": 14,
+            "gamepad_deadzone": 0.15,
+            "gamepad_edge_margin": 16,
+            "gamepad_scroll_sensitivity": 0.35,
+        },
+        headers={"X-Admin-Pin": "9999"},
+    )
+    assert response.status_code == 200
+    assert response.json()["gamepad_sensitivity"] == 14
 
 
 def test_update_touch_config_rejects_invalid_drag_start(client: TestClient) -> None:

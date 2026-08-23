@@ -131,7 +131,7 @@
               <button type="submit">Save Touch Settings</button>
             </form>
           </details>
-          <details class="admin-section">
+          <details class="admin-section" open>
             <summary>Gamepad as mouse</summary>
             <form class="form" id="gamepadForm">
               <p class="branding__hint" id="gamepadStatus">Gamepad: checking…</p>
@@ -140,28 +140,67 @@
                 Enable gamepad-as-mouse
               </label>
               <label>
-                Pointer speed
-                <input id="gamepadSensitivity" min="1" max="30" required step="1" type="number" />
-                <span class="branding__hint">Pixels per stick tick at full tilt (default 8).</span>
+                Cursor speed
+                <input id="gamepadSensitivityRange" max="30" min="1" step="1" type="range" />
+                <div class="touch-stepper" data-touch-stepper>
+                  <button
+                    aria-label="Decrease cursor speed"
+                    class="touch-stepper__btn"
+                    data-touch-stepper-delta="-1"
+                    type="button"
+                  >
+                    −
+                  </button>
+                  <input
+                    class="touch-stepper__value"
+                    id="gamepadSensitivity"
+                    max="30"
+                    min="1"
+                    required
+                    step="1"
+                    type="number"
+                  />
+                  <button
+                    aria-label="Increase cursor speed"
+                    class="touch-stepper__btn"
+                    data-touch-stepper-delta="1"
+                    type="button"
+                  >
+                    +
+                  </button>
+                </div>
+                <span class="branding__hint">How fast the stick moves the pointer (1 = slow, 30 = fast; default 8).</span>
               </label>
               <label>
                 Stick deadzone
-                <input id="gamepadDeadzone" min="0" max="0.5" required step="0.05" type="number" />
+                <div class="touch-stepper" data-touch-stepper>
+                  <button aria-label="Decrease deadzone" class="touch-stepper__btn" data-touch-stepper-delta="-1" type="button">−</button>
+                  <input class="touch-stepper__value" id="gamepadDeadzone" max="0.5" min="0" required step="0.05" type="number" />
+                  <button aria-label="Increase deadzone" class="touch-stepper__btn" data-touch-stepper-delta="1" type="button">+</button>
+                </div>
                 <span class="branding__hint">Ignore small stick drift (0.15 = 15%).</span>
               </label>
               <label>
                 Edge scroll margin (pixels)
-                <input id="gamepadEdgeMargin" min="4" max="64" required step="1" type="number" />
+                <div class="touch-stepper" data-touch-stepper>
+                  <button aria-label="Decrease edge margin" class="touch-stepper__btn" data-touch-stepper-delta="-1" type="button">−</button>
+                  <input class="touch-stepper__value" id="gamepadEdgeMargin" max="64" min="4" required step="1" type="number" />
+                  <button aria-label="Increase edge margin" class="touch-stepper__btn" data-touch-stepper-delta="1" type="button">+</button>
+                </div>
                 <span class="branding__hint">When the cursor is this close to the screen edge, pushing the stick scrolls the page.</span>
               </label>
               <label>
                 Edge scroll speed
-                <input id="gamepadScrollSensitivity" min="0.05" max="2" required step="0.05" type="number" />
+                <div class="touch-stepper" data-touch-stepper>
+                  <button aria-label="Decrease edge scroll speed" class="touch-stepper__btn" data-touch-stepper-delta="-1" type="button">−</button>
+                  <input class="touch-stepper__value" id="gamepadScrollSensitivity" max="2" min="0.05" required step="0.05" type="number" />
+                  <button aria-label="Increase edge scroll speed" class="touch-stepper__btn" data-touch-stepper-delta="1" type="button">+</button>
+                </div>
                 <span class="branding__hint">Higher values scroll faster when the cursor is pinned to an edge.</span>
               </label>
-              <p class="branding__hint">Left stick or D-pad moves the cursor while held. Primary face button = left click.</p>
-              <div class="button-row">
-                <button class="button--primary" id="saveGamepadSettings" type="submit">
+              <p class="branding__hint">Left stick or D-pad moves the cursor while held. Primary face button = left click. Saves apply to the HDMI display immediately.</p>
+              <div class="button-row gamepad-form__actions">
+                <button class="button--primary button--large" id="saveGamepadSettings" type="submit">
                   Save Gamepad Settings
                 </button>
               </div>
@@ -514,7 +553,11 @@
 
       <footer class="admin__footer" id="adminFooter" hidden>
         <p class="admin__remote" id="remoteInfo">Remote admin checking…</p>
-        <button id="restartService" type="button">Restart Service</button>
+        <div class="admin__footer-actions">
+          <button id="reloadKioskDisplay" type="button">Reload Kiosk Display</button>
+          <button id="reloadAdminPage" type="button">Reload Admin</button>
+          <button id="restartService" type="button">Restart Service</button>
+        </div>
       </footer>
     </main>
     <script src="/js/button-feedback.js"></script>

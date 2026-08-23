@@ -190,8 +190,13 @@ body.admin-page {
   background: #111c33;
 }
 
+.admin__footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .admin__footer button {
-  justify-self: start;
   padding: 0.85rem 1.1rem;
   border: 0;
   border-radius: 0.75rem;
@@ -719,6 +724,75 @@ body.admin-page {
 .branding__hint {
   margin: 0;
   color: #94a3b8;
+}
+
+.touch-stepper {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, 1fr) minmax(5rem, 2fr) minmax(4.5rem, 1fr);
+  gap: 0.65rem;
+  align-items: stretch;
+}
+
+.touch-stepper__btn {
+  min-height: 3.75rem;
+  border: 1px solid rgb(148 163 184 / 35%);
+  border-radius: 0.85rem;
+  background: #1e293b;
+  color: #f8fafc;
+  font: inherit;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.touch-stepper__btn:active {
+  transform: scale(0.96);
+  filter: brightness(0.9);
+}
+
+.touch-stepper__value {
+  width: 100%;
+  min-height: 3.75rem;
+  padding: 0.75rem 0.5rem;
+  border: 1px solid rgb(148 163 184 / 35%);
+  border-radius: 0.85rem;
+  background: #020617;
+  color: #f8fafc;
+  font: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.touch-stepper__value::-webkit-outer-spin-button,
+.touch-stepper__value::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#gamepadForm input[type="range"] {
+  width: 100%;
+  min-height: 2.5rem;
+  accent-color: #38bdf8;
+}
+
+.button--large {
+  min-height: 3.75rem;
+  padding: 1rem 1.25rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.gamepad-form__actions {
+  margin-top: 0.5rem;
+}
+
+.gamepad-form__actions .button--large {
+  width: 100%;
 }
 
 .admin__list {

@@ -8,7 +8,12 @@
 set -euo pipefail
 
 CONF="${HOME}/.config/raspberry-pab/touch-map.conf"
-[[ -f "${CONF}" ]] && source "${CONF}"
+if [[ -f "${CONF}" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "${CONF}"
+    set +a
+fi
 MODE="${PAB_TOUCH_MAP:-mirror}"
 GAMEPAD_ENABLED="${PAB_GAMEPAD_ENABLED:-1}"
 
@@ -42,10 +47,6 @@ if [[ -n "${TOUCH_ID}" ]]; then
             xinput set-prop "${TOUCH_ID}" --type=float "Coordinate Transformation Matrix" \
                 1 0 0  0 1 0  0 0 1
             xinput disable "${TOUCH_ID}" 2>/dev/null || true
-            if [[ -x "${HOME}/bin/touch-trackpad.py" ]]; then
-                pkill -f touch-trackpad.py 2>/dev/null || true
-                nohup "${HOME}/bin/touch-trackpad.py" >>/tmp/touch-trackpad.log 2>&1 &
-            fi
             ;;
         *)
             echo "Unknown PAB_TOUCH_MAP=${MODE}" >&2
@@ -55,12 +56,16 @@ else
     echo "No touch device" >&2
 fi
 
-pkill -f gamepad-mouse.py 2>/dev/null || true
-if [[ "${GAMEPAD_ENABLED}" == "1" ]] && [[ -x "${HOME}/bin/gamepad-mouse.py" ]]; then
-    nohup "${HOME}/bin/gamepad-mouse.py" >>/tmp/gamepad-mouse.log 2>&1 &
-    echo "Gamepad mouse: started" >>/tmp/touch-input.log
+if [[ -x "${HOME}/bin/apply-input-config.sh" ]]; then
+    bash "${HOME}/bin/apply-input-config.sh"
 else
-    echo "Gamepad mouse: disabled" >>/tmp/touch-input.log
+    pkill -f gamepad-mouse.py 2>/dev/null || true
+    if [[ "${GAMEPAD_ENABLED}" == "1" ]] && [[ -x "${HOME}/bin/gamepad-mouse.py" ]]; then
+        nohup "${HOME}/bin/gamepad-mouse.py" >>/tmp/gamepad-mouse.log 2>&1 &
+        echo "Gamepad mouse: started" >>/tmp/touch-input.log
+    else
+        echo "Gamepad mouse: disabled" >>/tmp/touch-input.log
+    fi
 fi
 
 echo "Touch map: ${MODE}" >>/tmp/touch-input.log

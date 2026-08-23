@@ -131,6 +131,8 @@ mkdir -p "${BIN_DIR}"
 install -m 0755 scripts/touch-trackpad.py "${BIN_DIR}/touch-trackpad.py"
 install -m 0755 scripts/gamepad-mouse.py "${BIN_DIR}/gamepad-mouse.py"
 install -m 0755 scripts/setup-touch-input.sh "${BIN_DIR}/setup-touch-input.sh"
+install -m 0755 scripts/apply-input-config.sh "${BIN_DIR}/apply-input-config.sh"
+install -m 0755 scripts/reload-kiosk-display.sh "${BIN_DIR}/reload-kiosk-display.sh"
 
 echo ""
 echo "Kiosk installation complete."
