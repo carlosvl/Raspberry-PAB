@@ -60,6 +60,14 @@ ${INSTALL_USER} ALL=(ALL) NOPASSWD: /bin/systemctl restart raspberry-pab
 EOF
 sudo chmod 440 /etc/sudoers.d/raspberry-pab-restart
 
+echo "==> Allowing passwordless Wi-Fi management from admin UI..."
+mkdir -p "${HOME}/bin"
+install -m 0755 scripts/manage-pi-wifi.sh "${HOME}/bin/manage-pi-wifi.sh"
+sudo tee /etc/sudoers.d/raspberry-pab-wifi >/dev/null <<EOF
+${INSTALL_USER} ALL=(ALL) NOPASSWD: ${HOME}/bin/manage-pi-wifi.sh
+EOF
+sudo chmod 440 /etc/sudoers.d/raspberry-pab-wifi
+
 echo "==> Allowing sleep inhibition for the kiosk service user..."
 sed "s|@INSTALL_USER@|${INSTALL_USER}|g" \
     deploy/polkit/49-raspberry-pab-inhibit.rules \
@@ -133,6 +141,8 @@ install -m 0755 scripts/gamepad-mouse.py "${BIN_DIR}/gamepad-mouse.py"
 install -m 0755 scripts/setup-touch-input.sh "${BIN_DIR}/setup-touch-input.sh"
 install -m 0755 scripts/apply-input-config.sh "${BIN_DIR}/apply-input-config.sh"
 install -m 0755 scripts/reload-kiosk-display.sh "${BIN_DIR}/reload-kiosk-display.sh"
+install -m 0755 scripts/manage-pi-wifi.sh "${BIN_DIR}/manage-pi-wifi.sh"
+install -m 0755 scripts/configure-pi-wifi.sh "${BIN_DIR}/configure-pi-wifi.sh"
 
 echo ""
 echo "Kiosk installation complete."

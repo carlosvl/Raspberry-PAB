@@ -36,12 +36,13 @@ Raspberry-PAB/
 │   └── autostart/             # Chromium kiosk autostart
 ├── scripts/
 │   ├── install.sh             # Pi install (chromium, unclutter, services)
-│   ├── configure-pi-wifi.sh   # Join Wi-Fi from Pi (stops hotspot to scan)
+│   ├── manage-pi-wifi.sh      # Wi-Fi status/scan/connect (admin + CLI)
+│   ├── configure-pi-wifi.sh   # Thin CLI wrapper for manage-pi-wifi.sh
 │   ├── upload-esp32-hardware.sh   # Flash combined ESP32 firmware
 │   ├── upload-esp32-matrix-test.sh # ESP32 wiring smoke test
 │   └── kiosk.sh               # Launch fullscreen browser
 ├── docs/kiosk.md              # Full kiosk setup guide
-└── docs/pi-wifi.md            # Change Pi Wi-Fi / fallback hotspot
+└── docs/pi-wifi.md            # Admin Wi-Fi tab + fallback hotspot
 ```
 
 ## Quick start (development)
@@ -74,7 +75,7 @@ sudo systemctl enable --now raspberry-pab
 sudo reboot
 ```
 
-The installer also creates a `Raspberry-PAB` Wi-Fi fallback hotspot. If the Pi cannot connect to a known Wi-Fi network, it broadcasts that hotspot and serves the app at `http://10.42.0.1:8080/admin`. See [docs/pi-wifi.md](docs/pi-wifi.md) to join a new network without losing access.
+The installer also creates a `Raspberry-PAB` Wi-Fi fallback hotspot. If the Pi cannot connect to a known Wi-Fi network, it broadcasts that hotspot and serves the app at `http://10.42.0.1:8080/admin`. On the Pi touchscreen, use **Admin → WiFi** to scan and join a network (local only). See [docs/pi-wifi.md](docs/pi-wifi.md).
 
 ## ESP32 buzzer + LED matrix (production)
 

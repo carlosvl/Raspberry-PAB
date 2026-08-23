@@ -2,6 +2,21 @@
 
 Raspberry-PAB uses **NetworkManager** (`nmcli`). If the Pi is not on your network, use its **fallback hotspot** first, then join your Wi-Fi (e.g. **QualitySuites**).
 
+## Admin UI (Pi touchscreen)
+
+Preferred when you are at the kiosk and only have touch or a gamepad:
+
+1. On the HDMI display, open admin (triple-tap the logo/title, or open `/admin`).
+2. Unlock with the admin PIN (on-screen keypad).
+3. Open the **WiFi** tab.
+4. Review **Current connection** and **Saved networks**.
+5. Tap **Scan Nearby** (this briefly pauses the fallback hotspot so `wlan0` can scan).
+6. Tap **Use this network**, enter the password with the **Keyboard** button (or gamepad + OS keyboard), then **Connect**.
+
+Wi‑Fi controls are **local-only** (they do not work from a phone on the hotspot). After a successful connect, the Pi leaves the hotspot and joins the chosen SSID; note the new IP on the status panel.
+
+Saved NetworkManager profiles appear under **Saved networks** with **Connect** / **Forget**. The fallback hotspot profile (`PAB-Hotspot`) is never listed or deletable from this UI.
+
 ## Step 1 — Reach the Pi via hotspot
 
 1. Power the Pi and wait ~2 minutes.
@@ -16,7 +31,9 @@ ssh carlos@10.42.0.1
 
 If that fails, the Pi may still be on an old network or the hotspot name/password was customized in `.env` (`PAB_HOTSPOT_SSID`, `PAB_HOTSPOT_PASSWORD`).
 
-## Step 2 — Connect the Pi to your Wi-Fi
+## Step 2 — Connect the Pi to your Wi-Fi (SSH / CLI)
+
+Prefer the **Admin UI** above when you are at the display. For SSH:
 
 **Important:** While the Pi is broadcasting `Raspberry-PAB`, its Wi‑Fi radio cannot scan for other networks. The script stops the hotspot first, then **brings the hotspot back** after `--list` or a failed connect.
 
@@ -26,13 +43,21 @@ From the Pi (SSH session):
 
 ```bash
 cd ~/Raspberry-PAB/scripts
-chmod +x configure-pi-wifi.sh
+chmod +x configure-pi-wifi.sh manage-pi-wifi.sh
 
 # See exact network names (stops hotspot — SSH may drop after connect)
 ./configure-pi-wifi.sh --list
 
 # Connect (use the exact SSID from the list + real password)
 ./configure-pi-wifi.sh "QualitySuites" "YOUR_WIFI_PASSWORD"
+```
+
+Or call the JSON helper directly:
+
+```bash
+./manage-pi-wifi.sh status
+./manage-pi-wifi.sh scan
+./manage-pi-wifi.sh connect "QualitySuites" "YOUR_WIFI_PASSWORD"
 ```
 
 Or manually:

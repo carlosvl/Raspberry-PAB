@@ -43,6 +43,9 @@
         <button data-tab-panel="testLabPanel" type="button">
           Test Lab
         </button>
+        <button data-tab-panel="wifiPanel" type="button">
+          WiFi
+        </button>
         <button data-tab-panel="importPanel" type="button">
           Import / Export
         </button>
@@ -546,6 +549,55 @@
                 <button id="exportSchedule" type="button">Export Selected Date</button>
               </div>
             </div>
+          </details>
+        </article>
+
+        <article class="panel" id="wifiPanel">
+          <h2>Wi‑Fi</h2>
+          <p class="branding__hint">
+            Available on the Pi touchscreen only. Scan pauses the fallback hotspot for a few seconds.
+          </p>
+
+          <details class="admin-section" open>
+            <summary>Current connection</summary>
+            <p class="wifi-status" id="wifiStatusText">Checking…</p>
+            <div class="button-row">
+              <button id="refreshWifiStatus" type="button">Refresh Status</button>
+            </div>
+          </details>
+
+          <details class="admin-section" open>
+            <summary>Saved networks</summary>
+            <div class="admin__list" id="wifiSavedList"></div>
+          </details>
+
+          <details class="admin-section" open>
+            <summary>Nearby networks</summary>
+            <div class="button-row">
+              <button class="button--primary button--large" id="scanWifi" type="button">
+                Scan Nearby
+              </button>
+            </div>
+            <div class="admin__list" id="wifiScanList"></div>
+          </details>
+
+          <details class="admin-section" open>
+            <summary>Connect</summary>
+            <form class="form" id="wifiConnectForm">
+              <label>
+                SSID
+                <input autocomplete="off" id="wifiSsid" maxlength="32" required type="text" />
+              </label>
+              <label>
+                Password
+                <input autocomplete="off" id="wifiPassword" maxlength="128" type="password" />
+                <span class="branding__hint">Leave blank for open networks.</span>
+              </label>
+              <div class="button-row wifi-form__actions">
+                <button data-open-keyboard type="button">Keyboard</button>
+                <button class="button--primary button--large" type="submit">Connect</button>
+              </div>
+            </form>
           </details>
         </article>
         <pre class="admin__output" id="adminOutput"></pre>

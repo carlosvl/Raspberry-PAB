@@ -32,6 +32,7 @@ from raspberry_pab.routes.race_results import router as race_results_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.routes.test_scenarios import router as test_scenarios_router
 from raspberry_pab.routes.touch import router as touch_router
+from raspberry_pab.routes.wifi import router as wifi_router
 from raspberry_pab.scheduler import AlertBroker, RaceResultsSyncScheduler, ReminderScheduler
 
 logger = logging.getLogger(__name__)
@@ -198,6 +199,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(schedule_router)
     app.include_router(branding_router)
     app.include_router(touch_router)
+    app.include_router(wifi_router)
     app.include_router(alerts_router)
     app.include_router(kiosk_router)
     app.include_router(led_router)

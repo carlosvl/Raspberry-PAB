@@ -97,8 +97,9 @@ The admin screen supports:
 - Adding reminder rules such as `30 min: Warm Up {name}`
 - Optional repeating reminders, for example every 5 minutes from 15 minutes before start
 - JSON import/export for offline setup or backups
+- **WiFi** tab on the Pi touchscreen: scan nearby SSIDs, connect with the OS keyboard, and manage saved NetworkManager profiles (see [pi-wifi.md](pi-wifi.md))
 
-On the Pi touchscreen, tap **Keyboard** on the admin PIN screen or admin header to open the OS on-screen keyboard. The installer tries to install `wvkbd`, `matchbox-keyboard`, or `onboard`; the app launches whichever is available for the active desktop session.
+On the Pi touchscreen, tap **Keyboard** on the admin PIN screen, WiFi connect form, or any `Keyboard` button to open the OS on-screen keyboard. The installer tries to install `wvkbd`, `matchbox-keyboard`, or `onboard`; the app launches whichever is available for the active desktop session.
 
 ### USB gamepad as mouse
 
@@ -155,6 +156,8 @@ Edit files under `web/`:
 | `web/js/kiosk.js` | Client-side logic |
 | `web/admin.html` | Admin page |
 | `web/js/admin.js` | Admin behavior |
+| `scripts/manage-pi-wifi.sh` | Local Wi-Fi status/scan/connect helper |
+| `src/raspberry_pab/routes/wifi.py` | Admin WiFi API (Pi touchscreen only) |
 
 Add API routes under `src/raspberry_pab/routes/` for buttons, sensors, or backend data.
 

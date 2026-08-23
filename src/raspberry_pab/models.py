@@ -316,3 +316,59 @@ class KioskClockState(BaseModel):
     anchor: str | None = None
     kiosk_now: str
     display_date: str
+
+
+class WifiStatus(BaseModel):
+    iface: str
+    connection: str = ""
+    ssid: str = ""
+    ipv4: str = ""
+    on_hotspot: bool = False
+    state: str = ""
+    hotspot_connection: str = "PAB-Hotspot"
+
+
+class WifiSavedNetwork(BaseModel):
+    name: str
+    ssid: str
+    uuid: str = ""
+    security: str = ""
+
+
+class WifiSavedNetworksResponse(BaseModel):
+    networks: list[WifiSavedNetwork]
+
+
+class WifiScanNetwork(BaseModel):
+    ssid: str
+    signal: int = 0
+    security: str = ""
+    in_use: bool = False
+    secured: bool = False
+
+
+class WifiScanResponse(BaseModel):
+    networks: list[WifiScanNetwork]
+
+
+class WifiConnectRequest(BaseModel):
+    ssid: str = Field(min_length=1, max_length=32)
+    password: str | None = Field(default=None, max_length=128)
+
+
+class WifiConnectSavedRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=128)
+
+
+class WifiConnectResponse(BaseModel):
+    ok: bool = True
+    ssid: str = ""
+    connection: str = ""
+    ipv4: str = ""
+    name: str = ""
+    message: str = ""
+
+
+class WifiForgetResponse(BaseModel):
+    ok: bool = True
+    forgotten: str

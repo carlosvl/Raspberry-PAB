@@ -795,6 +795,62 @@ body.admin-page {
   width: 100%;
 }
 
+.wifi-status {
+  margin: 0 0 0.75rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgb(2 6 23 / 65%);
+  color: #e2e8f0;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.wifi-form__actions {
+  margin-top: 0.5rem;
+  align-items: stretch;
+}
+
+.wifi-form__actions .button--large {
+  flex: 1;
+}
+
+.wifi-item {
+  grid-template-columns: 1fr;
+}
+
+.wifi-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.wifi-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.wifi-item__actions button {
+  min-height: 3rem;
+  padding: 0.65rem 1rem;
+}
+
+.wifi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .admin__list {
   display: grid;
   gap: 0.75rem;

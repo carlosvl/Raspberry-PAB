@@ -579,10 +579,220 @@ async function loadAll() {
       loadHardwareStatus(),
       loadLedConfig(),
       loadMatrixStatus(),
+      loadWifiPanel(),
     ]);
     setOutput("Loaded.");
   } catch (error) {
     setOutput(error.message);
+  }
+}
+
+function fillWifiConnectForm(ssid, preferPasswordFocus = false) {
+  const ssidInput = document.getElementById("wifiSsid");
+  const passwordInput = document.getElementById("wifiPassword");
+  if (ssidInput) ssidInput.value = ssid || "";
+  if (passwordInput) passwordInput.value = "";
+  if (preferPasswordFocus && passwordInput) {
+    passwordInput.focus();
+  } else if (ssidInput) {
+    ssidInput.focus();
+  }
+}
+
+function renderWifiStatus(status) {
+  const el = document.getElementById("wifiStatusText");
+  if (!el) return;
+  if (!status) {
+    el.textContent = "Wi‑Fi status unavailable on this display.";
+    return;
+  }
+  const lines = [];
+  if (status.on_hotspot) {
+    lines.push(`On fallback hotspot: ${status.ssid || status.connection || "PAB-Hotspot"}`);
+  } else if (status.ssid || status.connection) {
+    lines.push(`Connected: ${status.ssid || status.connection}`);
+  } else {
+    lines.push("Not connected");
+  }
+  if (status.ipv4) lines.push(`IP: ${status.ipv4}`);
+  if (status.iface) lines.push(`Interface: ${status.iface}`);
+  if (status.state) lines.push(`State: ${status.state}`);
+  el.textContent = lines.join("\n");
+}
+
+function renderWifiSavedList(networks) {
+  const list = document.getElementById("wifiSavedList");
+  if (!list) return;
+  list.innerHTML = "";
+  if (!networks.length) {
+    list.innerHTML = "<p class=\"branding__hint\">No saved client networks yet.</p>";
+    return;
+  }
+  for (const network of networks) {
+    const item = document.createElement("div");
+    item.className = "admin__item wifi-item";
+    item.innerHTML = `
+      <div class="admin__item-main">
+        <strong>${escapeHtml(network.ssid || network.name)}</strong>
+        <div class="wifi-item__meta">
+          <span>Profile: ${escapeHtml(network.name)}</span>
+          ${network.security ? `<span class="wifi-badge">${escapeHtml(network.security)}</span>` : ""}
+        </div>
+        <div class="wifi-item__actions">
+          <button type="button" data-wifi-connect-saved="${escapeAttr(network.name)}">Connect</button>
+          <button type="button" data-wifi-forget="${escapeAttr(network.name)}">Forget</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(item);
+  }
+}
+
+function renderWifiScanList(networks) {
+  const list = document.getElementById("wifiScanList");
+  if (!list) return;
+  list.innerHTML = "";
+  if (!networks.length) {
+    list.innerHTML = "<p class=\"branding__hint\">No networks found. Try Scan Nearby again.</p>";
+    return;
+  }
+  for (const network of networks) {
+    const item = document.createElement("div");
+    item.className = "admin__item wifi-item";
+    const lock = network.secured ? "🔒" : "Open";
+    item.innerHTML = `
+      <div class="admin__item-main">
+        <strong>${escapeHtml(network.ssid)}</strong>
+        <div class="wifi-item__meta">
+          <span class="wifi-badge">${network.signal}%</span>
+          <span class="wifi-badge">${lock}</span>
+          ${network.in_use ? "<span class=\"wifi-badge\">In use</span>" : ""}
+          ${network.security ? `<span>${escapeHtml(network.security)}</span>` : ""}
+        </div>
+        <div class="wifi-item__actions">
+          <button class="button--primary" type="button" data-wifi-pick="${escapeAttr(network.ssid)}" data-wifi-secured="${network.secured ? "1" : "0"}">
+            Use this network
+          </button>
+        </div>
+      </div>
+    `;
+    list.appendChild(item);
+  }
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replaceAll("'", "&#39;");
+}
+
+async function loadWifiStatus() {
+  try {
+    const status = await api("/api/admin/wifi/status");
+    renderWifiStatus(status);
+  } catch (error) {
+    renderWifiStatus(null);
+    throw error;
+  }
+}
+
+async function loadWifiSaved() {
+  const payload = await api("/api/admin/wifi/saved");
+  renderWifiSavedList(payload.networks || []);
+}
+
+async function loadWifiPanel() {
+  try {
+    await Promise.all([loadWifiStatus(), loadWifiSaved()]);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const statusEl = document.getElementById("wifiStatusText");
+    if (statusEl) {
+      statusEl.textContent = message.includes("local")
+        ? "Wi‑Fi controls are only available on the Pi touchscreen."
+        : message;
+    }
+    const saved = document.getElementById("wifiSavedList");
+    if (saved) {
+      saved.innerHTML = `<p class="branding__hint">${escapeHtml(message)}</p>`;
+    }
+  }
+}
+
+async function scanWifiNetworks() {
+  const button = document.getElementById("scanWifi");
+  setOutput("Scanning nearby Wi‑Fi (hotspot may pause briefly)…");
+  if (button) button.disabled = true;
+  try {
+    const payload = await api("/api/admin/wifi/scan", { method: "POST" });
+    renderWifiScanList(payload.networks || []);
+    await loadWifiStatus();
+    setOutput(`Found ${(payload.networks || []).length} nearby network(s).`);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function connectWifi(event) {
+  event.preventDefault();
+  const ssid = document.getElementById("wifiSsid")?.value?.trim() || "";
+  const password = document.getElementById("wifiPassword")?.value || "";
+  if (!ssid) {
+    setOutput("Enter an SSID first.");
+    return;
+  }
+  setOutput(`Connecting to ${ssid}…`);
+  try {
+    const result = await api("/api/admin/wifi/connect", {
+      method: "POST",
+      body: JSON.stringify({
+        ssid,
+        password: password || null,
+      }),
+    });
+    setOutput(
+      `Connected to ${result.ssid || ssid}` +
+        (result.ipv4 ? ` (${result.ipv4})` : "") +
+        ".",
+    );
+    document.getElementById("wifiPassword").value = "";
+    await loadWifiPanel();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+    await loadWifiStatus();
+  }
+}
+
+async function connectSavedNetwork(name) {
+  setOutput(`Connecting to saved network ${name}…`);
+  try {
+    const result = await api("/api/admin/wifi/connect-saved", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
+    setOutput(
+      `Connected to ${result.ssid || name}` +
+        (result.ipv4 ? ` (${result.ipv4})` : "") +
+        ".",
+    );
+    await loadWifiPanel();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+    await loadWifiStatus();
+  }
+}
+
+async function forgetSavedNetwork(name) {
+  if (!window.confirm(`Forget saved network “${name}”?`)) return;
+  setOutput(`Forgetting ${name}…`);
+  try {
+    await api(`/api/admin/wifi/saved/${encodeURIComponent(name)}`, {
+      method: "DELETE",
+    });
+    setOutput(`Forgot ${name}.`);
+    await loadWifiSaved();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
   }
 }
 
@@ -1524,6 +1734,47 @@ document.getElementById("exportSchedule")?.addEventListener("click", async () =>
 restartServiceButton?.addEventListener("click", restartService);
 reloadKioskDisplayButton?.addEventListener("click", reloadKioskDisplay);
 reloadAdminPageButton?.addEventListener("click", hardReloadAdminPage);
+
+document.getElementById("refreshWifiStatus")?.addEventListener("click", async () => {
+  try {
+    await loadWifiStatus();
+    setOutput("Wi‑Fi status refreshed.");
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+document.getElementById("scanWifi")?.addEventListener("click", scanWifiNetworks);
+document.getElementById("wifiConnectForm")?.addEventListener("submit", connectWifi);
+
+document.getElementById("wifiSavedList")?.addEventListener("click", async (event) => {
+  const connectBtn = event.target.closest("[data-wifi-connect-saved]");
+  if (connectBtn) {
+    await connectSavedNetwork(connectBtn.dataset.wifiConnectSaved || "");
+    return;
+  }
+  const forgetBtn = event.target.closest("[data-wifi-forget]");
+  if (forgetBtn) {
+    await forgetSavedNetwork(forgetBtn.dataset.wifiForget || "");
+  }
+});
+
+document.getElementById("wifiScanList")?.addEventListener("click", (event) => {
+  const pickBtn = event.target.closest("[data-wifi-pick]");
+  if (!pickBtn) return;
+  const ssid = pickBtn.dataset.wifiPick || "";
+  const secured = pickBtn.dataset.wifiSecured === "1";
+  fillWifiConnectForm(ssid, secured);
+  if (secured) {
+    openKeyboard();
+  }
+  setOutput(`Selected ${ssid}. Enter password if needed, then Connect.`);
+});
+
+["wifiSsid", "wifiPassword"].forEach((id) => {
+  document.getElementById(id)?.addEventListener("focus", () => {
+    openKeyboard();
+  }, { once: true });
+});
 
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;
