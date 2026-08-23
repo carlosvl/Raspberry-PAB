@@ -97,6 +97,7 @@ function populateRuleForm(rule) {
     setFieldValue("ruleLedInterval", String(rule.led_flash_interval_ms ?? 500));
     setFieldValue("ruleLedDuration", String(rule.led_flash_duration_seconds ?? 10));
     setFieldValue("ruleLedChaseDuration", String(rule.led_chase_duration_seconds ?? 10));
+    setFieldValue("ruleMatrixEffect", rule.matrix_effect || "solid");
     setFieldChecked("ruleBuzzerEnabled", rule.buzzer_enabled);
     setFieldValue("ruleBuzzerPitch", String(rule.buzzer_pitch_hz ?? 2500));
     setFieldValue("ruleBuzzerVolume", String(rule.buzzer_volume ?? 80));
@@ -118,6 +119,7 @@ function readRuleNumber(id, fallback) {
 
 function readRuleLedSettings() {
   const ledColor = parseHexColor(document.getElementById("ruleLedColor").value);
+  const effectEl = document.getElementById("ruleMatrixEffect");
   return {
     led_enabled: document.getElementById("ruleLedEnabled").checked,
     led_red: ledColor.led_red,
@@ -126,6 +128,7 @@ function readRuleLedSettings() {
     led_flash_interval_ms: readRuleNumber("ruleLedInterval", 500),
     led_flash_duration_seconds: readRuleNumber("ruleLedDuration", 10),
     led_chase_duration_seconds: readRuleNumber("ruleLedChaseDuration", 10),
+    matrix_effect: effectEl?.value || "solid",
   };
 }
 
@@ -153,10 +156,14 @@ function ruleLedSummary(rule) {
     return "";
   }
   const color = rgbToHex(rule.led_red, rule.led_green, rule.led_blue);
+  const effect = rule.matrix_effect && rule.matrix_effect !== "solid"
+    ? `, matrix ${rule.matrix_effect}`
+    : "";
   return ` · LED ${color} @ ${rule.led_flash_interval_ms}ms for ${rule.led_flash_duration_seconds}s` +
     (rule.led_chase_duration_seconds > 0
       ? `, then chase ${rule.led_chase_duration_seconds}s`
-      : "");
+      : "") +
+    effect;
 }
 function adminPin() {
   return sessionStorage.getItem("pabAdminPin") || "";
@@ -395,6 +402,8 @@ function clearRuleForm() {
   document.getElementById("ruleLedInterval").value = "500";
   document.getElementById("ruleLedDuration").value = "10";
   document.getElementById("ruleLedChaseDuration").value = "10";
+  const matrixEffectEl = document.getElementById("ruleMatrixEffect");
+  if (matrixEffectEl) matrixEffectEl.value = "solid";
   document.getElementById("ruleBuzzerEnabled").checked = false;
   document.getElementById("ruleBuzzerPitch").value = "2500";
   document.getElementById("ruleBuzzerVolume").value = "80";
@@ -774,6 +783,13 @@ document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile)
 document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
 document.getElementById("clearRule")?.addEventListener("click", clearRuleForm);
+document.querySelectorAll(".color-preset").forEach((button) => {
+  button.addEventListener("click", () => {
+    const color = button.dataset.color;
+    const colorInput = document.getElementById("ruleLedColor");
+    if (color && colorInput) colorInput.value = color;
+  });
+});
 document.getElementById("testRuleBuzzer")?.addEventListener("click", async () => {
   let buzzerSettings;
   try {
@@ -824,14 +840,14 @@ document.getElementById("testRuleMatrix")?.addEventListener("click", async () =>
     document.getElementById("ruleMessage")?.value?.trim() || "Matrix test";
   const totalSeconds =
     ledSettings.led_flash_duration_seconds + (ledSettings.led_chase_duration_seconds || 0);
-  setOutput(`Testing matrix scroll (“${message}”, ~${totalSeconds}s)…`);
+  setOutput(`Testing matrix scroll (“${message}”, ${ledSettings.matrix_effect}, ~${totalSeconds}s)…`);
   try {
     await api("/api/admin/matrix/test", {
       method: "POST",
       body: JSON.stringify({ ...ledSettings, message }),
     });
     setOutput(
-      `Matrix test started — scrolling “${message}” for ~${totalSeconds}s`,
+      `Matrix test started — ${ledSettings.matrix_effect} scroll “${message}” for ~${totalSeconds}s`,
     );
   } catch (error) {
     setOutput("❌ " + (error instanceof Error ? error.message : String(error)));

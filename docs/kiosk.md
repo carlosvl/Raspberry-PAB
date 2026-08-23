@@ -110,6 +110,8 @@ Example import file: `data/schedule.example.json`.
 
 ## 5. Remote iOS app and fallback hotspot
 
+See **[pi-wifi.md](pi-wifi.md)** for changing the Pi’s Wi-Fi (e.g. joining **QualitySuites** via the fallback hotspot first).
+
 The admin UI is installable on iOS as a Safari PWA:
 
 1. Connect the iPhone to the same Wi-Fi as the Pi.
@@ -174,6 +176,37 @@ PAB_LED_NAME="MELKL-OT21 CB"
 .venv/bin/python scripts/test-lotus-lamp.py
 ```
 
+## 6.2 ESP32 buzzer + WS2812 matrix
+
+Production hardware is a **combined ESP32 board** (buzzer GPIO **4**, matrix DIN GPIO **16**, **768** LEDs = three 8×32 panels). Wiring: [hardware/esp32/WIRING.md](../hardware/esp32/WIRING.md). Field power: [hardware/power/MOBILE-POWER.md](../hardware/power/MOBILE-POWER.md).
+
+1. Add to `.env` on the Pi:
+
+```bash
+PAB_BUZZER_ENABLED=true
+PAB_BUZZER_PORT=/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0
+PAB_MATRIX_ENABLED=true
+PAB_MATRIX_WIDTH=96
+PAB_MATRIX_BRIGHTNESS=64
+```
+
+(`PAB_MATRIX_PORT` can stay empty — it uses the buzzer port.)
+
+2. Flash firmware (stop the service first on the Pi):
+
+```bash
+sudo systemctl stop raspberry-pab
+PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # optional wiring check
+PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh
+sudo systemctl start raspberry-pab
+```
+
+On a Mac, use `/dev/cu.usbserial-*` or run `./scripts/detect-buzzer-port.sh`. The Pi needs internet for `arduino-cli` on first flash; otherwise flash from the Mac and plug the ESP32 back into the Pi.
+
+3. Confirm boot line on serial: `READY PIXELS 768`. Use **Admin → Test buzzer** and **Test matrix**.
+
+Legacy Nano (two panels): [hardware/arduino/README.md](../hardware/arduino/README.md).
+
 ## 7. Configuration
 
 | Variable | Default | Description |
@@ -191,6 +224,13 @@ PAB_LED_NAME="MELKL-OT21 CB"
 | `PAB_LED_ENABLED` | `false` | Enable BLE LED flashing on alerts |
 | `PAB_LED_ADDRESS` | *(empty)* | BLE MAC address of the LED controller |
 | `PAB_LED_NAME` | `MELKL-OT21 CB` | BLE advertised device name |
+| `PAB_BUZZER_ENABLED` | `false` | Enable ESP32/Nano buzzer on alerts |
+| `PAB_BUZZER_PORT` | *(empty)* | Serial port (CP2102 on ESP32) |
+| `PAB_MATRIX_ENABLED` | `false` | Enable WS2812 matrix scroll on alerts |
+| `PAB_MATRIX_WIDTH` | `96` | Matrix width (three 8×32 panels) |
+| `PAB_MATRIX_BRIGHTNESS` | `64` | Matrix max brightness (field ≤128) |
+
+See also [pi-wifi.md](pi-wifi.md) for hotspot + Wi-Fi changes.
 
 ## Troubleshooting
 

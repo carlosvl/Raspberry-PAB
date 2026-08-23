@@ -3,8 +3,14 @@
 from __future__ import annotations
 
 from datetime import date, datetime, time
+from typing import Literal
 
 from pydantic import BaseModel, Field
+
+
+MatrixEffect = Literal["solid", "rainbow", "pulse"]
+MATRIX_EFFECTS: tuple[MatrixEffect, ...] = ("solid", "rainbow", "pulse")
+MATRIX_EFFECT_MODE = {"solid": 0, "rainbow": 1, "pulse": 2}
 
 
 class ParticipantBase(BaseModel):
@@ -131,6 +137,7 @@ class ReminderRuleBase(BaseModel):
     led_flash_interval_ms: int = Field(default=500, ge=100, le=5000)
     led_flash_duration_seconds: int = Field(default=10, ge=1, le=120)
     led_chase_duration_seconds: int = Field(default=10, ge=0, le=120)
+    matrix_effect: MatrixEffect = "solid"
     buzzer_enabled: bool = False
     buzzer_pitch_hz: int = Field(default=2500, ge=100, le=10000)
     buzzer_volume: int = Field(default=80, ge=0, le=100)
@@ -156,6 +163,7 @@ class ReminderRuleUpdate(BaseModel):
     led_flash_interval_ms: int | None = Field(default=None, ge=100, le=5000)
     led_flash_duration_seconds: int | None = Field(default=None, ge=1, le=120)
     led_chase_duration_seconds: int | None = Field(default=None, ge=0, le=120)
+    matrix_effect: MatrixEffect | None = None
     buzzer_enabled: bool | None = None
     buzzer_pitch_hz: int | None = Field(default=None, ge=100, le=10000)
     buzzer_volume: int | None = Field(default=None, ge=0, le=100)
@@ -183,6 +191,7 @@ class LedStripTest(BaseModel):
     led_flash_interval_ms: int = Field(default=500, ge=100, le=5000)
     led_flash_duration_seconds: int = Field(default=3, ge=1, le=120)
     led_chase_duration_seconds: int = Field(default=10, ge=0, le=120)
+    matrix_effect: MatrixEffect = "solid"
     message: str = Field(default="Matrix test", min_length=1, max_length=80)
 
 

@@ -150,6 +150,7 @@ class ScheduleStore:
             )
             self._migrate_rule_led_columns(conn)
             self._migrate_rule_buzzer_columns(conn)
+            self._migrate_rule_matrix_columns(conn)
             count = conn.execute("SELECT COUNT(*) FROM reminder_rules").fetchone()[0]
             if count == 0:
                 self._create_rules(conn, DEFAULT_RULES)
@@ -249,7 +250,7 @@ class ScheduleStore:
             SELECT id, offset_minutes, message_template, repeat_every_minutes,
                    enabled, sort_order, led_enabled, led_red, led_green, led_blue,
                    led_flash_interval_ms, led_flash_duration_seconds,
-                   led_chase_duration_seconds,
+                   led_chase_duration_seconds, matrix_effect,
                    buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
                    buzzer_count, buzzer_beep_ms, buzzer_gap_ms
             FROM reminder_rules
@@ -268,7 +269,7 @@ class ScheduleStore:
                 SELECT id, offset_minutes, message_template, repeat_every_minutes,
                        enabled, sort_order, led_enabled, led_red, led_green, led_blue,
                        led_flash_interval_ms, led_flash_duration_seconds,
-                   led_chase_duration_seconds,
+                   led_chase_duration_seconds, matrix_effect,
                    buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
                    buzzer_count, buzzer_beep_ms, buzzer_gap_ms
                 FROM reminder_rules
@@ -345,6 +346,11 @@ class ScheduleStore:
                 if update.led_chase_duration_seconds is not None
                 else existing.led_chase_duration_seconds
             ),
+            matrix_effect=(
+                update.matrix_effect
+                if update.matrix_effect is not None
+                else existing.matrix_effect
+            ),
             buzzer_enabled=(
                 update.buzzer_enabled
                 if update.buzzer_enabled is not None
@@ -384,7 +390,7 @@ class ScheduleStore:
                     repeat_every_minutes = ?, enabled = ?, sort_order = ?,
                     led_enabled = ?, led_red = ?, led_green = ?, led_blue = ?,
                     led_flash_interval_ms = ?, led_flash_duration_seconds = ?,
-                    led_chase_duration_seconds = ?,
+                    led_chase_duration_seconds = ?, matrix_effect = ?,
                     buzzer_enabled = ?, buzzer_pitch_hz = ?, buzzer_volume = ?,
                     buzzer_count = ?, buzzer_beep_ms = ?, buzzer_gap_ms = ?
                 WHERE id = ?
@@ -402,6 +408,7 @@ class ScheduleStore:
                     merged.led_flash_interval_ms,
                     merged.led_flash_duration_seconds,
                     merged.led_chase_duration_seconds,
+                    merged.matrix_effect,
                     int(merged.buzzer_enabled),
                     merged.buzzer_pitch_hz,
                     merged.buzzer_volume,
@@ -464,6 +471,7 @@ class ScheduleStore:
                 led_flash_interval_ms=rule.led_flash_interval_ms,
                 led_flash_duration_seconds=rule.led_flash_duration_seconds,
                 led_chase_duration_seconds=rule.led_chase_duration_seconds,
+                matrix_effect=rule.matrix_effect,
                 buzzer_enabled=rule.buzzer_enabled,
                 buzzer_pitch_hz=rule.buzzer_pitch_hz,
                 buzzer_volume=rule.buzzer_volume,
@@ -869,6 +877,16 @@ class ScheduleStore:
                 continue
 
     @staticmethod
+    def _migrate_rule_matrix_columns(conn: sqlite3.Connection) -> None:
+        try:
+            conn.execute(
+                "ALTER TABLE reminder_rules ADD COLUMN matrix_effect "
+                "TEXT NOT NULL DEFAULT 'solid'"
+            )
+        except sqlite3.OperationalError:
+            pass
+
+    @staticmethod
     def _create_rules(
         conn: sqlite3.Connection, rules: Iterable[ReminderRuleCreate]
     ) -> sqlite3.Cursor:
@@ -880,10 +898,10 @@ class ScheduleStore:
                     (offset_minutes, message_template, repeat_every_minutes,
                      enabled, sort_order, led_enabled, led_red, led_green, led_blue,
                      led_flash_interval_ms, led_flash_duration_seconds,
-                     led_chase_duration_seconds,
+                     led_chase_duration_seconds, matrix_effect,
                      buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
                      buzzer_count, buzzer_beep_ms, buzzer_gap_ms)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     rule.offset_minutes,
@@ -898,6 +916,7 @@ class ScheduleStore:
                     rule.led_flash_interval_ms,
                     rule.led_flash_duration_seconds,
                     rule.led_chase_duration_seconds,
+                    rule.matrix_effect,
                     int(rule.buzzer_enabled),
                     rule.buzzer_pitch_hz,
                     rule.buzzer_volume,
@@ -920,6 +939,14 @@ class ScheduleStore:
     @staticmethod
     def _rule_from_row(row: sqlite3.Row) -> ReminderRule:
         repeat = row["repeat_every_minutes"]
+        raw_effect = (
+            str(row["matrix_effect"])
+            if "matrix_effect" in row.keys() and row["matrix_effect"]
+            else "solid"
+        )
+        matrix_effect = (
+            raw_effect if raw_effect in ("solid", "rainbow", "pulse") else "solid"
+        )
         return ReminderRule(
             id=int(row["id"]),
             offset_minutes=int(row["offset_minutes"]),
@@ -934,6 +961,7 @@ class ScheduleStore:
             led_flash_interval_ms=int(row["led_flash_interval_ms"]),
             led_flash_duration_seconds=int(row["led_flash_duration_seconds"]),
             led_chase_duration_seconds=int(row["led_chase_duration_seconds"]),
+            matrix_effect=matrix_effect,
             buzzer_enabled=bool(row["buzzer_enabled"]),
             buzzer_pitch_hz=int(row["buzzer_pitch_hz"]),
             buzzer_volume=int(row["buzzer_volume"]),

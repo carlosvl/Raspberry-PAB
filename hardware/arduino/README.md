@@ -1,4 +1,7 @@
-# Arduino Nano + buzzer + WS2812 matrix (Raspberry-PAB)
+# Arduino Nano + buzzer + WS2812 matrix (legacy)
+
+> **Production (3 panels):** use the **ESP32** combined board — see [`../esp32/WIRING.md`](../esp32/WIRING.md) and `scripts/upload-esp32-hardware.sh`.  
+> This folder is the **legacy Nano** path: **two** 8×32 panels (512 LEDs), buzzer **D3**, matrix **D6**.
 
 Hardware sketches for a **low-level-trigger** active buzzer on **D3** and **two daisy-chained 8×32 WS2812B** panels on **D6** (one **8×64** display, 512 LEDs).
 

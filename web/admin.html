@@ -285,6 +285,20 @@
                   LED color
                   <input id="ruleLedColor" type="color" value="#ffc800" />
                 </label>
+                <div class="color-presets" role="group" aria-label="Matrix color presets">
+                  <button type="button" class="color-preset" data-color="#ffc800" title="Amber" style="--swatch:#ffc800">Amber</button>
+                  <button type="button" class="color-preset" data-color="#ff0505" title="Red" style="--swatch:#ff0505">Red</button>
+                  <button type="button" class="color-preset" data-color="#00ff66" title="Lime" style="--swatch:#00ff66">Lime</button>
+                  <button type="button" class="color-preset" data-color="#ffffff" title="White" style="--swatch:#ffffff">White</button>
+                </div>
+                <label>
+                  Matrix effect
+                  <select id="ruleMatrixEffect">
+                    <option value="solid">Solid scroll</option>
+                    <option value="rainbow">Rainbow scroll</option>
+                    <option value="pulse">Pulse scroll</option>
+                  </select>
+                </label>
                 <label>
                   Flash interval (ms)
                   <input id="ruleLedInterval" min="100" max="5000" step="50" type="number" value="500" />
@@ -299,8 +313,8 @@
                 </label>
                 <p class="branding__hint">
                   Chase runs back-and-forth on the <strong>BLE strip</strong> after flashing
-                  (set to 0 to skip). The <strong>matrix</strong> scrolls the message for
-                  flash + chase duration total — it does not run a separate chase.
+                  (set to 0 to skip). The <strong>matrix</strong> scrolls for flash + chase
+                  duration using the matrix effect above (rainbow ignores solid color for text).
                   Test from the LED Matrix / BLE LED strip sections above.
                 </p>
               </div>

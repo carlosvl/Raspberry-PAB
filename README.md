@@ -25,6 +25,10 @@ Raspberry-PAB/
 │   ├── server.py              # FastAPI routes + static files
 │   ├── app.py                 # uvicorn server entry
 │   └── config.py              # Env-based settings
+├── hardware/
+│   ├── esp32/                 # Production MCU: 3-panel matrix + buzzer
+│   ├── arduino/               # Legacy Nano (2 panels)
+│   └── power/                 # Mobile power + buck converter setup
 ├── data/schedule.example.json # Offline import example
 ├── deploy/
 │   ├── systemd/               # Web server + fallback hotspot units
@@ -32,8 +36,12 @@ Raspberry-PAB/
 │   └── autostart/             # Chromium kiosk autostart
 ├── scripts/
 │   ├── install.sh             # Pi install (chromium, unclutter, services)
+│   ├── configure-pi-wifi.sh   # Join Wi-Fi from Pi (stops hotspot to scan)
+│   ├── upload-esp32-hardware.sh   # Flash combined ESP32 firmware
+│   ├── upload-esp32-matrix-test.sh # ESP32 wiring smoke test
 │   └── kiosk.sh               # Launch fullscreen browser
-└── docs/kiosk.md              # Full kiosk setup guide
+├── docs/kiosk.md              # Full kiosk setup guide
+└── docs/pi-wifi.md            # Change Pi Wi-Fi / fallback hotspot
 ```
 
 ## Quick start (development)
@@ -66,7 +74,28 @@ sudo systemctl enable --now raspberry-pab
 sudo reboot
 ```
 
-The installer also creates a `Raspberry-PAB` Wi-Fi fallback hotspot. If the Pi cannot connect to a known Wi-Fi network, it broadcasts that hotspot and serves the app at `http://10.42.0.1:8080/admin`.
+The installer also creates a `Raspberry-PAB` Wi-Fi fallback hotspot. If the Pi cannot connect to a known Wi-Fi network, it broadcasts that hotspot and serves the app at `http://10.42.0.1:8080/admin`. See [docs/pi-wifi.md](docs/pi-wifi.md) to join a new network without losing access.
+
+## ESP32 buzzer + LED matrix (production)
+
+Three daisy-chained **8×32 WS2812** panels (768 LEDs) plus an active buzzer run on a **38-pin ESP32-WROOM** (CP2102 USB) over one serial port to the Pi.
+
+| Doc | Purpose |
+|-----|---------|
+| [hardware/esp32/WIRING.md](hardware/esp32/WIRING.md) | GPIO 16 (DIN), GPIO 4 (buzzer), power, daisy-chain |
+| [hardware/power/MOBILE-POWER.md](hardware/power/MOBILE-POWER.md) | Field power (AC2A + Cywhrvzsf 5.1 V) |
+| [hardware/power/CYWHRVZSF-BUCK-SETUP.md](hardware/power/CYWHRVZSF-BUCK-SETUP.md) | Buck pot calibration |
+
+Flash firmware (Mac or Pi with `arduino-cli`):
+
+```bash
+PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # wiring check
+PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh     # production
+```
+
+Set in `.env`: `PAB_BUZZER_ENABLED=true`, `PAB_MATRIX_ENABLED=true`, `PAB_MATRIX_WIDTH=96`, and `PAB_BUZZER_PORT` to the CP2102 by-id path. Test from **Admin → Test buzzer** / **Test matrix**.
+
+Legacy **Arduino Nano** (two panels, 512 LEDs): [hardware/arduino/](hardware/arduino/).
 
 ## Remote iOS admin
 
@@ -139,15 +168,15 @@ The admin **Race Results** panel syncs the [Precision Race MCA index](https://ww
 | `PAB_ADMIN_PIN`         | `1234`                         | PIN for admin writes                         |
 | `PAB_HOTSPOT_SSID`     | `Raspberry-PAB`                | Fallback hotspot name                        |
 | `PAB_HOTSPOT_PASSWORD` | `RaspberryPAB123`              | Fallback hotspot password                    |
-| `PAB_BUZZER_ENABLED`   | `false`                        | Enable Arduino buzzer on reminder alerts     |
-| `PAB_BUZZER_PORT`      | *(empty)*                      | Serial port for Arduino Nano                 |
+| `PAB_BUZZER_ENABLED`   | `false`                        | Enable buzzer on reminder alerts (ESP32 combined board) |
+| `PAB_BUZZER_PORT`      | *(empty)*                      | Serial port for ESP32 (CP2102) / legacy Nano    |
 | `PAB_BUZZER_MODE`      | `active`                       | `active` or `passive` buzzer module          |
 | `PAB_BUZZER_BAUD`      | `115200`                       | Serial baud rate                             |
 | `PAB_MATRIX_ENABLED`   | `false`                        | Enable WS2812 matrix on reminder alerts      |
 | `PAB_MATRIX_PORT`      | *(empty)*                      | Serial port; defaults to `PAB_BUZZER_PORT`   |
-| `PAB_MATRIX_WIDTH`     | `64`                           | Matrix width (two 8×32 panels daisy-chained) |
+| `PAB_MATRIX_WIDTH`     | `96`                           | Matrix width (three 8×32 panels daisy-chained) |
 | `PAB_MATRIX_HEIGHT`    | `8`                            | Matrix height in pixels                      |
-| `PAB_MATRIX_BRIGHTNESS`| `64`                           | Max matrix brightness (0–255)              |
+| `PAB_MATRIX_BRIGHTNESS`| `64`                           | Max matrix brightness (0–255; field ≤128)  |
 | `PAB_MATRIX_BAUD`      | `115200`                       | Matrix serial baud rate                      |
 
 On the Pi touchscreen, tap **Keyboard** on the admin PIN screen to open the installed OS on-screen keyboard. `scripts/install.sh` tries to install common keyboard packages (`wvkbd`, `matchbox-keyboard`, `onboard`) and `scripts/touch-keyboard.sh` launches whichever is available for the current desktop session.

@@ -32,6 +32,8 @@ It matches **your actual board layout** (see photo below):
 
 **Field / battery:** This guide uses a wall **5V** PSU. For a mobile cart ([BLUETTI AC2A](https://www.bluettipower.com/products/solar-generator-ac2a), ~3–4 h), see **[MOBILE-POWER.md](../power/MOBILE-POWER.md)**.
 
+**Production MCU:** three panels are driven by the **ESP32** — see [`../esp32/WIRING.md`](../esp32/WIRING.md). This breadboard guide is for the **legacy Nano + two panels** bench setup.
+
 ---
 
 ## Part 1 — Understand your breadboard

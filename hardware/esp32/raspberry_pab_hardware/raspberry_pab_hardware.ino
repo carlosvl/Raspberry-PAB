@@ -1,25 +1,24 @@
-// Combined buzzer (D3) + dual 8x32 WS2812 (D6) for Raspberry-PAB.
-// Nano has 2KB SRAM: 220B BSS + 1536B pixel heap ≈ 292B stack left.
-// Never use sscanf — it overflows that stack and corrupts the LED buffer.
+// Combined buzzer (GPIO 4) + triple 8x32 WS2812 (GPIO 16) for Raspberry-PAB.
+// ESP32-WROOM DevKit on screw-terminal breakout. 768 LEDs (8x96) — needs ESP32 RAM.
+// Same newline ASCII protocol as the Nano sketch so the Pi app stays compatible.
 #include <Adafruit_NeoPixel.h>
-#include <avr/pgmspace.h>
 #include <stdlib.h>
 #include <string.h>
 
-const uint8_t BUZZER_PIN = 3;
-const uint8_t LED_PIN = 6;
+const uint8_t BUZZER_PIN = 4;
+const uint8_t LED_PIN = 16;
 const uint8_t TILE_W = 32;
 const uint8_t TILE_H = 8;
-const uint8_t MATRIX_W = 64;
+const uint8_t MATRIX_W = 96;
 const uint8_t MATRIX_H = 8;
-const uint16_t LED_COUNT = 512;
+const uint16_t LED_COUNT = 768;
 const uint8_t SCROLL_MS = 50;
 const uint8_t CHAR_W = 6;
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-// 5x7 font ASCII 32..90 in PROGMEM (flash, not SRAM).
-const uint8_t FONT5X7[] PROGMEM = {
+// 5x7 font ASCII 32..90
+const uint8_t FONT5X7[] = {
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x5F,0x00,0x00,0x00,0x07,0x00,0x07,0x00,
   0x14,0x7F,0x14,0x7F,0x14,0x24,0x2A,0x7F,0x2A,0x12,0x23,0x13,0x08,0x64,0x62,
   0x36,0x49,0x55,0x22,0x50,0x00,0x05,0x03,0x00,0x00,0x00,0x1C,0x22,0x41,0x00,
@@ -43,10 +42,7 @@ const uint8_t FONT5X7[] PROGMEM = {
 };
 
 int freeRam() {
-  extern int __heap_start;
-  extern void *__brkval;
-  int top;
-  return (int)&top - (__brkval == 0 ? (int)&__heap_start : (int)__brkval);
+  return (int)ESP.getFreeHeap();
 }
 
 // Skip token; parse next signed int. Returns NULL on failure.
@@ -61,12 +57,11 @@ const char *parseInt(const char *s, int *out) {
   return end;
 }
 
-bool startsWith_P(const char *line, const char *progmemPrefix) {
-  while (true) {
-    char pc = (char)pgm_read_byte(progmemPrefix++);
-    if (pc == '\0') return true;
-    if (*line++ != pc) return false;
+bool startsWith(const char *line, const char *prefix) {
+  while (*prefix) {
+    if (*line++ != *prefix++) return false;
   }
+  return true;
 }
 
 uint16_t xyToIndex(int16_t x, int16_t y) {
@@ -112,7 +107,7 @@ void drawChar5x7(int16_t x, int16_t y, char c, uint32_t color) {
   if (c < 32 || c > 90) c = '?';
   uint8_t index = (uint8_t)(c - 32);
   for (uint8_t col = 0; col < 5; col++) {
-    uint8_t bits = pgm_read_byte(&FONT5X7[index * 5 + col]);
+    uint8_t bits = FONT5X7[index * 5 + col];
     for (uint8_t row = 0; row < 7; row++) {
       if (bits & (1 << row)) setXY(x + col, y + row, color);
     }
@@ -138,7 +133,7 @@ void drawChar5x7Effect(
   if (c < 32 || c > 90) c = '?';
   uint8_t index = (uint8_t)(c - 32);
   for (uint8_t col = 0; col < 5; col++) {
-    uint8_t bits = pgm_read_byte(&FONT5X7[index * 5 + col]);
+    uint8_t bits = FONT5X7[index * 5 + col];
     for (uint8_t row = 0; row < 7; row++) {
       if (!(bits & (1 << row))) continue;
       int16_t px = x + col;
@@ -156,14 +151,6 @@ void drawChar5x7Effect(
       }
       setXY(px, y + row, color);
     }
-  }
-}
-
-void drawText(int16_t x, int16_t y, const char *text, uint32_t color) {
-  int16_t cursor = x;
-  while (*text) {
-    drawChar5x7(cursor, y, *text++, color);
-    cursor += CHAR_W;
   }
 }
 
@@ -221,7 +208,7 @@ void runScroll(uint8_t r, uint8_t g, uint8_t b, unsigned long ms, uint8_t mode, 
   int16_t textW = 0;
   for (const char *p = text; *p; p++) textW += CHAR_W;
   int16_t x = MATRIX_W;
-  // Frame count (not millis): show() blocks interrupts so millis drifts.
+  // Frame count (not millis): show() can stall timing on some platforms.
   unsigned long frames = ms / SCROLL_MS;
   if (frames < 1) frames = 1;
   for (unsigned long i = 0; i < frames; i++) {
@@ -244,72 +231,72 @@ void runScroll(uint8_t r, uint8_t g, uint8_t b, unsigned long ms, uint8_t mode, 
 }
 
 void handleLine(char *line) {
-  if (strcmp_P(line, PSTR("PING")) == 0) { Serial.println(F("PONG")); return; }
-  if (strcmp_P(line, PSTR("INFO")) == 0) {
-    Serial.print(F("PIXELS "));
+  if (strcmp(line, "PING") == 0) { Serial.println("PONG"); return; }
+  if (strcmp(line, "INFO") == 0) {
+    Serial.print("PIXELS ");
     Serial.print(strip.numPixels());
-    Serial.print(F(" FREE "));
+    Serial.print(" FREE ");
     Serial.println(freeRam());
     return;
   }
-  if (strcmp_P(line, PSTR("STOP")) == 0 || strcmp_P(line, PSTR("CLEAR")) == 0) {
+  if (strcmp(line, "STOP") == 0 || strcmp(line, "CLEAR") == 0) {
     if (line[0] == 'S') buzzerOff();
     matrixClear();
-    Serial.println(F("OK"));
+    Serial.println("OK");
     return;
   }
-  if (startsWith_P(line, PSTR("BEEP "))) {
+  if (startsWith(line, "BEEP ")) {
     int freq, vol, count, beepMs, gapMs;
     const char *p = line + 5;
-    p = parseInt(p, &freq); if (!p) { Serial.println(F("ERR beep")); return; }
-    p = parseInt(p, &vol); if (!p) { Serial.println(F("ERR beep")); return; }
-    p = parseInt(p, &count); if (!p) { Serial.println(F("ERR beep")); return; }
-    p = parseInt(p, &beepMs); if (!p) { Serial.println(F("ERR beep")); return; }
-    p = parseInt(p, &gapMs); if (!p) { Serial.println(F("ERR beep")); return; }
+    p = parseInt(p, &freq); if (!p) { Serial.println("ERR beep"); return; }
+    p = parseInt(p, &vol); if (!p) { Serial.println("ERR beep"); return; }
+    p = parseInt(p, &count); if (!p) { Serial.println("ERR beep"); return; }
+    p = parseInt(p, &beepMs); if (!p) { Serial.println("ERR beep"); return; }
+    p = parseInt(p, &gapMs); if (!p) { Serial.println("ERR beep"); return; }
     (void)freq; (void)vol;
     beepTimes(count, beepMs, gapMs);
-    Serial.println(F("OK"));
+    Serial.println("OK");
     return;
   }
-  if (startsWith_P(line, PSTR("BRIGHT "))) {
+  if (startsWith(line, "BRIGHT ")) {
     int brightness;
     if (!parseInt(line + 7, &brightness) || brightness < 0 || brightness > 255) {
-      Serial.println(F("ERR bright")); return;
+      Serial.println("ERR bright"); return;
     }
     strip.setBrightness((uint8_t)brightness);
-    Serial.println(F("OK"));
+    Serial.println("OK");
     return;
   }
-  if (startsWith_P(line, PSTR("FLASH "))) {
+  if (startsWith(line, "FLASH ")) {
     int r, g, b, ms, interval;
     const char *p = line + 6;
-    p = parseInt(p, &r); if (!p) { Serial.println(F("ERR flash")); return; }
-    p = parseInt(p, &g); if (!p) { Serial.println(F("ERR flash")); return; }
-    p = parseInt(p, &b); if (!p) { Serial.println(F("ERR flash")); return; }
-    p = parseInt(p, &ms); if (!p) { Serial.println(F("ERR flash")); return; }
-    p = parseInt(p, &interval); if (!p) { Serial.println(F("ERR flash")); return; }
+    p = parseInt(p, &r); if (!p) { Serial.println("ERR flash"); return; }
+    p = parseInt(p, &g); if (!p) { Serial.println("ERR flash"); return; }
+    p = parseInt(p, &b); if (!p) { Serial.println("ERR flash"); return; }
+    p = parseInt(p, &ms); if (!p) { Serial.println("ERR flash"); return; }
+    p = parseInt(p, &interval); if (!p) { Serial.println("ERR flash"); return; }
     runFlash(r, g, b, ms, interval);
-    Serial.println(F("OK"));
+    Serial.println("OK");
     return;
   }
-  if (startsWith_P(line, PSTR("SOLID "))) {
+  if (startsWith(line, "SOLID ")) {
     int r, g, b, ms;
     const char *p = line + 6;
-    p = parseInt(p, &r); if (!p) { Serial.println(F("ERR solid")); return; }
-    p = parseInt(p, &g); if (!p) { Serial.println(F("ERR solid")); return; }
-    p = parseInt(p, &b); if (!p) { Serial.println(F("ERR solid")); return; }
-    p = parseInt(p, &ms); if (!p) { Serial.println(F("ERR solid")); return; }
+    p = parseInt(p, &r); if (!p) { Serial.println("ERR solid"); return; }
+    p = parseInt(p, &g); if (!p) { Serial.println("ERR solid"); return; }
+    p = parseInt(p, &b); if (!p) { Serial.println("ERR solid"); return; }
+    p = parseInt(p, &ms); if (!p) { Serial.println("ERR solid"); return; }
     runSolid(r, g, b, ms);
-    Serial.println(F("OK"));
+    Serial.println("OK");
     return;
   }
-  if (startsWith_P(line, PSTR("SCROLL "))) {
+  if (startsWith(line, "SCROLL ")) {
     int r, g, b, ms;
     const char *p = line + 7;
-    p = parseInt(p, &r); if (!p) { Serial.println(F("ERR scroll")); return; }
-    p = parseInt(p, &g); if (!p) { Serial.println(F("ERR scroll")); return; }
-    p = parseInt(p, &b); if (!p) { Serial.println(F("ERR scroll")); return; }
-    p = parseInt(p, &ms); if (!p) { Serial.println(F("ERR scroll")); return; }
+    p = parseInt(p, &r); if (!p) { Serial.println("ERR scroll"); return; }
+    p = parseInt(p, &g); if (!p) { Serial.println("ERR scroll"); return; }
+    p = parseInt(p, &b); if (!p) { Serial.println("ERR scroll"); return; }
+    p = parseInt(p, &ms); if (!p) { Serial.println("ERR scroll"); return; }
     while (*p == ' ') p++;
     // Optional mode 0/1/2; otherwise treat remainder as text (legacy clients).
     uint8_t mode = 0;
@@ -319,21 +306,21 @@ void handleLine(char *line) {
       while (*p == ' ') p++;
     }
     runScroll(r, g, b, ms, mode, p);
-    Serial.println(F("OK"));
+    Serial.println("OK");
     return;
   }
-  if (startsWith_P(line, PSTR("CHASE "))) {
+  if (startsWith(line, "CHASE ")) {
     int r, g, b, ms;
     const char *p = line + 6;
-    p = parseInt(p, &r); if (!p) { Serial.println(F("ERR chase")); return; }
-    p = parseInt(p, &g); if (!p) { Serial.println(F("ERR chase")); return; }
-    p = parseInt(p, &b); if (!p) { Serial.println(F("ERR chase")); return; }
-    p = parseInt(p, &ms); if (!p) { Serial.println(F("ERR chase")); return; }
+    p = parseInt(p, &r); if (!p) { Serial.println("ERR chase"); return; }
+    p = parseInt(p, &g); if (!p) { Serial.println("ERR chase"); return; }
+    p = parseInt(p, &b); if (!p) { Serial.println("ERR chase"); return; }
+    p = parseInt(p, &ms); if (!p) { Serial.println("ERR chase"); return; }
     runChase(r, g, b, ms);
-    Serial.println(F("OK"));
+    Serial.println("OK");
     return;
   }
-  Serial.println(F("ERR unknown"));
+  Serial.println("ERR unknown");
 }
 
 void setup() {
@@ -344,16 +331,16 @@ void setup() {
   strip.setBrightness(64);
   strip.show();  // clear any residual pixels; keep boot quiet for admin tests
   Serial.begin(115200);
-  while (!Serial) { ; }
-  Serial.print(F("READY PIXELS "));
+  delay(200);
+  Serial.print("READY PIXELS ");
   Serial.print(strip.numPixels());
-  Serial.print(F(" FREE "));
+  Serial.print(" FREE ");
   Serial.println(freeRam());
 }
 
 void loop() {
   if (!Serial.available()) return;
-  char line[64];
+  char line[128];
   size_t n = Serial.readBytesUntil('\n', line, sizeof(line) - 1);
   line[n] = '\0';
   while (n > 0 && (line[n - 1] == '\r' || line[n - 1] == ' ')) line[--n] = '\0';

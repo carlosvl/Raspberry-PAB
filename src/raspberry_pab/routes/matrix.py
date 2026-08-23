@@ -38,5 +38,6 @@ async def test_matrix(request: Request, body: LedStripTest) -> dict[str, bool]:
         led_flash_duration_seconds=body.led_flash_duration_seconds,
         led_chase_duration_seconds=body.led_chase_duration_seconds,
         message=body.message,
+        matrix_effect=body.matrix_effect,
     )
     return {"testing": True}

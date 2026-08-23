@@ -17,15 +17,15 @@ from raspberry_pab.arduino_serial import (
     wait_for_ok,
 )
 from raspberry_pab.config import Settings
-from raspberry_pab.models import ReminderRule
+from raspberry_pab.models import MATRIX_EFFECT_MODE, MatrixEffect, ReminderRule
 
 logger = logging.getLogger(__name__)
 
 SerialFactory = Callable[[Settings, str], object]
 
-# Keep SCROLL command under Nano's 64-byte default serial RX buffer:
-# "SCROLL 255 255 255 20000 " is 24 chars → leave ~40 for text.
-MAX_MATRIX_MESSAGE_CHARS = 40
+# Keep SCROLL under Nano's 64-byte RX:
+# "SCROLL 255 255 255 20000 1 " is 26 chars → leave ~36 for text.
+MAX_MATRIX_MESSAGE_CHARS = 36
 _ALLOWED_MESSAGE_CHARS = re.compile(r"[^A-Za-z0-9 .,:!?\-_'#/@&()+%=]+")
 
 
@@ -40,6 +40,10 @@ def sanitize_matrix_message(message: str) -> str:
     if not cleaned:
         return "PAB"
     return cleaned[:MAX_MATRIX_MESSAGE_CHARS]
+
+
+def matrix_effect_mode(effect: MatrixEffect | str) -> int:
+    return MATRIX_EFFECT_MODE.get(effect, 0)  # type: ignore[arg-type]
 
 
 def build_bright_command(brightness: int) -> str:
@@ -63,9 +67,11 @@ def build_scroll_command(
     blue: int,
     duration_ms: int,
     message: str,
+    effect: MatrixEffect | str = "solid",
 ) -> str:
     text = sanitize_matrix_message(message)
-    return f"SCROLL {red} {green} {blue} {duration_ms} {text}\n"
+    mode = matrix_effect_mode(effect)
+    return f"SCROLL {red} {green} {blue} {duration_ms} {mode} {text}\n"
 
 
 def build_clear_command() -> str:
@@ -114,6 +120,7 @@ class MatrixController:
         led_blue: int,
         led_flash_duration_seconds: int,
         led_chase_duration_seconds: int = 0,
+        matrix_effect: MatrixEffect = "solid",
     ) -> None:
         if not self._settings.matrix_enabled or not effective_matrix_port(
             self._settings
@@ -129,6 +136,7 @@ class MatrixController:
             led_blue=led_blue,
             led_flash_duration_seconds=led_flash_duration_seconds,
             led_chase_duration_seconds=led_chase_duration_seconds,
+            matrix_effect=matrix_effect,
         )
         await self._start_show(rule, message, wait=True)
 
@@ -142,6 +150,7 @@ class MatrixController:
         led_flash_duration_seconds: int,
         led_chase_duration_seconds: int = 10,
         message: str = "Matrix test",
+        matrix_effect: MatrixEffect = "solid",
     ) -> None:
         await self.show_test(
             message=message,
@@ -150,6 +159,7 @@ class MatrixController:
             led_blue=led_blue,
             led_flash_duration_seconds=led_flash_duration_seconds,
             led_chase_duration_seconds=led_chase_duration_seconds,
+            matrix_effect=matrix_effect,
         )
 
     async def shutdown(self) -> None:
@@ -203,9 +213,10 @@ class MatrixController:
         display_message = sanitize_matrix_message(message)
         port_name = effective_matrix_port(self._settings)
         logger.info(
-            "Matrix scroll for rule %s (%d ms): %s",
+            "Matrix scroll for rule %s (%d ms, %s): %s",
             rule.id,
             duration_ms,
+            rule.matrix_effect,
             display_message,
         )
         port = self._serial_factory(self._settings, port_name)
@@ -223,6 +234,7 @@ class MatrixController:
                 blue=rule.led_blue,
                 duration_ms=duration_ms,
                 message=display_message,
+                effect=rule.matrix_effect,
             )
             port.write(scroll_cmd.encode("ascii"))
             port.flush()

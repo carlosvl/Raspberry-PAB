@@ -48,7 +48,7 @@ class Settings:
     buzzer_baud: int = 115200
     matrix_enabled: bool = False
     matrix_port: str = ""
-    matrix_width: int = 64  # two daisy-chained 8x32 panels
+    matrix_width: int = 96  # three daisy-chained 8x32 panels (ESP32)
     matrix_height: int = 8
     matrix_brightness: int = 64
     matrix_baud: int = 115200

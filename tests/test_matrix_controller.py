@@ -54,6 +54,7 @@ def _enabled_rule(**overrides: object) -> ReminderRule:
         "led_flash_interval_ms": 500,
         "led_flash_duration_seconds": 3,
         "led_chase_duration_seconds": 2,
+        "matrix_effect": "solid",
     }
     values.update(overrides)
     return ReminderRule(**values)  # type: ignore[arg-type]
@@ -69,7 +70,29 @@ def test_build_matrix_commands() -> None:
             duration_ms=5000,
             message="Warm Up Ada",
         )
-        == "SCROLL 255 0 0 5000 Warm Up Ada\n"
+        == "SCROLL 255 0 0 5000 0 Warm Up Ada\n"
+    )
+    assert (
+        build_scroll_command(
+            red=0,
+            green=255,
+            blue=0,
+            duration_ms=3000,
+            message="HELLO",
+            effect="rainbow",
+        )
+        == "SCROLL 0 255 0 3000 1 HELLO\n"
+    )
+    assert (
+        build_scroll_command(
+            red=255,
+            green=255,
+            blue=255,
+            duration_ms=2000,
+            message="PULSE",
+            effect="pulse",
+        )
+        == "SCROLL 255 255 255 2000 2 PULSE\n"
     )
 
 
@@ -77,7 +100,7 @@ def test_sanitize_matrix_message() -> None:
     assert sanitize_matrix_message("Warm Up Ada") == "Warm Up Ada"
     assert sanitize_matrix_message("  Hello!!! 😀  ") == "Hello!!!"
     assert sanitize_matrix_message("") == "PAB"
-    assert len(sanitize_matrix_message("A" * 120)) == 40
+    assert len(sanitize_matrix_message("A" * 120)) == 36
 
 
 def test_matrix_display_duration_ms() -> None:
@@ -128,11 +151,12 @@ def test_show_sends_bright_and_scroll() -> None:
             led_blue=0,
             led_flash_duration_seconds=3,
             led_chase_duration_seconds=2,
+            matrix_effect="rainbow",
         )
         await controller.shutdown()
         assert serial.writes[0] == b"PING\n"
         assert serial.writes[1] == b"BRIGHT 64\n"
-        assert serial.writes[2] == b"SCROLL 255 0 0 5000 Go to Start Line\n"
+        assert serial.writes[2] == b"SCROLL 255 0 0 5000 1 Go to Start Line\n"
         assert serial.writes[-1] == b"CLEAR\n"
         assert serial.closed is True
 

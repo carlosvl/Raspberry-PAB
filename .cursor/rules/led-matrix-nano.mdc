@@ -1,35 +1,35 @@
 ---
-description: Nano SRAM and serial constraints for the dual WS2812 LED matrix
-globs: hardware/arduino/**/*,src/raspberry_pab/**/*matrix*,src/raspberry_pab/arduino_serial.py,scripts/upload-*matrix*,scripts/upload-hardware*
+description: ESP32 3-panel WS2812 matrix + combined buzzer; Nano is legacy 2-panel only
+globs: hardware/esp32/**/*,hardware/arduino/**/*,src/raspberry_pab/**/*matrix*,src/raspberry_pab/arduino_serial.py,scripts/upload-*matrix*,scripts/upload-*hardware*,scripts/upload-esp32*
 alwaysApply: false
 ---
 
-# LED matrix on Arduino Nano (ATmega328P)
+# LED matrix on ESP32 (production) / Nano (legacy)
 
-## Hard limits
+## Production (ESP32)
 
-- Nano has **2 KB SRAM**. Dual 8×32 panels = **512 LEDs × 3 = 1536 B** pixel buffer (heap via NeoPixel).
-- After ~220 B BSS, only ~**250–300 B stack** remains. Exceeding that silently corrupts pixels or hangs (commands may still return `OK`).
-- Prefer `Adafruit_NeoPixel` only — **do not** pull NeoMatrix/GFX for 512 LEDs.
-- **Three panels (768 LEDs)** need **2304 B** — impossible on Nano. Field power for 3 panels: `hardware/power/MOBILE-POWER.md`; matrix MCU migration is a separate task.
+- Combined board: buzzer **GPIO 4**, WS2812 DIN **GPIO 16**, **768** LEDs (`MATRIX_W=96`).
+- Firmware: `hardware/esp32/raspberry_pab_hardware/`. Wiring: `hardware/esp32/WIRING.md`.
+- Upload: `scripts/upload-esp32-hardware.sh` (FQBN `esp32:esp32:esp32`).
+- Same serial protocol as Nano (`READY`, `PING`, `SCROLL …`, `BEEP`, …). Env `PAB_MATRIX_WIDTH=96`.
+- Power LEDs from external **5.1 V** rail only — never ESP32 `5V`. Common GND required.
+- 3.3 V data into 5 V panels: short wire + 330 Ω; level-shift if needed.
 
-## Firmware rules
+## Legacy Nano (do not scale to 3 panels)
 
-- Keep globals near **matrix_test** (~220 B). Measure with `arduino-cli` “Global variables use …”.
-- Put command strings / formats in **flash**: `PSTR`, `strcmp_P`, `F()`. Never leave `"SCROLL %d…"` literals in `.data`.
-- **Never use `sscanf` / `scanf`** — stack blows the pixel buffer. Parse with tiny `strtol` helpers.
-- Handshake banner may be `READY` or `READY PIXELS 512 FREE …`. Python must accept `startswith("READY")`.
-- Scroll timing: `show()` disables interrupts so `millis()` drifts; prefer **frame counts**, and give Python **≥ ~2× duration + 5s** to wait for `OK`.
-- `SCROLL r g b ms [mode] text` — mode `0` solid, `1` rainbow, `2` pulse (optional for legacy).
+- Nano has **2 KB SRAM**. Dual 8×32 = **512 × 3 = 1536 B** pixel buffer.
+- **Three panels (768 LEDs)** need **2304 B** — impossible on Nano. Keep Nano sketches at 512 / width 64.
+- Prefer `Adafruit_NeoPixel` only on Nano — no NeoMatrix/GFX for 512 LEDs.
+- Never use `sscanf` on Nano — stack blows the pixel buffer.
 
-## Python / product behavior
+## Firmware / protocol rules
 
-- Shared USB port with buzzer (`HARDWARE_SERIAL_LOCK`); matrix port defaults to buzzer port.
-- Keep SCROLL lines under **64-byte** RX: sanitize message to ~**40** chars.
-- Admin **Test matrix** scrolls the rule message for flash+chase duration — it is **not** BLE strip flash→chase.
-- Validate on device with `INFO` → `PIXELS 512` and positive `FREE` before claiming LEDs work.
+- Handshake banner may be `READY` or `READY PIXELS n FREE …`. Python must accept `startswith("READY")`.
+- Scroll timing: prefer **frame counts**; give Python **≥ ~2× duration + 5s** to wait for `OK`.
+- `SCROLL r g b ms [mode] text` — mode `0` solid, `1` rainbow, `2` pulse.
+- Keep SCROLL lines under RX limits: sanitize message to ~**40** chars.
 
 ## Verify
 
-- `matrix_test` lights panels → wiring/power OK.
-- Production sketch: compile BSS ~220 B, boot `PIXELS 512`, SOLID then SCROLL visible on both panels.
+- ESP32 `matrix_test` lights three panels → wiring/power OK.
+- Production: `PIXELS 768`, SOLID then SCROLL visible across all panels; buzzer on same USB port.
