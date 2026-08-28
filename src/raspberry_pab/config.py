@@ -52,6 +52,8 @@ class Settings:
     matrix_height: int = 8
     matrix_brightness: int = 64
     matrix_baud: int = 115200
+    sound_enabled: bool = True
+    sound_sink: str = ""
 
     @property
     def kiosk_url(self) -> str:
@@ -64,6 +66,10 @@ class Settings:
     @property
     def logo_path(self) -> Path:
         return self.data_dir / "logo.png"
+
+    @property
+    def sounds_dir(self) -> Path:
+        return self.data_dir / "sounds"
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -100,4 +106,6 @@ class Settings:
                 os.getenv("PAB_MATRIX_BRIGHTNESS", str(cls.matrix_brightness))
             ),
             matrix_baud=int(os.getenv("PAB_MATRIX_BAUD", str(cls.matrix_baud))),
+            sound_enabled=_env_bool("PAB_SOUND_ENABLED", cls.sound_enabled),
+            sound_sink=os.getenv("PAB_SOUND_SINK", cls.sound_sink),
         )

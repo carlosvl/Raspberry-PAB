@@ -14,6 +14,11 @@ if [[ -f "${PROJECT_ROOT}/.env" ]]; then
     set +a
 fi
 
+# PipeWire/Pulse for HDMI alert sounds (system unit needs the session runtime dir).
+if [[ -z "${XDG_RUNTIME_DIR:-}" && -d "/run/user/$(id -u)" ]]; then
+    export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+fi
+
 _start_touch_input() {
     local script="${HOME}/bin/setup-touch-input.sh"
     if [[ -f "${script}" ]]; then

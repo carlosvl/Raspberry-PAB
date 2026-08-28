@@ -3,10 +3,14 @@
   "participants": [
     {
       "name": "Carlos",
+      "race": "Pro Men",
+      "call_up": "10:45",
       "start_time": "11:00"
     },
     {
       "name": "Ana",
+      "race": "Pro Women",
+      "call_up": "11:00",
       "start_time": "11:15"
     }
   ],

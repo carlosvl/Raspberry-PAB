@@ -20,11 +20,15 @@ def test_participant_crud(tmp_path: Path) -> None:
             name="Carlos",
             event_date=date(2026, 6, 21),
             start_time=time(11, 0),
+            race="Pro Men",
+            call_up=time(10, 45),
         )
     )
 
     participants = store.list_participants(date(2026, 6, 21))
     assert participants == [participant]
+    assert participant.race == "Pro Men"
+    assert participant.call_up == time(10, 45)
 
     assert store.delete_participant(participant.id)
     assert store.list_participants(date(2026, 6, 21)) == []
@@ -36,7 +40,12 @@ def test_import_export_round_trip(tmp_path: Path) -> None:
     schedule = ScheduleImport(
         event_date=date(2026, 6, 21),
         participants=[
-            ScheduleParticipantImport(name="Carlos", start_time=time(11, 0)),
+            ScheduleParticipantImport(
+                name="Carlos",
+                start_time=time(11, 0),
+                race="Pro Men",
+                call_up=time(10, 45),
+            ),
         ],
         reminder_rules=[
             ReminderRuleCreate(
@@ -102,3 +111,29 @@ def test_rule_buzzer_fields_persist(tmp_path: Path) -> None:
     assert loaded.buzzer_enabled is True
     assert loaded.buzzer_pitch_hz == 3000
     assert loaded.buzzer_count == 5
+
+
+def test_rule_sound_fields_persist(tmp_path: Path) -> None:
+    store = ScheduleStore(tmp_path / "schedule.db")
+    store.initialize()
+    sound = store.create_sound(
+        original_name="alert.wav",
+        stored_name="1.wav",
+        content_type="audio/wav",
+        size_bytes=12,
+    )
+    created = store.create_rule(
+        ReminderRuleCreate(
+            offset_minutes=8,
+            message_template="Sound {name}",
+            sound_enabled=True,
+            sound_id=sound.id,
+            sound_volume=65,
+        )
+    )
+    loaded = store.get_rule(created.id)
+    assert loaded is not None
+    assert loaded.sound_enabled is True
+    assert loaded.sound_id == sound.id
+    assert loaded.sound_volume == 65
+    assert store.count_rules_using_sound(sound.id) == 1

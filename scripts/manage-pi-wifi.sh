@@ -18,10 +18,12 @@ IFACE="${PAB_HOTSPOT_IFACE:-wlan0}"
 HOTSPOT_WAS_ACTIVE=0
 
 _nm() {
+    # Cap activation waits so a bad PSK cannot hang forever (and leave the
+    # fallback hotspot down, killing SSH on 10.42.0.1).
     if [[ "$(id -u)" -eq 0 ]]; then
-        nmcli "$@"
+        nmcli -w 25 "$@"
     else
-        sudo -n nmcli "$@"
+        sudo -n nmcli -w 25 "$@"
     fi
 }
 
@@ -207,6 +209,46 @@ print(json.dumps({"networks": networks}, separators=(",", ":")))
 PY
 }
 
+_find_connection_for_ssid() {
+    local target="$1"
+    local name ctype ssid
+    while IFS=: read -r name ctype; do
+        [[ "${ctype}" == "802-11-wireless" ]] || continue
+        [[ "${name}" == "${HOTSPOT_CONNECTION}" ]] && continue
+        ssid="$(nmcli -t -f 802-11-wireless.ssid connection show "${name}" 2>/dev/null \
+            | awk -F: '{ print substr($0, index($0,$2)) }')"
+        if [[ "${ssid}" == "${target}" || "${name}" == "${target}" ]]; then
+            printf '%s\n' "${name}"
+            return 0
+        fi
+    done < <(nmcli -t -f NAME,TYPE connection show 2>/dev/null)
+    return 1
+}
+
+_apply_psk_and_up() {
+    local name="$1"
+    local password="$2"
+    local out=""
+
+    # Prefer updating the saved profile. nmcli device wifi connect … password …
+    # often fails on NM 1.5x with existing profiles ("password not given in
+    # 'password-file'").
+    if [[ -n "${password}" ]]; then
+        out="$(_nm connection modify "${name}" \
+            802-11-wireless-security.key-mgmt wpa-psk \
+            802-11-wireless-security.psk "${password}" 2>&1)" || {
+            echo "${out}" >&2
+            return 1
+        }
+    fi
+    out="$(_nm connection up "${name}" ifname "${IFACE}" 2>&1)" || {
+        echo "${out}" >&2
+        return 1
+    }
+    printf '%s\n' "${out}"
+    return 0
+}
+
 _cmd_connect() {
     local ssid="${1:-}"
     local password="${2:-}"
@@ -220,10 +262,28 @@ _cmd_connect() {
     sleep 2
 
     set +e
-    local connect_out connect_rc
-    if [[ -n "${password}" ]]; then
-        connect_out="$(_nm device wifi connect "${ssid}" password "${password}" ifname "${IFACE}" 2>&1)"
+    local connect_out connect_rc=1 existing=""
+    existing="$(_find_connection_for_ssid "${ssid}" || true)"
+
+    if [[ -n "${existing}" ]]; then
+        connect_out="$(_apply_psk_and_up "${existing}" "${password}" 2>&1)"
         connect_rc=$?
+    elif [[ -n "${password}" ]]; then
+        # Create/activate a fresh WPA profile for this SSID.
+        connect_out="$(_nm connection add type wifi con-name "${ssid}" ifname "${IFACE}" \
+            ssid "${ssid}" \
+            wifi-sec.key-mgmt wpa-psk \
+            wifi-sec.psk "${password}" 2>&1)"
+        connect_rc=$?
+        if [[ "${connect_rc}" == "0" ]]; then
+            connect_out="$(_nm connection up "${ssid}" ifname "${IFACE}" 2>&1)"
+            connect_rc=$?
+        fi
+        # Fallback for older NM behavior.
+        if [[ "${connect_rc}" != "0" ]]; then
+            connect_out="$(_nm device wifi connect "${ssid}" password "${password}" ifname "${IFACE}" 2>&1)"
+            connect_rc=$?
+        fi
     else
         connect_out="$(_nm device wifi connect "${ssid}" ifname "${IFACE}" 2>&1)"
         connect_rc=$?
@@ -271,6 +331,7 @@ _cmd_connect_saved() {
     set -e
     if [[ "${rc}" != "0" ]]; then
         echo "${out}" >&2
+        echo "Saved network failed to connect (wrong password or out of range). Re-enter the password under Connect, or Forget and add it again." >&2
         _restore_hotspot
         exit 1
     fi

@@ -24,6 +24,7 @@ from raspberry_pab.models import (
     ScheduleExport,
     ScheduleImport,
     ScheduleParticipantImport,
+    SoundFile,
 )
 
 DEFAULT_RULES = (
@@ -146,18 +147,32 @@ class ScheduleStore:
                     FOREIGN KEY (iyr_session_id)
                         REFERENCES iyr_race_sessions (id) ON DELETE CASCADE
                 );
+
+                CREATE TABLE IF NOT EXISTS sound_files (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    original_name TEXT NOT NULL,
+                    stored_name TEXT NOT NULL,
+                    content_type TEXT NOT NULL,
+                    size_bytes INTEGER NOT NULL,
+                    created_at TEXT NOT NULL
+                );
                 """
             )
             self._migrate_rule_led_columns(conn)
             self._migrate_rule_buzzer_columns(conn)
             self._migrate_rule_matrix_columns(conn)
+            self._migrate_rule_sound_columns(conn)
+            self._migrate_participant_columns(conn)
             count = conn.execute("SELECT COUNT(*) FROM reminder_rules").fetchone()[0]
             if count == 0:
                 self._create_rules(conn, DEFAULT_RULES)
             conn.commit()
 
     def list_participants(self, event_date: date | None = None) -> list[Participant]:
-        query = "SELECT id, name, event_date, start_time FROM participants"
+        query = (
+            "SELECT id, name, event_date, start_time, race, call_up "
+            "FROM participants"
+        )
         params: tuple[str, ...] = ()
         if event_date is not None:
             query += " WHERE event_date = ?"
@@ -171,7 +186,7 @@ class ScheduleStore:
         with self._connect() as conn:
             row = conn.execute(
                 """
-                SELECT id, name, event_date, start_time
+                SELECT id, name, event_date, start_time, race, call_up
                 FROM participants
                 WHERE id = ?
                 """,
@@ -183,13 +198,20 @@ class ScheduleStore:
         with self._connect() as conn:
             cursor = conn.execute(
                 """
-                INSERT INTO participants (name, event_date, start_time)
-                VALUES (?, ?, ?)
+                INSERT INTO participants
+                    (name, event_date, start_time, race, call_up)
+                VALUES (?, ?, ?, ?, ?)
                 """,
                 (
                     participant.name.strip(),
                     participant.event_date.isoformat(),
                     participant.start_time.isoformat(timespec="minutes"),
+                    participant.race.strip(),
+                    (
+                        participant.call_up.isoformat(timespec="minutes")
+                        if participant.call_up is not None
+                        else None
+                    ),
                 ),
             )
             conn.commit()
@@ -219,18 +241,30 @@ class ScheduleStore:
                 if update.start_time is not None
                 else existing.start_time
             ),
+            race=(update.race if update.race is not None else existing.race),
+            call_up=(
+                update.call_up
+                if "call_up" in update.model_fields_set
+                else existing.call_up
+            ),
         )
         with self._connect() as conn:
             conn.execute(
                 """
                 UPDATE participants
-                SET name = ?, event_date = ?, start_time = ?
+                SET name = ?, event_date = ?, start_time = ?, race = ?, call_up = ?
                 WHERE id = ?
                 """,
                 (
                     merged.name.strip(),
                     merged.event_date.isoformat(),
                     merged.start_time.isoformat(timespec="minutes"),
+                    merged.race.strip(),
+                    (
+                        merged.call_up.isoformat(timespec="minutes")
+                        if merged.call_up is not None
+                        else None
+                    ),
                     participant_id,
                 ),
             )
@@ -252,7 +286,8 @@ class ScheduleStore:
                    led_flash_interval_ms, led_flash_duration_seconds,
                    led_chase_duration_seconds, matrix_effect,
                    buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
-                   buzzer_count, buzzer_beep_ms, buzzer_gap_ms
+                   buzzer_count, buzzer_beep_ms, buzzer_gap_ms,
+                   sound_enabled, sound_id, sound_volume
             FROM reminder_rules
         """
         if enabled_only:
@@ -271,7 +306,8 @@ class ScheduleStore:
                        led_flash_interval_ms, led_flash_duration_seconds,
                    led_chase_duration_seconds, matrix_effect,
                    buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
-                   buzzer_count, buzzer_beep_ms, buzzer_gap_ms
+                   buzzer_count, buzzer_beep_ms, buzzer_gap_ms,
+                   sound_enabled, sound_id, sound_volume
                 FROM reminder_rules
                 WHERE id = ?
                 """,
@@ -381,6 +417,21 @@ class ScheduleStore:
                 if update.buzzer_gap_ms is not None
                 else existing.buzzer_gap_ms
             ),
+            sound_enabled=(
+                update.sound_enabled
+                if update.sound_enabled is not None
+                else existing.sound_enabled
+            ),
+            sound_id=(
+                update.sound_id
+                if "sound_id" in update.model_fields_set
+                else existing.sound_id
+            ),
+            sound_volume=(
+                update.sound_volume
+                if update.sound_volume is not None
+                else existing.sound_volume
+            ),
         )
         with self._connect() as conn:
             conn.execute(
@@ -392,7 +443,8 @@ class ScheduleStore:
                     led_flash_interval_ms = ?, led_flash_duration_seconds = ?,
                     led_chase_duration_seconds = ?, matrix_effect = ?,
                     buzzer_enabled = ?, buzzer_pitch_hz = ?, buzzer_volume = ?,
-                    buzzer_count = ?, buzzer_beep_ms = ?, buzzer_gap_ms = ?
+                    buzzer_count = ?, buzzer_beep_ms = ?, buzzer_gap_ms = ?,
+                    sound_enabled = ?, sound_id = ?, sound_volume = ?
                 WHERE id = ?
                 """,
                 (
@@ -415,6 +467,9 @@ class ScheduleStore:
                     merged.buzzer_count,
                     merged.buzzer_beep_ms,
                     merged.buzzer_gap_ms,
+                    int(merged.sound_enabled),
+                    merged.sound_id,
+                    merged.sound_volume,
                     rule_id,
                 ),
             )
@@ -435,14 +490,21 @@ class ScheduleStore:
             )
             conn.executemany(
                 """
-                INSERT INTO participants (name, event_date, start_time)
-                VALUES (?, ?, ?)
+                INSERT INTO participants
+                    (name, event_date, start_time, race, call_up)
+                VALUES (?, ?, ?, ?, ?)
                 """,
                 [
                     (
                         participant.name.strip(),
                         schedule.event_date.isoformat(),
                         participant.start_time.isoformat(timespec="minutes"),
+                        participant.race.strip(),
+                        (
+                            participant.call_up.isoformat(timespec="minutes")
+                            if participant.call_up is not None
+                            else None
+                        ),
                     )
                     for participant in schedule.participants
                 ],
@@ -454,7 +516,12 @@ class ScheduleStore:
 
     def export_schedule(self, event_date: date) -> ScheduleExport:
         participants = [
-            ScheduleParticipantImport(name=item.name, start_time=item.start_time)
+            ScheduleParticipantImport(
+                name=item.name,
+                start_time=item.start_time,
+                race=item.race,
+                call_up=item.call_up,
+            )
             for item in self.list_participants(event_date)
         ]
         rules = [
@@ -478,6 +545,9 @@ class ScheduleStore:
                 buzzer_count=rule.buzzer_count,
                 buzzer_beep_ms=rule.buzzer_beep_ms,
                 buzzer_gap_ms=rule.buzzer_gap_ms,
+                sound_enabled=rule.sound_enabled,
+                sound_id=rule.sound_id,
+                sound_volume=rule.sound_volume,
             )
             for rule in self.list_rules()
         ]
@@ -887,6 +957,105 @@ class ScheduleStore:
             pass
 
     @staticmethod
+    def _migrate_rule_sound_columns(conn: sqlite3.Connection) -> None:
+        columns = (
+            ("sound_enabled", "INTEGER NOT NULL DEFAULT 0"),
+            ("sound_id", "INTEGER"),
+            ("sound_volume", "INTEGER NOT NULL DEFAULT 80"),
+        )
+        for name, spec in columns:
+            try:
+                conn.execute(f"ALTER TABLE reminder_rules ADD COLUMN {name} {spec}")
+            except sqlite3.OperationalError:
+                continue
+
+    def list_sounds(self) -> list[SoundFile]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT id, original_name, stored_name, content_type, size_bytes,
+                       created_at
+                FROM sound_files
+                ORDER BY original_name COLLATE NOCASE, id
+                """
+            ).fetchall()
+        return [self._sound_from_row(row) for row in rows]
+
+    def get_sound(self, sound_id: int) -> SoundFile | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                SELECT id, original_name, stored_name, content_type, size_bytes,
+                       created_at
+                FROM sound_files
+                WHERE id = ?
+                """,
+                (sound_id,),
+            ).fetchone()
+        return self._sound_from_row(row) if row is not None else None
+
+    def create_sound(
+        self,
+        *,
+        original_name: str,
+        stored_name: str,
+        content_type: str,
+        size_bytes: int,
+        created_at: datetime | None = None,
+    ) -> SoundFile:
+        stamped = created_at or datetime.now()
+        with self._connect() as conn:
+            cursor = conn.execute(
+                """
+                INSERT INTO sound_files
+                    (original_name, stored_name, content_type, size_bytes, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    original_name.strip(),
+                    stored_name,
+                    content_type,
+                    size_bytes,
+                    stamped.isoformat(timespec="seconds"),
+                ),
+            )
+            conn.commit()
+            if cursor.lastrowid is None:
+                raise RuntimeError("Failed to create sound file")
+            sound_id = cursor.lastrowid
+        created = self.get_sound(sound_id)
+        if created is None:
+            raise RuntimeError("Failed to load created sound file")
+        return created
+
+    def update_sound_stored_name(
+        self, sound_id: int, stored_name: str
+    ) -> SoundFile | None:
+        with self._connect() as conn:
+            cursor = conn.execute(
+                "UPDATE sound_files SET stored_name = ? WHERE id = ?",
+                (stored_name, sound_id),
+            )
+            conn.commit()
+            if cursor.rowcount == 0:
+                return None
+        return self.get_sound(sound_id)
+
+    def count_rules_using_sound(self, sound_id: int) -> int:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) AS count FROM reminder_rules WHERE sound_id = ?",
+                (sound_id,),
+            ).fetchone()
+        return int(row["count"]) if row is not None else 0
+
+    def delete_sound(self, sound_id: int) -> bool:
+        with self._connect() as conn:
+            cursor = conn.execute("DELETE FROM sound_files WHERE id = ?", (sound_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+
+    @staticmethod
     def _create_rules(
         conn: sqlite3.Connection, rules: Iterable[ReminderRuleCreate]
     ) -> sqlite3.Cursor:
@@ -900,8 +1069,9 @@ class ScheduleStore:
                      led_flash_interval_ms, led_flash_duration_seconds,
                      led_chase_duration_seconds, matrix_effect,
                      buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
-                     buzzer_count, buzzer_beep_ms, buzzer_gap_ms)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     buzzer_count, buzzer_beep_ms, buzzer_gap_ms,
+                     sound_enabled, sound_id, sound_volume)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     rule.offset_minutes,
@@ -923,17 +1093,50 @@ class ScheduleStore:
                     rule.buzzer_count,
                     rule.buzzer_beep_ms,
                     rule.buzzer_gap_ms,
+                    int(rule.sound_enabled),
+                    rule.sound_id,
+                    rule.sound_volume,
                 ),
             )
         return cursor
 
     @staticmethod
+    def _migrate_participant_columns(conn: sqlite3.Connection) -> None:
+        columns = (
+            ("race", "TEXT NOT NULL DEFAULT ''"),
+            ("call_up", "TEXT"),
+        )
+        for name, spec in columns:
+            try:
+                conn.execute(f"ALTER TABLE participants ADD COLUMN {name} {spec}")
+            except sqlite3.OperationalError:
+                continue
+
+    @staticmethod
     def _participant_from_row(row: sqlite3.Row) -> Participant:
+        keys = row.keys()
+        call_up_raw = row["call_up"] if "call_up" in keys else None
+        call_up = None
+        if call_up_raw:
+            call_up = datetime.strptime(str(call_up_raw), "%H:%M").time()
         return Participant(
             id=int(row["id"]),
             name=str(row["name"]),
             event_date=date.fromisoformat(str(row["event_date"])),
             start_time=datetime.strptime(str(row["start_time"]), "%H:%M").time(),
+            race=str(row["race"]) if "race" in keys and row["race"] is not None else "",
+            call_up=call_up,
+        )
+
+    @staticmethod
+    def _sound_from_row(row: sqlite3.Row) -> SoundFile:
+        return SoundFile(
+            id=int(row["id"]),
+            original_name=str(row["original_name"]),
+            stored_name=str(row["stored_name"]),
+            content_type=str(row["content_type"]),
+            size_bytes=int(row["size_bytes"]),
+            created_at=datetime.fromisoformat(str(row["created_at"])),
         )
 
     @staticmethod
@@ -947,6 +1150,8 @@ class ScheduleStore:
         matrix_effect = (
             raw_effect if raw_effect in ("solid", "rainbow", "pulse") else "solid"
         )
+        keys = row.keys()
+        sound_id_raw = row["sound_id"] if "sound_id" in keys else None
         return ReminderRule(
             id=int(row["id"]),
             offset_minutes=int(row["offset_minutes"]),
@@ -968,6 +1173,13 @@ class ScheduleStore:
             buzzer_count=int(row["buzzer_count"]),
             buzzer_beep_ms=int(row["buzzer_beep_ms"]),
             buzzer_gap_ms=int(row["buzzer_gap_ms"]),
+            sound_enabled=(
+                bool(row["sound_enabled"]) if "sound_enabled" in keys else False
+            ),
+            sound_id=int(sound_id_raw) if sound_id_raw is not None else None,
+            sound_volume=(
+                int(row["sound_volume"]) if "sound_volume" in keys else 80
+            ),
         )
 
     @staticmethod

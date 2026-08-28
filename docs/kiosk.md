@@ -97,9 +97,9 @@ The admin screen supports:
 - Adding reminder rules such as `30 min: Warm Up {name}`
 - Optional repeating reminders, for example every 5 minutes from 15 minutes before start
 - JSON import/export for offline setup or backups
-- **WiFi** tab on the Pi touchscreen: scan nearby SSIDs, connect with the OS keyboard, and manage saved NetworkManager profiles (see [pi-wifi.md](pi-wifi.md))
+- **WiFi** tab on the Pi touchscreen: scan nearby SSIDs, type passwords with the in-admin on-screen keyboard (touch/gamepad), and manage saved NetworkManager profiles (see [pi-wifi.md](pi-wifi.md))
 
-On the Pi touchscreen, tap **Keyboard** on the admin PIN screen, WiFi connect form, or any `Keyboard` button to open the OS on-screen keyboard. The installer tries to install `wvkbd`, `matchbox-keyboard`, or `onboard`; the app launches whichever is available for the active desktop session.
+On the Pi touchscreen, the admin PIN uses an on-screen keypad. For Wi‑Fi SSID/password entry, open **Admin → WiFi → Keyboard** for the in-page QWERTY keyboard (works with gamepad-as-mouse). Other text fields can still use the desktop OS keyboard via any remaining **Keyboard** buttons that call `wvkbd` / `matchbox-keyboard` / `onboard`.
 
 ### USB gamepad as mouse
 
@@ -241,6 +241,18 @@ Legacy Nano (two panels): [hardware/arduino/README.md](../hardware/arduino/READM
 | `PAB_MATRIX_ENABLED` | `false` | Enable WS2812 matrix scroll on alerts |
 | `PAB_MATRIX_WIDTH` | `96` | Matrix width (three 8×32 panels) |
 | `PAB_MATRIX_BRIGHTNESS` | `64` | Matrix max brightness (field ≤128) |
+| `PAB_SOUND_ENABLED` | `true` | Enable HDMI alert sound playback |
+| `PAB_SOUND_SINK` | *(empty)* | Optional PipeWire/Pulse sink name (auto-detects HDMI) |
+
+### HDMI alert sounds
+
+Reminder rules can play an uploaded WAV/MP3/OGG **once** over HDMI when they fire (independent of the ESP32 buzzer).
+
+1. Open **Admin → Sounds** and upload a file (max 8 MB).
+2. In **Admin → Rules → Reminder HDMI sound**, enable playback, pick the file, set volume.
+3. Use **Test HDMI sound** (or Test on a library row) to verify PipeWire reaches the monitor.
+
+Playback targets the HDMI sink by name (not the default analog jack). Override with `PAB_SOUND_SINK` if needed. The systemd service sets `XDG_RUNTIME_DIR` so the server can talk to the desktop PipeWire session.
 
 See also [pi-wifi.md](pi-wifi.md) for hotspot + Wi-Fi changes.
 

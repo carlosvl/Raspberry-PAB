@@ -7,7 +7,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-
 MatrixEffect = Literal["solid", "rainbow", "pulse"]
 MATRIX_EFFECTS: tuple[MatrixEffect, ...] = ("solid", "rainbow", "pulse")
 MATRIX_EFFECT_MODE = {"solid": 0, "rainbow": 1, "pulse": 2}
@@ -17,6 +16,8 @@ class ParticipantBase(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     event_date: date
     start_time: time
+    race: str = Field(default="", max_length=120)
+    call_up: time | None = None
 
 
 class ParticipantCreate(ParticipantBase):
@@ -27,6 +28,8 @@ class ParticipantUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     event_date: date | None = None
     start_time: time | None = None
+    race: str | None = Field(default=None, max_length=120)
+    call_up: time | None = None
 
 
 class Participant(ParticipantBase):
@@ -144,6 +147,9 @@ class ReminderRuleBase(BaseModel):
     buzzer_count: int = Field(default=3, ge=1, le=50)
     buzzer_beep_ms: int = Field(default=200, ge=10, le=5000)
     buzzer_gap_ms: int = Field(default=150, ge=0, le=5000)
+    sound_enabled: bool = False
+    sound_id: int | None = None
+    sound_volume: int = Field(default=80, ge=0, le=100)
 
 
 class ReminderRuleCreate(ReminderRuleBase):
@@ -170,10 +176,26 @@ class ReminderRuleUpdate(BaseModel):
     buzzer_count: int | None = Field(default=None, ge=1, le=50)
     buzzer_beep_ms: int | None = Field(default=None, ge=10, le=5000)
     buzzer_gap_ms: int | None = Field(default=None, ge=0, le=5000)
+    sound_enabled: bool | None = None
+    sound_id: int | None = None
+    sound_volume: int | None = Field(default=None, ge=0, le=100)
 
 
 class ReminderRule(ReminderRuleBase):
     id: int
+
+
+class SoundFile(BaseModel):
+    id: int
+    original_name: str
+    stored_name: str
+    content_type: str
+    size_bytes: int
+    created_at: datetime
+
+
+class SoundTest(BaseModel):
+    volume: int = Field(default=80, ge=0, le=100)
 
 
 class BuzzerTest(BaseModel):
@@ -204,6 +226,8 @@ class LedConfig(BaseModel):
 class ScheduleParticipantImport(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     start_time: time
+    race: str = Field(default="", max_length=120)
+    call_up: time | None = None
 
 
 class ScheduleImport(BaseModel):
@@ -214,6 +238,13 @@ class ScheduleImport(BaseModel):
 
 class ScheduleExport(ScheduleImport):
     pass
+
+
+class ScheduleCsvImportResult(BaseModel):
+    imported: bool = True
+    event_date: date
+    participant_count: int
+    columns: list[str] = Field(default_factory=list)
 
 
 class BrandingUpdate(BaseModel):
@@ -264,6 +295,7 @@ class Alert(BaseModel):
     fire_at: datetime
     message: str
     created_at: datetime
+    sound_enabled: bool = False
 
 
 class TestScenarioRider(BaseModel):

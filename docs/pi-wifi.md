@@ -11,7 +11,9 @@ Preferred when you are at the kiosk and only have touch or a gamepad:
 3. Open the **WiFi** tab.
 4. Review **Current connection** and **Saved networks**.
 5. Tap **Scan Nearby** (this briefly pauses the fallback hotspot so `wlan0` can scan).
-6. Tap **Use this network**, enter the password with the **Keyboard** button (or gamepad + OS keyboard), then **Connect**.
+6. Tap **Use this network**, then use the **in-admin Keyboard** (large on-screen keys) to type the password with touch or gamepad, then **Connect**.
+
+Wi‑Fi password entry uses the **in-page keyboard** inside Admin → WiFi so gamepad-as-mouse can click keys in Chromium. It does not depend on the desktop OS keyboard (`wvkbd` / matchbox / onboard).
 
 Wi‑Fi controls are **local-only** (they do not work from a phone on the hotspot). After a successful connect, the Pi leaves the hotspot and joins the chosen SSID; note the new IP on the status panel.
 

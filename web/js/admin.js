@@ -30,6 +30,7 @@ const TIME_DISPLAY_OPTIONS = {
 };
 
 let cachedRules = [];
+let cachedSounds = [];
 
 const todayParam = new Date().toISOString().slice(0, 10);
 
@@ -106,6 +107,9 @@ function populateRuleForm(rule) {
     setFieldValue("ruleBuzzerCount", String(rule.buzzer_count ?? 3));
     setFieldValue("ruleBuzzerBeepMs", String(rule.buzzer_beep_ms ?? 200));
     setFieldValue("ruleBuzzerGapMs", String(rule.buzzer_gap_ms ?? 150));
+    setFieldChecked("ruleSoundEnabled", rule.sound_enabled);
+    fillRuleSoundSelect(rule.sound_id ? String(rule.sound_id) : "");
+    setFieldValue("ruleSoundVolume", String(rule.sound_volume ?? 80));
     showPanel("rulesPanel");
     ruleForm?.scrollIntoView({ behavior: "smooth", block: "start" });
     setOutput(`Editing rule: ${rule.message_template}`);
@@ -146,11 +150,29 @@ function readRuleBuzzerSettings() {
   };
 }
 
+function readRuleSoundSettings() {
+  const soundIdRaw = document.getElementById("ruleSoundId")?.value || "";
+  return {
+    sound_enabled: document.getElementById("ruleSoundEnabled")?.checked || false,
+    sound_id: soundIdRaw ? Number(soundIdRaw) : null,
+    sound_volume: readRuleNumber("ruleSoundVolume", 80),
+  };
+}
+
 function ruleBuzzerSummary(rule) {
   if (!rule.buzzer_enabled) {
     return "";
   }
   return ` · Buzzer ${rule.buzzer_count}x @ ${rule.buzzer_pitch_hz}Hz`;
+}
+
+function ruleSoundSummary(rule) {
+  if (!rule.sound_enabled || !rule.sound_id) {
+    return "";
+  }
+  const sound = cachedSounds.find((item) => item.id === rule.sound_id);
+  const label = sound ? sound.original_name : `#${rule.sound_id}`;
+  return ` · HDMI ${label} @ ${rule.sound_volume ?? 80}%`;
 }
 
 function ruleLedSummary(rule) {
@@ -415,6 +437,10 @@ async function unlock() {
 function clearParticipantForm() {
   document.getElementById("participantId").value = "";
   document.getElementById("participantName").value = "";
+  const raceEl = document.getElementById("participantRace");
+  if (raceEl) raceEl.value = "";
+  const callUpEl = document.getElementById("participantCallUp");
+  if (callUpEl) callUpEl.value = "";
   document.getElementById("participantDate").value = todayParam;
   document.getElementById("participantTime").value = "";
 }
@@ -438,6 +464,12 @@ function clearRuleForm() {
   document.getElementById("ruleBuzzerCount").value = "3";
   document.getElementById("ruleBuzzerBeepMs").value = "200";
   document.getElementById("ruleBuzzerGapMs").value = "150";
+  const soundEnabledEl = document.getElementById("ruleSoundEnabled");
+  if (soundEnabledEl) soundEnabledEl.checked = false;
+  const soundIdEl = document.getElementById("ruleSoundId");
+  if (soundIdEl) soundIdEl.value = "";
+  const soundVolumeEl = document.getElementById("ruleSoundVolume");
+  if (soundVolumeEl) soundVolumeEl.value = "80";
 }
 
 async function loadParticipants() {
@@ -452,7 +484,7 @@ async function loadParticipants() {
         <div class="admin__item">
           <div class="admin__item-main">
             <strong>${escapeHtml(item.name)}</strong>
-            <span>${escapeHtml(item.event_date)} ${escapeHtml(formatDisplayTime(item.start_time, item.event_date))}</span>
+            <span>${escapeHtml(item.race || "—")} · Call up ${item.call_up ? escapeHtml(formatDisplayTime(item.call_up, item.event_date)) : "—"} · Start ${escapeHtml(formatDisplayTime(item.start_time, item.event_date))}</span>
           </div>
           <button data-edit-participant="${item.id}" type="button">Edit</button>
           <button data-delete-participant="${item.id}" type="button">Delete</button>
@@ -469,6 +501,12 @@ async function loadParticipants() {
       if (!item) return;
       document.getElementById("participantId").value = item.id;
       document.getElementById("participantName").value = item.name;
+      const raceEl = document.getElementById("participantRace");
+      if (raceEl) raceEl.value = item.race || "";
+      const callUpEl = document.getElementById("participantCallUp");
+      if (callUpEl) {
+        callUpEl.value = item.call_up ? String(item.call_up).slice(0, 5) : "";
+      }
       document.getElementById("participantDate").value = item.event_date;
       document.getElementById("participantTime").value = item.start_time.slice(0, 5);
       participantForm?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -498,7 +536,7 @@ async function loadRules() {
         <div class="admin__item">
           <div class="admin__item-main">
             <strong>${escapeHtml(rule.offset_minutes)} min: ${escapeHtml(rule.message_template)}</strong>
-            <span>${rule.repeat_every_minutes ? `Repeats every ${escapeHtml(rule.repeat_every_minutes)} min` : "One time"} · ${rule.enabled ? "Enabled" : "Disabled"}${escapeHtml(ruleLedSummary(rule))}${escapeHtml(ruleBuzzerSummary(rule))}</span>
+            <span>${rule.repeat_every_minutes ? `Repeats every ${escapeHtml(rule.repeat_every_minutes)} min` : "One time"} · ${rule.enabled ? "Enabled" : "Disabled"}${escapeHtml(ruleLedSummary(rule))}${escapeHtml(ruleBuzzerSummary(rule))}${escapeHtml(ruleSoundSummary(rule))}</span>
           </div>
           <button data-edit-rule="${rule.id}" type="button">Edit</button>
           <button data-delete-rule="${rule.id}" type="button">Delete</button>
@@ -506,6 +544,118 @@ async function loadRules() {
       `,
     )
     .join("");
+}
+
+function fillRuleSoundSelect(selectedId) {
+  const select = document.getElementById("ruleSoundId");
+  if (!select) return;
+  const current = selectedId !== undefined ? selectedId : select.value;
+  select.innerHTML =
+    `<option value="">— none —</option>` +
+    cachedSounds
+      .map(
+        (sound) =>
+          `<option value="${sound.id}">${escapeHtml(sound.original_name)} (${Math.round(sound.size_bytes / 1024)} KB)</option>`,
+      )
+      .join("");
+  if (current) {
+    select.value = String(current);
+  }
+}
+
+function formatSoundSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function loadSounds() {
+  const sounds = await api("/api/admin/sounds");
+  cachedSounds = sounds;
+  fillRuleSoundSelect();
+  const soundList = document.getElementById("soundList");
+  if (!soundList) return;
+  if (!sounds.length) {
+    soundList.innerHTML = `<p class="branding__hint">No sounds uploaded yet.</p>`;
+    return;
+  }
+  soundList.innerHTML = sounds
+    .map(
+      (sound) => `
+        <div class="admin__item">
+          <div class="admin__item-main">
+            <strong>${escapeHtml(sound.original_name)}</strong>
+            <span>${escapeHtml(formatSoundSize(sound.size_bytes))} · ${escapeHtml(sound.content_type)}</span>
+          </div>
+          <button data-test-sound="${sound.id}" type="button">Test</button>
+          <button data-delete-sound="${sound.id}" type="button">Delete</button>
+        </div>
+      `,
+    )
+    .join("");
+
+  soundList.querySelectorAll("[data-test-sound]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const soundId = button.dataset.testSound;
+      setOutput("Testing HDMI sound...");
+      try {
+        await api(`/api/admin/sounds/${soundId}/test`, {
+          method: "POST",
+          body: JSON.stringify({ volume: 80 }),
+        });
+        setOutput("HDMI sound test started.");
+      } catch (error) {
+        setOutput(error instanceof Error ? error.message : String(error));
+      }
+    });
+  });
+
+  soundList.querySelectorAll("[data-delete-sound]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const soundId = button.dataset.deleteSound;
+      try {
+        await api(`/api/admin/sounds/${soundId}`, { method: "DELETE" });
+        await loadSounds();
+        await loadRules();
+        setOutput("Sound deleted.");
+      } catch (error) {
+        setOutput(error instanceof Error ? error.message : String(error));
+      }
+    });
+  });
+}
+
+async function uploadSoundFile() {
+  const input = document.getElementById("soundUpload");
+  const statusEl = document.getElementById("soundUploadStatus");
+  const file = input?.files?.[0];
+  if (!file) {
+    if (statusEl) statusEl.textContent = "Choose a sound file first.";
+    return;
+  }
+  if (statusEl) statusEl.textContent = "Uploading…";
+  const formData = new FormData();
+  formData.append("file", file);
+  try {
+    const response = await fetch("/api/admin/sounds", {
+      method: "POST",
+      headers: { "X-Admin-Pin": adminPin() },
+      body: formData,
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      throw new Error(detail.detail || `Upload failed (${response.status})`);
+    }
+    const sound = await response.json();
+    if (input) input.value = "";
+    if (statusEl) statusEl.textContent = `Uploaded ${sound.original_name}.`;
+    await loadSounds();
+    setOutput(`Uploaded sound: ${sound.original_name}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (statusEl) statusEl.textContent = message;
+    setOutput(message);
+  }
 }
 
 async function loadRaceResults() {
@@ -571,6 +721,7 @@ async function loadAll() {
       loadBranding(),
       loadTouchConfig(),
       loadParticipants(),
+      loadSounds(),
       loadRules(),
       loadRaceResults(),
       loadKioskClockStatus(),
@@ -597,6 +748,188 @@ function fillWifiConnectForm(ssid, preferPasswordFocus = false) {
   } else if (ssidInput) {
     ssidInput.focus();
   }
+}
+
+const WIFI_KB_LAYERS = {
+  lower: [
+    { rowClass: "", keys: "1234567890".split("") },
+    { rowClass: "", keys: "qwertyuiop".split("") },
+    { rowClass: "wifi-keyboard__row--9", keys: "asdfghjkl".split("") },
+    { rowClass: "wifi-keyboard__row--7", keys: "zxcvbnm".split("") },
+  ],
+  upper: [
+    { rowClass: "", keys: "1234567890".split("") },
+    { rowClass: "", keys: "QWERTYUIOP".split("") },
+    { rowClass: "wifi-keyboard__row--9", keys: "ASDFGHJKL".split("") },
+    { rowClass: "wifi-keyboard__row--7", keys: "ZXCVBNM".split("") },
+  ],
+  symbols: [
+    { rowClass: "", keys: "!@#$%^&*()".split("") },
+    { rowClass: "", keys: "-_=+[]{}\\".split("") },
+    { rowClass: "wifi-keyboard__row--9", keys: ";:'\",.<>?".split("") },
+    { rowClass: "wifi-keyboard__row--7", keys: ["~", "`", "/", "|", "#", "@", "$"] },
+  ],
+};
+
+let wifiKeyboardTargetId = "wifiSsid";
+let wifiKeyboardShifted = false;
+let wifiKeyboardSymbols = false;
+
+function wifiKeyboardTargetInput() {
+  return document.getElementById(wifiKeyboardTargetId);
+}
+
+function updateWifiKeyboardTargetLabel() {
+  const label = document.getElementById("wifiKeyboardTarget");
+  const name = wifiKeyboardTargetId === "wifiPassword" ? "Password" : "SSID";
+  if (label) label.textContent = `Typing into: ${name}`;
+  document.querySelectorAll("[data-wifi-kb-target]").forEach((button) => {
+    button.classList.toggle(
+      "is-active",
+      button.getAttribute("data-wifi-kb-target") === wifiKeyboardTargetId,
+    );
+  });
+}
+
+function currentWifiKeyboardLayer() {
+  if (wifiKeyboardSymbols) return WIFI_KB_LAYERS.symbols;
+  return wifiKeyboardShifted ? WIFI_KB_LAYERS.upper : WIFI_KB_LAYERS.lower;
+}
+
+function renderWifiKeyboardKeys() {
+  const container = document.getElementById("wifiKeyboardKeys");
+  if (!container) return;
+  container.innerHTML = "";
+  for (const row of currentWifiKeyboardLayer()) {
+    const rowEl = document.createElement("div");
+    rowEl.className = `wifi-keyboard__row${row.rowClass ? ` ${row.rowClass}` : ""}`;
+    for (const key of row.keys) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = key;
+      button.setAttribute("data-wifi-kb-char", key);
+      rowEl.appendChild(button);
+    }
+    container.appendChild(rowEl);
+  }
+  const shiftButton = document.querySelector('[data-wifi-kb-action="shift"]');
+  if (shiftButton) {
+    shiftButton.classList.toggle("is-active", wifiKeyboardShifted || wifiKeyboardSymbols);
+    shiftButton.textContent = wifiKeyboardSymbols ? "ABC" : "Shift";
+  }
+}
+
+function setWifiKeyboardTarget(targetId) {
+  if (targetId !== "wifiSsid" && targetId !== "wifiPassword") return;
+  wifiKeyboardTargetId = targetId;
+  updateWifiKeyboardTargetLabel();
+  wifiKeyboardTargetInput()?.focus();
+}
+
+function openWifiKeyboard(targetId) {
+  const panel = document.getElementById("wifiKeyboard");
+  if (!panel) {
+    setOutput("Wi‑Fi keyboard is missing from this page. Use Reload Admin to refresh.");
+    return;
+  }
+  if (targetId === "wifiSsid" || targetId === "wifiPassword") {
+    wifiKeyboardTargetId = targetId;
+  } else if (document.activeElement?.id === "wifiPassword") {
+    wifiKeyboardTargetId = "wifiPassword";
+  } else if (document.activeElement?.id === "wifiSsid") {
+    wifiKeyboardTargetId = "wifiSsid";
+  }
+  panel.hidden = false;
+  wifiKeyboardShifted = false;
+  wifiKeyboardSymbols = false;
+  updateWifiKeyboardTargetLabel();
+  renderWifiKeyboardKeys();
+  wifiKeyboardTargetInput()?.focus();
+  // Bring Connect + keyboard into view (below nearby/saved lists).
+  panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  const targetName = wifiKeyboardTargetId === "wifiPassword" ? "Password" : "SSID";
+  setOutput(`On-screen keyboard open — typing into ${targetName}. Use Shift for uppercase/symbols.`);
+}
+
+function closeWifiKeyboard() {
+  const panel = document.getElementById("wifiKeyboard");
+  if (panel) panel.hidden = true;
+  document.getElementById("wifiConnectForm")
+    ?.querySelector('button[type="submit"]')
+    ?.focus();
+}
+
+function insertWifiKeyboardChar(char) {
+  const input = wifiKeyboardTargetInput();
+  if (!input) return;
+  const maxLength = Number(input.maxLength > 0 ? input.maxLength : 128);
+  if (input.value.length >= maxLength) return;
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? input.value.length;
+  input.value = `${input.value.slice(0, start)}${char}${input.value.slice(end)}`;
+  const cursor = start + char.length;
+  input.setSelectionRange(cursor, cursor);
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  if (wifiKeyboardShifted && !wifiKeyboardSymbols) {
+    wifiKeyboardShifted = false;
+    renderWifiKeyboardKeys();
+  }
+}
+
+function deleteWifiKeyboardChar() {
+  const input = wifiKeyboardTargetInput();
+  if (!input) return;
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? input.value.length;
+  if (start !== end) {
+    input.value = `${input.value.slice(0, start)}${input.value.slice(end)}`;
+    input.setSelectionRange(start, start);
+  } else if (start > 0) {
+    input.value = `${input.value.slice(0, start - 1)}${input.value.slice(end)}`;
+    input.setSelectionRange(start - 1, start - 1);
+  }
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function clearWifiKeyboardTarget() {
+  const input = wifiKeyboardTargetInput();
+  if (!input) return;
+  input.value = "";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function toggleWifiKeyboardShift() {
+  if (wifiKeyboardSymbols) {
+    wifiKeyboardSymbols = false;
+    wifiKeyboardShifted = false;
+  } else if (wifiKeyboardShifted) {
+    wifiKeyboardSymbols = true;
+    wifiKeyboardShifted = false;
+  } else {
+    wifiKeyboardShifted = true;
+  }
+  renderWifiKeyboardKeys();
+}
+
+function handleWifiKeyboardClick(event) {
+  const charBtn = event.target.closest("[data-wifi-kb-char]");
+  if (charBtn) {
+    insertWifiKeyboardChar(charBtn.getAttribute("data-wifi-kb-char") || "");
+    return;
+  }
+  const targetBtn = event.target.closest("[data-wifi-kb-target]");
+  if (targetBtn) {
+    setWifiKeyboardTarget(targetBtn.getAttribute("data-wifi-kb-target") || "wifiSsid");
+    return;
+  }
+  const actionBtn = event.target.closest("[data-wifi-kb-action]");
+  if (!actionBtn) return;
+  const action = actionBtn.getAttribute("data-wifi-kb-action");
+  if (action === "shift") toggleWifiKeyboardShift();
+  else if (action === "space") insertWifiKeyboardChar(" ");
+  else if (action === "back") deleteWifiKeyboardChar();
+  else if (action === "clear") clearWifiKeyboardTarget();
+  else if (action === "done") closeWifiKeyboard();
 }
 
 function renderWifiStatus(status) {
@@ -976,6 +1309,8 @@ participantForm?.addEventListener("submit", async (event) => {
   const participantId = document.getElementById("participantId").value;
   const payload = {
     name: document.getElementById("participantName").value,
+    race: document.getElementById("participantRace")?.value || "",
+    call_up: document.getElementById("participantCallUp")?.value || null,
     event_date: document.getElementById("participantDate").value,
     start_time: document.getElementById("participantTime").value,
   };
@@ -1004,6 +1339,7 @@ ruleForm?.addEventListener("submit", async (event) => {
     sort_order: 0,
     ...readRuleLedSettings(),
     ...readRuleBuzzerSettings(),
+    ...readRuleSoundSettings(),
   };
   try {
     await api(ruleId ? `/api/reminder-rules/${ruleId}` : "/api/reminder-rules", {
@@ -1055,6 +1391,7 @@ if (gamepadSensitivity && gamepadSensitivityRange) {
 
 initTouchSteppers();
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
+document.getElementById("uploadSound")?.addEventListener("click", uploadSoundFile);
 document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
 document.getElementById("clearRule")?.addEventListener("click", clearRuleForm);
@@ -1082,6 +1419,24 @@ document.getElementById("testRuleBuzzer")?.addEventListener("click", async () =>
     setOutput(
       `Buzzer test started (${buzzerSettings.buzzer_count} beeps @ ${buzzerSettings.buzzer_pitch_hz}Hz)`,
     );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("testRuleSound")?.addEventListener("click", async () => {
+  const soundSettings = readRuleSoundSettings();
+  if (!soundSettings.sound_id) {
+    setOutput("Choose a sound file first (upload in Sounds tab).");
+    return;
+  }
+  setOutput("Testing HDMI sound...");
+  try {
+    await api(`/api/admin/sounds/${soundSettings.sound_id}/test`, {
+      method: "POST",
+      body: JSON.stringify({ volume: soundSettings.sound_volume }),
+    });
+    setOutput(`HDMI sound test started (volume ${soundSettings.sound_volume}).`);
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }
@@ -1566,6 +1921,7 @@ async function loadHardwareStatus() {
     else if (!hw.led_address) issues.push("BLE LED address not set (PAB_LED_ADDRESS)");
     if (!hw.matrix_enabled) issues.push("Matrix disabled (PAB_MATRIX_ENABLED)");
     else if (!hw.matrix_port) issues.push("Matrix port not set (PAB_MATRIX_PORT)");
+    if (!hw.sound_enabled) issues.push("HDMI sound disabled (PAB_SOUND_ENABLED)");
     if (issues.length > 0) {
       el.textContent = "⚠ " + issues.join(" · ");
       el.hidden = false;
@@ -1719,6 +2075,44 @@ document.getElementById("importSchedule")?.addEventListener("click", async () =>
   }
 });
 
+document.getElementById("importCsv")?.addEventListener("click", async () => {
+  const input = document.getElementById("csvImportFile");
+  const statusEl = document.getElementById("csvImportStatus");
+  const file = input?.files?.[0];
+  if (!file) {
+    if (statusEl) statusEl.textContent = "Choose a CSV file first.";
+    return;
+  }
+  const eventDate = document.getElementById("csvImportDate")?.value || todayParam;
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("event_date", eventDate);
+  if (statusEl) statusEl.textContent = "Importing…";
+  try {
+    const response = await fetch("/api/import/csv", {
+      method: "POST",
+      headers: { "X-Admin-Pin": adminPin() },
+      body: formData,
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      throw new Error(detail.detail || `Import failed (${response.status})`);
+    }
+    const result = await response.json();
+    if (input) input.value = "";
+    const msg = `Imported ${result.participant_count} participant(s) for ${result.event_date}.`;
+    if (statusEl) statusEl.textContent = msg;
+    const participantDate = document.getElementById("participantDate");
+    if (participantDate) participantDate.value = result.event_date;
+    await loadAll();
+    setOutput(msg);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (statusEl) statusEl.textContent = message;
+    setOutput(message);
+  }
+});
+
 document.getElementById("exportSchedule")?.addEventListener("click", async () => {
   try {
     const date = document.getElementById("importDate").value || todayParam;
@@ -1745,6 +2139,10 @@ document.getElementById("refreshWifiStatus")?.addEventListener("click", async ()
 });
 document.getElementById("scanWifi")?.addEventListener("click", scanWifiNetworks);
 document.getElementById("wifiConnectForm")?.addEventListener("submit", connectWifi);
+document.getElementById("openWifiKeyboard")?.addEventListener("click", () => {
+  openWifiKeyboard();
+});
+document.getElementById("wifiKeyboard")?.addEventListener("click", handleWifiKeyboardClick);
 
 document.getElementById("wifiSavedList")?.addEventListener("click", async (event) => {
   const connectBtn = event.target.closest("[data-wifi-connect-saved]");
@@ -1765,19 +2163,16 @@ document.getElementById("wifiScanList")?.addEventListener("click", (event) => {
   const secured = pickBtn.dataset.wifiSecured === "1";
   fillWifiConnectForm(ssid, secured);
   if (secured) {
-    openKeyboard();
+    openWifiKeyboard("wifiPassword");
+  } else {
+    openWifiKeyboard("wifiSsid");
   }
   setOutput(`Selected ${ssid}. Enter password if needed, then Connect.`);
 });
 
-["wifiSsid", "wifiPassword"].forEach((id) => {
-  document.getElementById(id)?.addEventListener("focus", () => {
-    openKeyboard();
-  }, { once: true });
-});
-
 document.getElementById("participantDate").value = todayParam;
 document.getElementById("importDate").value = todayParam;
+document.getElementById("csvImportDate").value = todayParam;
 document.getElementById("raceResultsDate").value = todayParam;
 
 ruleList?.addEventListener("click", async (event) => {

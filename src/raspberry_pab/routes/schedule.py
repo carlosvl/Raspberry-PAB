@@ -2,14 +2,27 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    Header,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+    status,
+)
 
 from raspberry_pab.arduino_serial import effective_matrix_port
 from raspberry_pab.config import Settings
+from raspberry_pab.csv_import import parse_schedule_csv
 from raspberry_pab.db import ScheduleStore
+from raspberry_pab.kiosk_clock import effective_now
 from raspberry_pab.models import (
     Participant,
     ParticipantCreate,
@@ -18,10 +31,10 @@ from raspberry_pab.models import (
     ReminderRule,
     ReminderRuleCreate,
     ReminderRuleUpdate,
+    ScheduleCsvImportResult,
     ScheduleExport,
     ScheduleImport,
 )
-from raspberry_pab.kiosk_clock import effective_now
 from raspberry_pab.reminders import participant_status
 
 router = APIRouter(prefix="/api", tags=["schedule"])
@@ -63,6 +76,8 @@ def hardware_status(request: Request) -> dict[str, object]:
         "matrix_enabled": settings.matrix_enabled,
         "matrix_port": effective_matrix_port(settings) or "",
         "matrix_brightness": settings.matrix_brightness,
+        "sound_enabled": settings.sound_enabled,
+        "sound_sink": settings.sound_sink or "",
     }
 
 
@@ -175,6 +190,54 @@ def delete_reminder_rule(request: Request, rule_id: int) -> dict[str, bool]:
 def import_schedule(request: Request, schedule: ScheduleImport) -> dict[str, bool]:
     get_store(request).import_schedule(schedule)
     return {"imported": True}
+
+
+@router.post(
+    "/import/csv",
+    response_model=ScheduleCsvImportResult,
+    dependencies=[Depends(require_admin_pin)],
+)
+async def import_schedule_csv(
+    request: Request,
+    file: Annotated[UploadFile, File()],
+    event_date: Annotated[date | None, Form()] = None,
+) -> ScheduleCsvImportResult:
+    raw = await file.read()
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="CSV must be UTF-8 text",
+        ) from exc
+    try:
+        schedule = parse_schedule_csv(text, event_date=event_date)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    get_store(request).import_schedule(schedule)
+    columns = sorted(
+        {
+            key
+            for participant in schedule.participants
+            for key, value in (
+                ("name", participant.name),
+                ("race", participant.race),
+                ("call_up", participant.call_up),
+                ("start_time", participant.start_time),
+            )
+            if value not in (None, "")
+        }
+        | {"name", "start_time"}
+    )
+    return ScheduleCsvImportResult(
+        imported=True,
+        event_date=schedule.event_date,
+        participant_count=len(schedule.participants),
+        columns=columns,
+    )
 
 
 @router.get("/export", response_model=ScheduleExport)

@@ -6,6 +6,7 @@ from datetime import date, datetime, time, timedelta
 
 from raspberry_pab.models import Alert, Participant, ParticipantStatus, ReminderRule
 
+
 def participant_start_at(event_date: date, start_time: time) -> datetime:
     return datetime.combine(event_date, start_time)
 
@@ -47,6 +48,8 @@ def participant_status(participant: Participant, now: datetime) -> ParticipantSt
         name=participant.name,
         event_date=participant.event_date,
         start_time=participant.start_time,
+        race=participant.race,
+        call_up=participant.call_up,
         start_at=start_at,
         countdown_seconds=countdown_seconds,
         status=status,
@@ -79,6 +82,7 @@ def build_due_alerts(
                         fire_at=fire_at,
                         message=render_message(rule.message_template, participant),
                         created_at=created_at,
+                        sound_enabled=bool(rule.sound_enabled and rule.sound_id),
                     )
                 )
     return alerts

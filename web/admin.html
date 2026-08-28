@@ -28,6 +28,9 @@
         <button data-tab-panel="brandingPanel" type="button">
           Branding
         </button>
+        <button data-tab-panel="soundsPanel" type="button">
+          Sounds
+        </button>
         <button data-tab-panel="touchPanel" type="button">
           Touch
         </button>
@@ -102,6 +105,31 @@
                 <button id="removeLogo" type="button">Remove Logo</button>
               </div>
             </div>
+          </details>
+        </article>
+
+        <article class="panel" id="soundsPanel">
+          <h2>HDMI Sound Library</h2>
+          <p class="branding__hint">
+            Upload WAV, MP3, or OGG (max 8 MB). Reminder rules can play a file once over HDMI
+            when they fire. Files stay on this Pi under the app data directory.
+          </p>
+          <details class="admin-section" open>
+            <summary>Upload</summary>
+            <div class="form">
+              <label>
+                Sound file
+                <input accept="audio/wav,audio/mpeg,audio/ogg,.wav,.mp3,.ogg" id="soundUpload" type="file" />
+              </label>
+              <div class="button-row">
+                <button id="uploadSound" type="button">Upload Sound</button>
+              </div>
+              <p class="branding__hint" id="soundUploadStatus"></p>
+            </div>
+          </details>
+          <details class="admin-section" open>
+            <summary>Library</summary>
+            <div class="admin__list" id="soundList"></div>
           </details>
         </article>
 
@@ -220,6 +248,14 @@
               <label>
                 Name
                 <input id="participantName" required />
+              </label>
+              <label>
+                Race
+                <input id="participantRace" maxlength="120" placeholder="e.g. Pro Men" />
+              </label>
+              <label>
+                Call Up
+                <input id="participantCallUp" type="time" />
               </label>
               <label>
                 Date
@@ -396,6 +432,33 @@
               </div>
             </details>
 
+            <details class="admin-section">
+              <summary>Reminder HDMI sound</summary>
+              <div class="form">
+                <label class="checkbox">
+                  <input id="ruleSoundEnabled" type="checkbox" />
+                  Play HDMI sound
+                </label>
+                <label>
+                  Sound file
+                  <select id="ruleSoundId">
+                    <option value="">— none —</option>
+                  </select>
+                </label>
+                <label>
+                  Sound volume (0-100)
+                  <input id="ruleSoundVolume" min="0" max="100" type="number" value="80" />
+                </label>
+                <p class="branding__hint">
+                  Plays once over the HDMI monitor when the reminder fires (independent of the ESP32 buzzer).
+                  Upload files in the <strong>Sounds</strong> tab.
+                </p>
+                <div class="button-row">
+                  <button id="testRuleSound" type="button">Test HDMI sound</button>
+                </div>
+              </div>
+            </details>
+
           </form>
 
           <details class="admin-section">
@@ -534,7 +597,7 @@
         <article class="panel" id="importPanel">
           <h2>Import / Export</h2>
           <details class="admin-section">
-            <summary>Import / export</summary>
+            <summary>Import / export JSON</summary>
             <div class="form">
               <label>
                 Event Date
@@ -548,6 +611,29 @@
                 <button id="importSchedule" type="button">Import JSON</button>
                 <button id="exportSchedule" type="button">Export Selected Date</button>
               </div>
+            </div>
+          </details>
+          <details class="admin-section" open>
+            <summary>Import CSV</summary>
+            <div class="form">
+              <p class="branding__hint">
+                Header row recommended:
+                <code>name,race,call_up,start_time</code>.
+                Legacy <code>name,start_time</code> also works.
+                Optional <code>event_date</code> column, or use the date below.
+              </p>
+              <label>
+                Event Date
+                <input id="csvImportDate" type="date" />
+              </label>
+              <label>
+                CSV file
+                <input accept=".csv,text/csv,text/plain" id="csvImportFile" type="file" />
+              </label>
+              <div class="button-row">
+                <button id="importCsv" type="button">Import CSV</button>
+              </div>
+              <p class="branding__hint" id="csvImportStatus"></p>
             </div>
           </details>
         </article>
@@ -591,13 +677,35 @@
               <label>
                 Password
                 <input autocomplete="off" id="wifiPassword" maxlength="128" type="password" />
-                <span class="branding__hint">Leave blank for open networks.</span>
+                <span class="branding__hint">Leave blank for open networks. Use the on-screen keyboard with gamepad or touch.</span>
               </label>
               <div class="button-row wifi-form__actions">
-                <button data-open-keyboard type="button">Keyboard</button>
+                <button id="openWifiKeyboard" type="button">Keyboard</button>
                 <button class="button--primary button--large" type="submit">Connect</button>
               </div>
             </form>
+            <div
+              aria-label="Wi-Fi on-screen keyboard"
+              class="wifi-keyboard"
+              hidden
+              id="wifiKeyboard"
+            >
+              <div class="wifi-keyboard__header">
+                <p class="wifi-keyboard__target" id="wifiKeyboardTarget">Typing into: SSID</p>
+                <div class="wifi-keyboard__target-toggles">
+                  <button data-wifi-kb-target="wifiSsid" type="button">SSID</button>
+                  <button data-wifi-kb-target="wifiPassword" type="button">Password</button>
+                </div>
+              </div>
+              <div class="wifi-keyboard__keys" id="wifiKeyboardKeys"></div>
+              <div class="wifi-keyboard__actions">
+                <button data-wifi-kb-action="shift" type="button">Shift</button>
+                <button data-wifi-kb-action="space" type="button">Space</button>
+                <button data-wifi-kb-action="back" type="button">Back</button>
+                <button data-wifi-kb-action="clear" type="button">Clear</button>
+                <button data-wifi-kb-action="done" type="button">Done</button>
+              </div>
+            </div>
           </details>
         </article>
         <pre class="admin__output" id="adminOutput"></pre>

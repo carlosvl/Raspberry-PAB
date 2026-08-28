@@ -68,6 +68,8 @@ def test_participants_endpoint_returns_countdown(tmp_path: Path) -> None:
                 "name": "Carlos",
                 "event_date": "2026-06-21",
                 "start_time": "11:00",
+                "race": "Pro Men",
+                "call_up": "10:45",
             },
         )
         with patch(
@@ -80,8 +82,34 @@ def test_participants_endpoint_returns_countdown(tmp_path: Path) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload[0]["name"] == "Carlos"
+    assert payload[0]["race"] == "Pro Men"
+    assert payload[0]["call_up"] == "10:45:00"
     assert payload[0]["start_time"] == "11:00:00"
     assert "countdown_seconds" in payload[0]
+
+
+def test_import_csv_endpoint(tmp_path: Path) -> None:
+    settings = Settings(
+        admin_pin="9999",
+        data_dir=tmp_path / "data",
+        web_dir=make_web_dir(tmp_path),
+    )
+    csv_bytes = b"name,race,call_up,start_time\nCarlos,Pro Men,10:45,11:00\n"
+    with TestClient(create_app(settings)) as client:
+        response = client.post(
+            "/api/import/csv",
+            headers={"X-Admin-Pin": "9999"},
+            data={"event_date": "2026-06-21"},
+            files={"file": ("starts.csv", csv_bytes, "text/csv")},
+        )
+        listed = client.get("/api/participants?date=2026-06-21")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["imported"] is True
+    assert body["participant_count"] == 1
+    assert listed.json()[0]["race"] == "Pro Men"
+    assert listed.json()[0]["call_up"] == "10:45:00"
 
 
 def test_scheduler_publishes_active_alert(tmp_path: Path) -> None:

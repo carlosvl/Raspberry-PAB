@@ -30,6 +30,7 @@ Raspberry-PAB/
 │   ├── arduino/               # Legacy Nano (2 panels)
 │   └── power/                 # Mobile power + buck converter setup
 ├── data/schedule.example.json # Offline import example
+├── data/schedule.example.csv  # CSV import example (name,race,call_up,start_time)
 ├── deploy/
 │   ├── systemd/               # Web server + fallback hotspot units
 │   ├── network/               # NetworkManager hotspot helper
@@ -118,13 +119,19 @@ In Safari, use **Share → Add to Home Screen** to install it like an app. Admin
 
 The app stores all schedules and reminder rules in SQLite under `PAB_DATA_DIR`, so it does not need internet access after installation.
 
-Use `/admin` to add participants and rules, or import JSON with this shape:
+Use `/admin` to add participants and rules, import JSON, or import a CSV
+(`name,race,call_up,start_time` — legacy `name,start_time` also works). Example JSON:
 
 ```json
 {
   "event_date": "2026-06-21",
   "participants": [
-    { "name": "Carlos", "start_time": "11:00" }
+    {
+      "name": "Carlos",
+      "race": "Pro Men",
+      "call_up": "10:45",
+      "start_time": "11:00"
+    }
   ],
   "reminder_rules": [
     { "offset_minutes": 30, "message_template": "Warm Up {name}" },
@@ -133,7 +140,7 @@ Use `/admin` to add participants and rules, or import JSON with this shape:
 }
 ```
 
-For Carlos at 11:00, that example fires `Warm Up Carlos` at 10:30 and `Go to Start Line` at 10:45, 10:50, and 10:55.
+See also `data/schedule.example.csv`. For Carlos at 11:00, that example fires `Warm Up Carlos` at 10:30 and `Go to Start Line` at 10:45, 10:50, and 10:55.
 
 ## Race results
 
@@ -179,6 +186,8 @@ The admin **Race Results** panel syncs the [Precision Race MCA index](https://ww
 | `PAB_MATRIX_HEIGHT`    | `8`                            | Matrix height in pixels                      |
 | `PAB_MATRIX_BRIGHTNESS`| `64`                           | Max matrix brightness (0–255; field ≤128)  |
 | `PAB_MATRIX_BAUD`      | `115200`                       | Matrix serial baud rate                      |
+| `PAB_SOUND_ENABLED`    | `true`                         | Enable HDMI alert sound playback             |
+| `PAB_SOUND_SINK`       | *(empty)*                      | Optional HDMI PipeWire/Pulse sink override   |
 
 On the Pi touchscreen, tap **Keyboard** on the admin PIN screen to open the installed OS on-screen keyboard. `scripts/install.sh` tries to install common keyboard packages (`wvkbd`, `matchbox-keyboard`, `onboard`) and `scripts/touch-keyboard.sh` launches whichever is available for the current desktop session.
 

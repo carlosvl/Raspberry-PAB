@@ -815,6 +815,134 @@ body.admin-page {
   flex: 1;
 }
 
+.wifi-keyboard {
+  position: sticky;
+  bottom: 0.5rem;
+  z-index: 5;
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px solid rgb(148 163 184 / 30%);
+  border-radius: 1rem;
+  background: #0f172a;
+  box-shadow: 0 -8px 24px rgb(2 6 23 / 45%);
+}
+
+.wifi-keyboard[hidden] {
+  display: none;
+}
+
+.wifi-keyboard__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wifi-keyboard__target {
+  margin: 0;
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.wifi-keyboard__target-toggles {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.wifi-keyboard__target-toggles button {
+  min-height: 2.75rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid rgb(148 163 184 / 35%);
+  border-radius: 0.7rem;
+  background: #1e293b;
+  color: #f8fafc;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wifi-keyboard__target-toggles button.is-active {
+  background: #38bdf8;
+  border-color: #38bdf8;
+  color: #020617;
+}
+
+.wifi-keyboard__keys {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.wifi-keyboard__row {
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+}
+
+.wifi-keyboard__row--9 {
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+}
+
+.wifi-keyboard__row--7 {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.wifi-keyboard__keys button {
+  min-height: 3.1rem;
+  padding: 0.35rem 0.15rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: #334155;
+  color: #f8fafc;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wifi-keyboard__keys button:active,
+.wifi-keyboard__keys button.is-pressed,
+.wifi-keyboard__actions button:active,
+.wifi-keyboard__actions button.is-pressed {
+  background: #38bdf8;
+  color: #020617;
+  transform: scale(0.96);
+}
+
+.wifi-keyboard__actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.wifi-keyboard__actions button {
+  min-height: 3.25rem;
+  padding: 0.5rem 0.35rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: #1e293b;
+  color: #f8fafc;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wifi-keyboard__actions button[data-wifi-kb-action="done"] {
+  background: #0ea5e9;
+  color: #020617;
+}
+
+.wifi-keyboard__actions button.is-active {
+  background: #38bdf8;
+  color: #020617;
+}
+
 .wifi-item {
   grid-template-columns: 1fr;
 }

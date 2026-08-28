@@ -53,6 +53,14 @@ function formatTime(timeString) {
   }).format(date);
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function formatCountdown(seconds) {
   const sign = seconds < 0 ? "-" : "";
   const remaining = Math.abs(seconds);
@@ -164,7 +172,7 @@ function renderSchedule(items) {
   if (!scheduleBody) return;
 
   if (items.length === 0) {
-    scheduleBody.innerHTML = '<tr><td colspan="5">No starts scheduled today.</td></tr>';
+    scheduleBody.innerHTML = '<tr><td colspan="6">No starts scheduled today.</td></tr>';
     return;
   }
 
@@ -175,8 +183,9 @@ function renderSchedule(items) {
     .map(
       (item) => `
         <tr class="${rowClass(item, nextId)}">
-          <td class="schedule__name">${item.name}</td>
-          <td>${formatDate(item.event_date)}</td>
+          <td class="schedule__name">${escapeHtml(item.name)}</td>
+          <td>${escapeHtml(item.race || "")}</td>
+          <td>${item.call_up ? formatTime(item.call_up) : ""}</td>
           <td>${formatTime(item.start_time)}</td>
           <td class="schedule__countdown">${formatCountdown(item.countdown_seconds)}</td>
           <td class="schedule__result">${formatResultCol(item)}</td>
@@ -225,7 +234,9 @@ function showAlert(alert) {
   alertMessage.textContent = alert.message;
   alertMeta.textContent = `${alert.name} starts at ${formatTime(alert.start_time)}`;
   alertOverlay.hidden = false;
-  beep();
+  if (!alert.sound_enabled) {
+    beep();
+  }
   clearTimeout(alertTimer);
   alertTimer = setTimeout(hideAlert, 10000);
 }
