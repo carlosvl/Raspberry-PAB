@@ -92,6 +92,20 @@
             </form>
           </details>
           <details class="admin-section">
+            <summary>Board text size</summary>
+            <form class="form" id="boardFontForm">
+              <label>
+                Schedule font size
+                <input id="boardFontScale" max="140" min="70" step="5" type="range" value="100" />
+                <span id="boardFontScaleLabel">100%</span>
+                <span class="branding__hint">
+                  Scales the participant table on the HDMI kiosk (70%–140%). Applies within about a second after save.
+                </span>
+              </label>
+              <button type="submit">Save Font Size</button>
+            </form>
+          </details>
+          <details class="admin-section">
             <summary>Logo</summary>
             <div class="branding__logo">
               <img alt="Current logo preview" class="branding__preview" id="logoPreview" hidden />
@@ -255,7 +269,7 @@
               </label>
               <label>
                 Call Up
-                <input id="participantCallUp" type="time" />
+                <input id="participantCallUp" maxlength="120" type="text" placeholder="e.g. Staging / Gate 2" />
               </label>
               <label>
                 Date

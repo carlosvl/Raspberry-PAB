@@ -83,7 +83,7 @@ def test_participants_endpoint_returns_countdown(tmp_path: Path) -> None:
     payload = response.json()
     assert payload[0]["name"] == "Carlos"
     assert payload[0]["race"] == "Pro Men"
-    assert payload[0]["call_up"] == "10:45:00"
+    assert payload[0]["call_up"] == "10:45"
     assert payload[0]["start_time"] == "11:00:00"
     assert "countdown_seconds" in payload[0]
 
@@ -109,7 +109,7 @@ def test_import_csv_endpoint(tmp_path: Path) -> None:
     assert body["imported"] is True
     assert body["participant_count"] == 1
     assert listed.json()[0]["race"] == "Pro Men"
-    assert listed.json()[0]["call_up"] == "10:45:00"
+    assert listed.json()[0]["call_up"] == "10:45"
 
 
 def test_scheduler_publishes_active_alert(tmp_path: Path) -> None:

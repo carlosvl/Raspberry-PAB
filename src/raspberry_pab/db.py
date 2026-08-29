@@ -27,6 +27,14 @@ from raspberry_pab.models import (
     SoundFile,
 )
 
+
+def _normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    stripped = value.strip()
+    return stripped or None
+
+
 DEFAULT_RULES = (
     ReminderRuleCreate(
         offset_minutes=30,
@@ -207,11 +215,7 @@ class ScheduleStore:
                     participant.event_date.isoformat(),
                     participant.start_time.isoformat(timespec="minutes"),
                     participant.race.strip(),
-                    (
-                        participant.call_up.isoformat(timespec="minutes")
-                        if participant.call_up is not None
-                        else None
-                    ),
+                    _normalize_optional_text(participant.call_up),
                 ),
             )
             conn.commit()
@@ -260,11 +264,7 @@ class ScheduleStore:
                     merged.event_date.isoformat(),
                     merged.start_time.isoformat(timespec="minutes"),
                     merged.race.strip(),
-                    (
-                        merged.call_up.isoformat(timespec="minutes")
-                        if merged.call_up is not None
-                        else None
-                    ),
+                    _normalize_optional_text(merged.call_up),
                     participant_id,
                 ),
             )
@@ -500,11 +500,7 @@ class ScheduleStore:
                         schedule.event_date.isoformat(),
                         participant.start_time.isoformat(timespec="minutes"),
                         participant.race.strip(),
-                        (
-                            participant.call_up.isoformat(timespec="minutes")
-                            if participant.call_up is not None
-                            else None
-                        ),
+                        _normalize_optional_text(participant.call_up),
                     )
                     for participant in schedule.participants
                 ],
@@ -1116,16 +1112,15 @@ class ScheduleStore:
     def _participant_from_row(row: sqlite3.Row) -> Participant:
         keys = row.keys()
         call_up_raw = row["call_up"] if "call_up" in keys else None
-        call_up = None
-        if call_up_raw:
-            call_up = datetime.strptime(str(call_up_raw), "%H:%M").time()
         return Participant(
             id=int(row["id"]),
             name=str(row["name"]),
             event_date=date.fromisoformat(str(row["event_date"])),
             start_time=datetime.strptime(str(row["start_time"]), "%H:%M").time(),
             race=str(row["race"]) if "race" in keys and row["race"] is not None else "",
-            call_up=call_up,
+            call_up=_normalize_optional_text(
+                str(call_up_raw) if call_up_raw is not None else None
+            ),
         )
 
     @staticmethod

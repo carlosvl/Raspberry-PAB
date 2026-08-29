@@ -484,7 +484,7 @@ async function loadParticipants() {
         <div class="admin__item">
           <div class="admin__item-main">
             <strong>${escapeHtml(item.name)}</strong>
-            <span>${escapeHtml(item.race || "—")} · Call up ${item.call_up ? escapeHtml(formatDisplayTime(item.call_up, item.event_date)) : "—"} · Start ${escapeHtml(formatDisplayTime(item.start_time, item.event_date))}</span>
+            <span>${escapeHtml(item.race || "—")} · Call up ${item.call_up ? escapeHtml(item.call_up) : "—"} · Start ${escapeHtml(formatDisplayTime(item.start_time, item.event_date))}</span>
           </div>
           <button data-edit-participant="${item.id}" type="button">Edit</button>
           <button data-delete-participant="${item.id}" type="button">Delete</button>
@@ -505,7 +505,7 @@ async function loadParticipants() {
       if (raceEl) raceEl.value = item.race || "";
       const callUpEl = document.getElementById("participantCallUp");
       if (callUpEl) {
-        callUpEl.value = item.call_up ? String(item.call_up).slice(0, 5) : "";
+        callUpEl.value = item.call_up ? String(item.call_up) : "";
       }
       document.getElementById("participantDate").value = item.event_date;
       document.getElementById("participantTime").value = item.start_time.slice(0, 5);
@@ -1217,7 +1217,13 @@ function renderBranding(branding) {
   const titleInput = document.getElementById("brandingTitle");
   const preview = document.getElementById("logoPreview");
   const status = document.getElementById("logoStatus");
+  const fontScale = document.getElementById("boardFontScale");
+  const fontLabel = document.getElementById("boardFontScaleLabel");
   if (titleInput) titleInput.value = branding.display_title || "";
+  if (fontScale && Number.isFinite(Number(branding.board_font_scale))) {
+    fontScale.value = String(branding.board_font_scale);
+    if (fontLabel) fontLabel.textContent = `${branding.board_font_scale}%`;
+  }
   if (preview && status) {
     if (branding.logo_url) {
       preview.src = branding.logo_url;
@@ -1228,6 +1234,30 @@ function renderBranding(branding) {
       preview.removeAttribute("src");
       status.textContent = "No logo uploaded.";
     }
+  }
+}
+
+function syncBoardFontLabel() {
+  const fontScale = document.getElementById("boardFontScale");
+  const fontLabel = document.getElementById("boardFontScaleLabel");
+  if (fontScale && fontLabel) {
+    fontLabel.textContent = `${fontScale.value}%`;
+  }
+}
+
+async function saveBoardFont(event) {
+  event.preventDefault();
+  const fontScale = document.getElementById("boardFontScale");
+  if (!fontScale) return;
+  try {
+    const branding = await api("/api/admin/branding/board-font", {
+      method: "PUT",
+      body: JSON.stringify({ board_font_scale: Number(fontScale.value) }),
+    });
+    renderBranding(branding);
+    setOutput(`Board font size saved (${branding.board_font_scale}%).`);
+  } catch (error) {
+    setOutput(error.message);
   }
 }
 
@@ -1355,6 +1385,8 @@ ruleForm?.addEventListener("submit", async (event) => {
 });
 
 document.getElementById("brandingForm")?.addEventListener("submit", saveBrandingTitle);
+document.getElementById("boardFontForm")?.addEventListener("submit", saveBoardFont);
+document.getElementById("boardFontScale")?.addEventListener("input", syncBoardFontLabel);
 document.getElementById("touchForm")?.addEventListener("submit", saveTouchConfig);
 document.getElementById("gamepadForm")?.addEventListener("submit", saveGamepadConfig);
 

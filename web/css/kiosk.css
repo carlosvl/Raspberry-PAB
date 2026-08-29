@@ -58,79 +58,109 @@ body.admin-page {
 .kiosk {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 0.65rem;
+  height: 100vh;
   min-height: 100vh;
-  padding: 2rem;
+  max-height: 100vh;
+  padding: 0.75rem 1rem 0.5rem;
+  overflow: hidden;
 }
 
 .kiosk__header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: 1rem;
+  flex-shrink: 0;
 }
 
 .kiosk__brand {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.75rem;
   min-width: 0;
 }
 
 .kiosk__logo {
-  width: clamp(3rem, 8vw, 5rem);
-  height: clamp(3rem, 8vw, 5rem);
+  width: clamp(2rem, 4.5vw, 3.25rem);
+  height: clamp(2rem, 4.5vw, 3.25rem);
   flex-shrink: 0;
   object-fit: contain;
 }
 
 .kiosk__title {
-  margin: 0 0 0.5rem;
-  font-size: clamp(2rem, 6vw, 4rem);
+  margin: 0 0 0.1rem;
+  font-size: clamp(1.35rem, 3.2vw, 2.35rem);
   font-weight: 700;
+  line-height: 1.1;
 }
 
 .kiosk__subtitle {
   margin: 0;
-  font-size: clamp(1rem, 3vw, 1.5rem);
+  font-size: clamp(0.8rem, 1.6vw, 1.05rem);
   color: #94a3b8;
 }
 
 .kiosk__clock {
   margin: 0;
-  font-size: clamp(2rem, 5vw, 4rem);
+  font-size: clamp(1.35rem, 3vw, 2.35rem);
   font-variant-numeric: tabular-nums;
   color: #38bdf8;
+  line-height: 1.1;
 }
 
 .kiosk__content {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.35rem;
   min-height: 0;
+  overflow: hidden;
+}
+
+.schedule-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border-radius: 0.75rem;
+  background: #111c33;
+  box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 35%);
+  -webkit-overflow-scrolling: touch;
 }
 
 .schedule {
   width: 100%;
   border-collapse: collapse;
-  overflow: hidden;
-  border-radius: 1rem;
-  background: #111c33;
-  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 35%);
-  font-size: clamp(1.25rem, 2.3vw, 2.2rem);
+  font-size: calc(clamp(1.1rem, 1.85vw, 1.55rem) * var(--board-font-scale, 1));
+}
+
+.schedule thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #152238;
+  box-shadow: 0 1px 0 rgb(148 163 184 / 25%);
 }
 
 .schedule th,
 .schedule td {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgb(148 163 184 / 20%);
+  padding: calc(0.5rem * var(--board-font-scale, 1)) 0.75rem;
+  border-bottom: 1px solid rgb(148 163 184 / 16%);
   text-align: left;
+  vertical-align: middle;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.schedule td:nth-child(2),
+.schedule td:nth-child(3) {
+  white-space: normal;
+  max-width: 28vw;
 }
 
 .schedule th {
   color: #94a3b8;
-  font-size: clamp(0.9rem, 1.4vw, 1.2rem);
+  font-size: calc(clamp(0.8rem, 1.2vw, 1.05rem) * var(--board-font-scale, 1));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -164,15 +194,17 @@ body.admin-page {
 
 .kiosk__status {
   margin: 0;
-  font-size: 1rem;
+  flex-shrink: 0;
+  font-size: 0.8rem;
   color: #38bdf8;
 }
 
 .kiosk__remote,
 .admin__remote {
   margin: 0;
-  color: #cbd5e1;
-  font-size: 0.95rem;
+  flex-shrink: 0;
+  color: #94a3b8;
+  font-size: 0.75rem;
   user-select: text;
   -webkit-user-select: text;
 }

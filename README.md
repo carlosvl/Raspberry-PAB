@@ -11,7 +11,7 @@ Fullscreen **offline schedule and reminder kiosk** for **Raspberry Pi OS**. A lo
 5. **Kiosk shell** — Chromium launches via desktop autostart with `--kiosk`
 6. **Boot** — systemd starts the server; autologin + autostart opens the browser
 
-See [docs/kiosk.md](docs/kiosk.md) for autologin, screen blanking, and troubleshooting.
+See [docs/kiosk.md](docs/kiosk.md) for autologin, screen blanking, and troubleshooting. Set the Pi clock over SSH with [docs/pi-set-time.md](docs/pi-set-time.md).
 
 ## Project structure
 
@@ -31,6 +31,8 @@ Raspberry-PAB/
 │   └── power/                 # Mobile power + buck converter setup
 ├── data/schedule.example.json # Offline import example
 ├── data/schedule.example.csv  # CSV import example (name,race,call_up,start_time)
+├── data/csv-to-schedule-llm-prompt.json  # LLM instructions: CSV → schedule JSON
+├── data/README-csv-to-json.md # How to use the LLM CSV→JSON prompt
 ├── deploy/
 │   ├── systemd/               # Web server + fallback hotspot units
 │   ├── network/               # NetworkManager hotspot helper
@@ -129,7 +131,7 @@ Use `/admin` to add participants and rules, import JSON, or import a CSV
     {
       "name": "Carlos",
       "race": "Pro Men",
-      "call_up": "10:45",
+      "call_up": "Staging",
       "start_time": "11:00"
     }
   ],
@@ -140,7 +142,7 @@ Use `/admin` to add participants and rules, import JSON, or import a CSV
 }
 ```
 
-See also `data/schedule.example.csv`. For Carlos at 11:00, that example fires `Warm Up Carlos` at 10:30 and `Go to Start Line` at 10:45, 10:50, and 10:55.
+See also `data/schedule.example.csv`. For LLM-assisted conversion from arbitrary CSVs, use [`data/csv-to-schedule-llm-prompt.json`](data/csv-to-schedule-llm-prompt.json) (notes in [`data/README-csv-to-json.md`](data/README-csv-to-json.md)). For Carlos at 11:00, that example fires `Warm Up Carlos` at 10:30 and `Go to Start Line` at 10:45, 10:50, and 10:55.
 
 ## Race results
 

@@ -130,7 +130,7 @@ def parse_schedule_csv(
 
         race = cell("race")
         call_up_raw = cell("call_up")
-        call_up = _parse_time(call_up_raw) if call_up_raw else None
+        call_up = call_up_raw or None
         date_raw = cell("event_date")
         if date_raw:
             parsed_date = _parse_date(date_raw)

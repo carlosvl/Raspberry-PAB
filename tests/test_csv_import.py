@@ -19,7 +19,7 @@ Ana,Pro Women,,11:15
     assert len(schedule.participants) == 2
     assert schedule.participants[0].name == "Carlos"
     assert schedule.participants[0].race == "Pro Men"
-    assert schedule.participants[0].call_up == time(10, 45)
+    assert schedule.participants[0].call_up == "10:45"
     assert schedule.participants[0].start_time == time(11, 0)
     assert schedule.participants[1].call_up is None
     assert schedule.participants[1].race == "Pro Women"

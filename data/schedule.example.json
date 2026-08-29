@@ -4,13 +4,13 @@
     {
       "name": "Carlos",
       "race": "Pro Men",
-      "call_up": "10:45",
+      "call_up": "Staging",
       "start_time": "11:00"
     },
     {
       "name": "Ana",
       "race": "Pro Women",
-      "call_up": "11:00",
+      "call_up": "Gate 2",
       "start_time": "11:15"
     }
   ],

@@ -28,23 +28,25 @@
       </header>
 
       <section class="kiosk__content">
-        <table class="schedule" aria-label="Start schedule">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Race</th>
-              <th>Call Up</th>
-              <th>Start Time</th>
-              <th>Countdown</th>
-              <th>Result</th>
-            </tr>
-          </thead>
-          <tbody id="scheduleBody">
-            <tr>
-              <td colspan="6">Loading schedule…</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="schedule-scroll" id="scheduleScroll">
+          <table class="schedule" aria-label="Start schedule">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Race</th>
+                <th>Call Up</th>
+                <th>Start Time</th>
+                <th>Countdown</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleBody">
+              <tr>
+                <td colspan="6">Loading schedule…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <p class="kiosk__status" id="status">Connecting…</p>
         <p class="kiosk__remote" id="remoteInfo">Remote access checking…</p>
       </section>

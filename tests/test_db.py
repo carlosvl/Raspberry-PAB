@@ -21,14 +21,14 @@ def test_participant_crud(tmp_path: Path) -> None:
             event_date=date(2026, 6, 21),
             start_time=time(11, 0),
             race="Pro Men",
-            call_up=time(10, 45),
+            call_up="Staging",
         )
     )
 
     participants = store.list_participants(date(2026, 6, 21))
     assert participants == [participant]
     assert participant.race == "Pro Men"
-    assert participant.call_up == time(10, 45)
+    assert participant.call_up == "Staging"
 
     assert store.delete_participant(participant.id)
     assert store.list_participants(date(2026, 6, 21)) == []
@@ -44,7 +44,7 @@ def test_import_export_round_trip(tmp_path: Path) -> None:
                 name="Carlos",
                 start_time=time(11, 0),
                 race="Pro Men",
-                call_up=time(10, 45),
+                call_up="Staging",
             ),
         ],
         reminder_rules=[

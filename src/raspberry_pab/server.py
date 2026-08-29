@@ -15,7 +15,11 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from raspberry_pab.arduino_serial import HARDWARE_SERIAL_LOCK
-from raspberry_pab.branding import effective_display_title, logo_url
+from raspberry_pab.branding import (
+    effective_board_font_scale,
+    effective_display_title,
+    logo_url,
+)
 from raspberry_pab.buzzer_controller import BuzzerController
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
@@ -182,6 +186,7 @@ def create_app(settings: Settings) -> FastAPI:
         return {
             "app_name": settings.app_name,
             "display_title": effective_display_title(settings, store),
+            "board_font_scale": effective_board_font_scale(store),
             "logo_url": logo_url(settings, store),
             "port": settings.port,
             "kiosk_now": clock["kiosk_now"],

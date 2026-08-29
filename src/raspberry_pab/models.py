@@ -17,7 +17,7 @@ class ParticipantBase(BaseModel):
     event_date: date
     start_time: time
     race: str = Field(default="", max_length=120)
-    call_up: time | None = None
+    call_up: str | None = Field(default=None, max_length=120)
 
 
 class ParticipantCreate(ParticipantBase):
@@ -29,7 +29,7 @@ class ParticipantUpdate(BaseModel):
     event_date: date | None = None
     start_time: time | None = None
     race: str | None = Field(default=None, max_length=120)
-    call_up: time | None = None
+    call_up: str | None = Field(default=None, max_length=120)
 
 
 class Participant(ParticipantBase):
@@ -227,7 +227,7 @@ class ScheduleParticipantImport(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     start_time: time
     race: str = Field(default="", max_length=120)
-    call_up: time | None = None
+    call_up: str | None = Field(default=None, max_length=120)
 
 
 class ScheduleImport(BaseModel):
@@ -251,8 +251,13 @@ class BrandingUpdate(BaseModel):
     display_title: str = Field(min_length=1, max_length=120)
 
 
+class BoardFontUpdate(BaseModel):
+    board_font_scale: int = Field(ge=70, le=140)
+
+
 class BrandingResponse(BaseModel):
     display_title: str
+    board_font_scale: int = 100
     has_logo: bool
     logo_url: str | None = None
 

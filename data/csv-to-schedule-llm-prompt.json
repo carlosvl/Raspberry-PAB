@@ -1,0 +1,96 @@
+{
+  "task": "Convert a race start CSV into a Raspberry-PAB schedule JSON file.",
+  "role": "You convert CSV start lists into valid Raspberry-PAB offline schedule JSON. Output only the JSON object—no markdown fences, no commentary.",
+  "target_schema": {
+    "event_date": "YYYY-MM-DD (required)",
+    "participants": [
+      {
+        "name": "string, 1–120 chars (required)",
+        "race": "string, optional category/race name; use \"\" if missing",
+        "call_up": "optional free-text call-up note (e.g. Staging, Gate 2); omit/null if blank",
+        "start_time": "HH:MM 24-hour time (required)"
+      }
+    ],
+    "reminder_rules": [
+      {
+        "offset_minutes": "integer >= 0",
+        "message_template": "string; may include {name}",
+        "repeat_every_minutes": "integer >= 1 or omit/null",
+        "enabled": true,
+        "sort_order": 0,
+        "optional_hardware_fields": "led_*, buzzer_*, sound_* — omit unless the user provides them"
+      }
+    ]
+  },
+  "csv_column_mapping": {
+    "name": ["name", "rider", "participant", "athlete"],
+    "race": ["race", "category"],
+    "call_up": ["call_up", "callup", "call-up", "call up"],
+    "start_time": ["start_time", "start", "start time"],
+    "event_date": ["event_date", "date", "event date"]
+  },
+  "rules": [
+    "Required participant fields: name, start_time.",
+    "Normalize all times to 24-hour HH:MM (e.g. 9:05 AM → 09:05, 11:00:00 → 11:00).",
+    "Normalize dates to YYYY-MM-DD.",
+    "Trim whitespace from names and race labels.",
+    "Skip empty rows.",
+    "If the CSV has no event_date column, use the event_date supplied by the user.",
+    "If multiple event_date values appear in the CSV, fail with a short error instead of guessing.",
+    "Sort participants by start_time ascending, then name.",
+    "Do not invent participants.",
+    "If reminder_rules are not provided by the user, use the default_reminder_rules below.",
+    "If the user supplies custom reminder rules, use those instead of the defaults.",
+    "Do not wrap the result in ```json fences.",
+    "Do not include trailing commentary after the JSON."
+  ],
+  "default_reminder_rules": [
+    {
+      "offset_minutes": 30,
+      "message_template": "Warm Up {name}",
+      "enabled": true,
+      "sort_order": 0
+    },
+    {
+      "offset_minutes": 15,
+      "message_template": "Go to Start Line",
+      "repeat_every_minutes": 5,
+      "enabled": true,
+      "sort_order": 1
+    }
+  ],
+  "example_input_csv": "name,race,call_up,start_time\nCarlos,Pro Men,Staging,11:00\nAna,Pro Women,Gate 2,11:15\n",
+  "example_output_json": {
+    "event_date": "2026-06-21",
+    "participants": [
+      {
+        "name": "Carlos",
+        "race": "Pro Men",
+        "call_up": "Staging",
+        "start_time": "11:00"
+      },
+      {
+        "name": "Ana",
+        "race": "Pro Women",
+        "call_up": "Gate 2",
+        "start_time": "11:15"
+      }
+    ],
+    "reminder_rules": [
+      {
+        "offset_minutes": 30,
+        "message_template": "Warm Up {name}",
+        "enabled": true,
+        "sort_order": 0
+      },
+      {
+        "offset_minutes": 15,
+        "message_template": "Go to Start Line",
+        "repeat_every_minutes": 5,
+        "enabled": true,
+        "sort_order": 1
+      }
+    ]
+  },
+  "user_message_template": "event_date: {{EVENT_DATE}}\n\nCSV:\n{{CSV_CONTENTS}}"
+}

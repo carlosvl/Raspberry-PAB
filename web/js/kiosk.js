@@ -1,4 +1,5 @@
 const scheduleBody = document.getElementById("scheduleBody");
+const scheduleScroll = document.getElementById("scheduleScroll");
 const statusEl = document.getElementById("status");
 const kioskTitleEl = document.getElementById("kioskTitle");
 const kioskLogoEl = document.getElementById("kioskLogo");
@@ -119,6 +120,13 @@ async function loadAppConfig() {
         kioskLogoEl.hidden = true;
       }
     }
+    const fontScale = Number(config.board_font_scale);
+    if (Number.isFinite(fontScale) && fontScale > 0) {
+      document.documentElement.style.setProperty(
+        "--board-font-scale",
+        String(fontScale / 100)
+      );
+    }
   } catch {
     // The hard-coded title remains usable if config loading fails.
   }
@@ -168,8 +176,80 @@ function formatResultCol(item) {
   return parts.join(" · ");
 }
 
+// Auto-scroll the participant list for unattended TV displays.
+const SCROLL_PX_PER_SEC = 28;
+const SCROLL_PAUSE_MS = 2200;
+const SCROLL_RESUME_IDLE_MS = 8000;
+let scrollRaf = null;
+let scrollPauseUntil = 0;
+let scrollDirection = 1;
+let scrollUserIdleTimer = null;
+let scrollUserPaused = false;
+
+function scheduleNeedsScroll() {
+  if (!scheduleScroll) return false;
+  return scheduleScroll.scrollHeight > scheduleScroll.clientHeight + 8;
+}
+
+function pauseAutoScrollForUser() {
+  scrollUserPaused = true;
+  clearTimeout(scrollUserIdleTimer);
+  scrollUserIdleTimer = setTimeout(() => {
+    scrollUserPaused = false;
+    scrollPauseUntil = performance.now() + SCROLL_PAUSE_MS;
+  }, SCROLL_RESUME_IDLE_MS);
+}
+
+function tickAutoScroll(now) {
+  scrollRaf = requestAnimationFrame(tickAutoScroll);
+  if (!scheduleScroll || scrollUserPaused || !scheduleNeedsScroll()) return;
+  if (now < scrollPauseUntil) return;
+
+  const maxScroll = scheduleScroll.scrollHeight - scheduleScroll.clientHeight;
+  if (maxScroll <= 0) return;
+
+  // ~60fps step from px/sec
+  const step = (SCROLL_PX_PER_SEC / 60) * scrollDirection;
+  let next = scheduleScroll.scrollTop + step;
+
+  if (next >= maxScroll) {
+    scheduleScroll.scrollTop = maxScroll;
+    scrollDirection = -1;
+    scrollPauseUntil = now + SCROLL_PAUSE_MS;
+    return;
+  }
+  if (next <= 0) {
+    scheduleScroll.scrollTop = 0;
+    scrollDirection = 1;
+    scrollPauseUntil = now + SCROLL_PAUSE_MS;
+    return;
+  }
+  scheduleScroll.scrollTop = next;
+}
+
+function startAutoScroll() {
+  if (!scheduleScroll) return;
+  if (scrollRaf == null) {
+    scrollRaf = requestAnimationFrame(tickAutoScroll);
+  }
+  scrollPauseUntil = performance.now() + SCROLL_PAUSE_MS;
+  scrollDirection = 1;
+}
+
+function configureScheduleScroll() {
+  if (!scheduleScroll) return;
+  ["wheel", "touchstart", "pointerdown"].forEach((eventName) => {
+    scheduleScroll.addEventListener(eventName, pauseAutoScrollForUser, {
+      passive: true,
+    });
+  });
+  startAutoScroll();
+}
+
 function renderSchedule(items) {
   if (!scheduleBody) return;
+
+  const previousTop = scheduleScroll ? scheduleScroll.scrollTop : 0;
 
   if (items.length === 0) {
     scheduleBody.innerHTML = '<tr><td colspan="6">No starts scheduled today.</td></tr>';
@@ -185,7 +265,7 @@ function renderSchedule(items) {
         <tr class="${rowClass(item, nextId)}">
           <td class="schedule__name">${escapeHtml(item.name)}</td>
           <td>${escapeHtml(item.race || "")}</td>
-          <td>${item.call_up ? formatTime(item.call_up) : ""}</td>
+          <td>${item.call_up ? escapeHtml(item.call_up) : ""}</td>
           <td>${formatTime(item.start_time)}</td>
           <td class="schedule__countdown">${formatCountdown(item.countdown_seconds)}</td>
           <td class="schedule__result">${formatResultCol(item)}</td>
@@ -193,6 +273,11 @@ function renderSchedule(items) {
       `,
     )
     .join("");
+
+  if (scheduleScroll && !scrollUserPaused) {
+    // Keep position across 1s refreshes so auto-scroll doesn't jump.
+    scheduleScroll.scrollTop = previousTop;
+  }
 }
 
 async function loadSchedule() {
@@ -417,6 +502,7 @@ controlMenu?.addEventListener("click", (event) => {
 configureAdminBrandTrigger();
 configureControlHotspot();
 configureFfToolbar();
+configureScheduleScroll();
 registerServiceWorker();
 loadAppConfig().then(() => {
   loadSchedule();

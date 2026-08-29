@@ -44,6 +44,25 @@ def test_public_config_uses_saved_title(client: TestClient) -> None:
     config = client.get("/api/config").json()
     assert config["display_title"] == "Race Day"
     assert config["logo_url"] is None
+    assert config["board_font_scale"] == 100
+
+
+def test_board_font_scale_saved(client: TestClient) -> None:
+    response = client.put(
+        "/api/admin/branding/board-font",
+        json={"board_font_scale": 120},
+        headers={"X-Admin-Pin": "9999"},
+    )
+    assert response.status_code == 200
+    assert response.json()["board_font_scale"] == 120
+    assert client.get("/api/config").json()["board_font_scale"] == 120
+
+    too_low = client.put(
+        "/api/admin/branding/board-font",
+        json={"board_font_scale": 50},
+        headers={"X-Admin-Pin": "9999"},
+    )
+    assert too_low.status_code == 422
 
 
 def test_upload_and_serve_logo(client: TestClient) -> None:

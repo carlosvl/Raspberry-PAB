@@ -254,9 +254,15 @@ Reminder rules can play an uploaded WAV/MP3/OGG **once** over HDMI when they fir
 
 Playback targets the HDMI sink by name (not the default analog jack). Override with `PAB_SOUND_SINK` if needed. The systemd service sets `XDG_RUNTIME_DIR` so the server can talk to the desktop PipeWire session.
 
-See also [pi-wifi.md](pi-wifi.md) for hotspot + Wi-Fi changes.
+See also [pi-wifi.md](pi-wifi.md) for hotspot + Wi-Fi changes, and [pi-set-time.md](pi-set-time.md) to set the system clock over SSH.
 
 ## Troubleshooting
+
+**Wrong reminder times / board clock off**
+
+- Check OS time: `timedatectl` / `date` on the Pi
+- Fix with [pi-set-time.md](pi-set-time.md), then `sudo systemctl restart raspberry-pab`
+- If Admin Test Lab has a simulated clock enabled, clear it for real events
 
 **Black screen after boot**
 
