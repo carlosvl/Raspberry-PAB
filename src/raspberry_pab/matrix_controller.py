@@ -107,6 +107,23 @@ class MatrixController:
             return
         await self._start_show(rule, message)
 
+    async def show_sequence(self, rule: ReminderRule, messages: list[str]) -> None:
+        """Scroll each message in order without cancelling mid-sequence."""
+        if not self._should_show(rule):
+            return
+        cleaned = [message for message in messages if message.strip()]
+        if not cleaned:
+            return
+        if self._show_task and not self._show_task.done():
+            self._show_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._show_task
+        self._show_task = asyncio.create_task(
+            self._run_show_sequence(rule, cleaned),
+            name="matrix-show-sequence",
+        )
+        await self._show_task
+
     async def flash(self, rule: ReminderRule) -> None:
         """Backward-compatible entry point for alert listener."""
         await self.show(rule, rule.message_template)
@@ -207,6 +224,27 @@ class MatrixController:
                 raise
             except Exception:
                 logger.exception("Matrix show failed for rule %s", rule.id)
+
+    async def _run_show_sequence(
+        self,
+        rule: ReminderRule,
+        messages: list[str],
+    ) -> None:
+        async with self._lock:
+            try:
+                async with self._hardware_lock:
+                    for message in messages:
+                        await asyncio.to_thread(
+                            self._execute_show_sequence,
+                            rule,
+                            message,
+                        )
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                logger.exception(
+                    "Matrix show sequence failed for rule %s", rule.id
+                )
 
     def _execute_show_sequence(self, rule: ReminderRule, message: str) -> None:
         duration_ms = matrix_display_duration_ms(rule)

@@ -26,7 +26,13 @@ let kioskSimulatedRunning = false;
 const ADMIN_TAP_COUNT = 3;
 const ADMIN_TAP_WINDOW_MS = 1500;
 const CONTROL_MENU_HOLD_MS = 3000;
+const ALERT_DISPLAY_MS = 10000;
+const ALERT_BATCH_WINDOW_MS = 1000;
 let alertTimer = null;
+let alertBatchTimer = null;
+let alertQueue = [];
+let pendingAlertBatch = [];
+let alertPlaying = false;
 let controlMenuTimer = null;
 let adminTapCount = 0;
 let adminTapResetTimer = null;
@@ -103,8 +109,12 @@ async function loadAppConfig() {
     const response = await fetch("/api/config");
     if (!response.ok) throw new Error("config request failed");
     const config = await response.json();
+    const previousDate = displayDate;
     if (config.display_date) {
       displayDate = config.display_date;
+    }
+    if (config.display_date && config.display_date !== previousDate) {
+      clearAlertQueue();
     }
     if (config.kiosk_now) {
       kioskNowIso = config.kiosk_now;
@@ -318,7 +328,18 @@ function beep() {
   }
 }
 
-function showAlert(alert) {
+function clearAlertQueue() {
+  alertQueue = [];
+  pendingAlertBatch = [];
+  alertPlaying = false;
+  clearTimeout(alertBatchTimer);
+  alertBatchTimer = null;
+  clearTimeout(alertTimer);
+  alertTimer = null;
+  if (alertOverlay) alertOverlay.hidden = true;
+}
+
+function displayAlert(alert) {
   if (!alertOverlay || !alertMessage || !alertMeta) return;
   alertMessage.textContent = alert.message;
   alertMeta.textContent = `${alert.name} starts at ${formatTime(alert.start_time)}`;
@@ -326,13 +347,57 @@ function showAlert(alert) {
   if (!alert.sound_enabled) {
     beep();
   }
+}
+
+function playNextQueuedAlert() {
+  if (!alertQueue.length) {
+    alertPlaying = false;
+    if (alertOverlay) alertOverlay.hidden = true;
+    clearTimeout(alertTimer);
+    alertTimer = null;
+    return;
+  }
+  alertPlaying = true;
+  const alert = alertQueue.shift();
+  displayAlert(alert);
   clearTimeout(alertTimer);
-  alertTimer = setTimeout(hideAlert, 10000);
+  alertTimer = setTimeout(playNextQueuedAlert, ALERT_DISPLAY_MS);
+}
+
+function flushPendingAlertBatch() {
+  alertBatchTimer = null;
+  if (!pendingAlertBatch.length) return;
+  const groups = new Map();
+  const order = [];
+  for (const alert of pendingAlertBatch) {
+    const key = `${alert.rule_id}|${alert.fire_at}`;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+      order.push(key);
+    }
+    groups.get(key).push(alert);
+  }
+  pendingAlertBatch = [];
+  for (const key of order) {
+    alertQueue.push(...groups.get(key));
+  }
+  if (!alertPlaying) {
+    playNextQueuedAlert();
+  }
+}
+
+function enqueueAlert(alert) {
+  pendingAlertBatch.push(alert);
+  clearTimeout(alertBatchTimer);
+  alertBatchTimer = setTimeout(flushPendingAlertBatch, ALERT_BATCH_WINDOW_MS);
+}
+
+function showAlert(alert) {
+  enqueueAlert(alert);
 }
 
 function hideAlert() {
-  if (alertOverlay) alertOverlay.hidden = true;
-  clearTimeout(alertTimer);
+  clearAlertQueue();
 }
 
 function showControlMenu() {
@@ -448,6 +513,7 @@ async function advanceClock(minutes) {
     displayDate = state.display_date;
     updateClock();
     updateFfClock();
+    clearAlertQueue();
     loadSchedule();
   } catch {
     // Network glitch — the next poll will catch up.

@@ -46,7 +46,7 @@ class AlertBroker:
 
     @contextlib.asynccontextmanager
     async def subscribe(self) -> AsyncIterator[asyncio.Queue[Alert]]:
-        queue: asyncio.Queue[Alert] = asyncio.Queue(maxsize=10)
+        queue: asyncio.Queue[Alert] = asyncio.Queue(maxsize=32)
         self._subscribers.add(queue)
         try:
             yield queue

@@ -14,6 +14,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from raspberry_pab.alert_batch import drain_alert_queue, group_alerts_by_slot
 from raspberry_pab.arduino_serial import HARDWARE_SERIAL_LOCK
 from raspberry_pab.branding import (
     effective_board_font_scale,
@@ -26,6 +27,7 @@ from raspberry_pab.db import ScheduleStore
 from raspberry_pab.kiosk_clock import get_clock_state
 from raspberry_pab.led_controller import LedController
 from raspberry_pab.matrix_controller import MatrixController
+from raspberry_pab.models import Alert
 from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.buzzer import router as buzzer_router
@@ -48,6 +50,51 @@ from raspberry_pab.scheduler import (
 from raspberry_pab.sound_controller import SoundController
 
 logger = logging.getLogger(__name__)
+
+
+async def play_alert_groups(
+    groups: list[list[Alert]],
+    *,
+    store: ScheduleStore,
+    led_controller: LedController,
+    matrix_controller: MatrixController,
+    buzzer_controller: BuzzerController,
+    sound_controller: SoundController,
+) -> None:
+    """Play each same-slot group: effects once, matrix messages in order."""
+    for group in groups:
+        if not group:
+            continue
+        rule = store.get_rule(group[0].rule_id)
+        if rule is None:
+            continue
+        try:
+            await led_controller.flash(rule)
+        except Exception:
+            logger.exception(
+                "LED listener failed for alert group rule %s", rule.id
+            )
+        try:
+            await buzzer_controller.beep(rule)
+        except Exception:
+            logger.exception(
+                "Buzzer listener failed for alert group rule %s", rule.id
+            )
+        try:
+            await sound_controller.play(rule)
+        except Exception:
+            logger.exception(
+                "Sound listener failed for alert group rule %s", rule.id
+            )
+        try:
+            await matrix_controller.show_sequence(
+                rule,
+                [alert.message for alert in group],
+            )
+        except Exception:
+            logger.exception(
+                "Matrix listener failed for alert group rule %s", rule.id
+            )
 
 
 def _local_ipv4_addresses() -> list[str]:
@@ -111,36 +158,19 @@ def create_app(settings: Settings) -> FastAPI:
             async with broker.subscribe() as queue:
                 while not stop_event.is_set():
                     try:
-                        alert = await asyncio.wait_for(queue.get(), timeout=0.5)
+                        first = await asyncio.wait_for(queue.get(), timeout=0.5)
                     except TimeoutError:
                         continue
-                    rule = store.get_rule(alert.rule_id)
-                    if rule is None:
-                        continue
-                    try:
-                        await led_controller.flash(rule)
-                    except Exception:
-                        logger.exception(
-                            "LED listener failed for alert %s", alert.id
-                        )
-                    try:
-                        await matrix_controller.show(rule, alert.message)
-                    except Exception:
-                        logger.exception(
-                            "Matrix listener failed for alert %s", alert.id
-                        )
-                    try:
-                        await buzzer_controller.beep(rule)
-                    except Exception:
-                        logger.exception(
-                            "Buzzer listener failed for alert %s", alert.id
-                        )
-                    try:
-                        await sound_controller.play(rule)
-                    except Exception:
-                        logger.exception(
-                            "Sound listener failed for alert %s", alert.id
-                        )
+                    batch = drain_alert_queue(queue, first)
+                    groups = group_alerts_by_slot(batch)
+                    await play_alert_groups(
+                        groups,
+                        store=store,
+                        led_controller=led_controller,
+                        matrix_controller=matrix_controller,
+                        buzzer_controller=buzzer_controller,
+                        sound_controller=sound_controller,
+                    )
 
         hardware_task = asyncio.create_task(
             hardware_listener(), name="hardware-alert-listener"
