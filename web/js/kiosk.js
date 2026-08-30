@@ -15,7 +15,11 @@ const exitKiosk = document.getElementById("exitKiosk");
 const closeMenu = document.getElementById("closeMenu");
 
 const today = new Date();
-let displayDate = today.toISOString().slice(0, 10);
+let displayDate = [
+  today.getFullYear(),
+  String(today.getMonth() + 1).padStart(2, "0"),
+  String(today.getDate()).padStart(2, "0"),
+].join("-");
 let kioskNowIso = today.toISOString();
 let kioskSimulated = false;
 let kioskSimulatedRunning = false;

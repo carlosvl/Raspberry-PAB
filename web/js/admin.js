@@ -32,7 +32,14 @@ const TIME_DISPLAY_OPTIONS = {
 let cachedRules = [];
 let cachedSounds = [];
 
-const todayParam = new Date().toISOString().slice(0, 10);
+function localDateParam(now = new Date()) {
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+const todayParam = localDateParam();
 
 function escapeHtml(value) {
   return String(value)
@@ -1936,8 +1943,8 @@ document.getElementById("newScenario")?.addEventListener("click", async () => {
     return;
   }
   const today = new Date();
-  const satDate = today.toISOString().slice(0, 10);
-  const sunDate = new Date(today.getTime() + 86400000).toISOString().slice(0, 10);
+  const satDate = localDateParam(today);
+  const sunDate = localDateParam(new Date(today.getTime() + 86400000));
   const scenario = {
     id: slug,
     label,
