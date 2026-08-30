@@ -355,6 +355,25 @@ class KioskClockState(BaseModel):
     display_date: str
 
 
+class SystemClockState(BaseModel):
+    local_time: str
+    timezone: str
+    ntp: bool = False
+    ntp_raw: str = ""
+    simulated_kiosk: bool = False
+    persists_offline: bool = False
+    fake_hwclock_saved: str | None = None
+
+
+class SystemClockUpdate(BaseModel):
+    year: int = Field(ge=2020, le=2099)
+    month: int = Field(ge=1, le=12)
+    day: int = Field(ge=1, le=31)
+    hour: int = Field(ge=0, le=23)
+    minute: int = Field(ge=0, le=59)
+    second: int = Field(default=0, ge=0, le=59)
+
+
 class WifiStatus(BaseModel):
     iface: str
     connection: str = ""

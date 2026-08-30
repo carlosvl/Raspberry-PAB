@@ -106,6 +106,66 @@
             </form>
           </details>
           <details class="admin-section">
+            <summary>System clock</summary>
+            <div class="form" id="systemClockForm">
+              <p class="branding__hint" id="systemClockStatus">Pi clock: checking…</p>
+              <div class="system-clock-grid">
+                <label>
+                  Year
+                  <div class="touch-stepper" data-touch-stepper>
+                    <button aria-label="Decrease year" class="touch-stepper__btn" data-touch-stepper-delta="-1" type="button">−</button>
+                    <input class="touch-stepper__value" id="sysClockYear" max="2099" min="2020" required step="1" type="number" />
+                    <button aria-label="Increase year" class="touch-stepper__btn" data-touch-stepper-delta="1" type="button">+</button>
+                  </div>
+                </label>
+                <label>
+                  Month
+                  <div class="touch-stepper" data-touch-stepper>
+                    <button aria-label="Decrease month" class="touch-stepper__btn" data-touch-stepper-delta="-1" type="button">−</button>
+                    <input class="touch-stepper__value" id="sysClockMonth" max="12" min="1" required step="1" type="number" />
+                    <button aria-label="Increase month" class="touch-stepper__btn" data-touch-stepper-delta="1" type="button">+</button>
+                  </div>
+                </label>
+                <label>
+                  Day
+                  <div class="touch-stepper" data-touch-stepper>
+                    <button aria-label="Decrease day" class="touch-stepper__btn" data-touch-stepper-delta="-1" type="button">−</button>
+                    <input class="touch-stepper__value" id="sysClockDay" max="31" min="1" required step="1" type="number" />
+                    <button aria-label="Increase day" class="touch-stepper__btn" data-touch-stepper-delta="1" type="button">+</button>
+                  </div>
+                </label>
+                <label>
+                  Hour
+                  <div class="touch-stepper" data-touch-stepper>
+                    <button aria-label="Decrease hour" class="touch-stepper__btn" data-touch-stepper-delta="-1" type="button">−</button>
+                    <input class="touch-stepper__value" id="sysClockHour" max="23" min="0" required step="1" type="number" />
+                    <button aria-label="Increase hour" class="touch-stepper__btn" data-touch-stepper-delta="1" type="button">+</button>
+                  </div>
+                </label>
+                <label>
+                  Minute
+                  <div class="touch-stepper" data-touch-stepper>
+                    <button aria-label="Decrease minute" class="touch-stepper__btn" data-touch-stepper-delta="-1" type="button">−</button>
+                    <input class="touch-stepper__value" id="sysClockMinute" max="59" min="0" required step="1" type="number" />
+                    <button aria-label="Increase minute" class="touch-stepper__btn" data-touch-stepper-delta="1" type="button">+</button>
+                  </div>
+                </label>
+              </div>
+              <span class="branding__hint">
+                Sets the Pi’s real OS clock (reminders + board). Use − / + with the gamepad.
+                NTP is turned off and the time is saved with fake-hwclock so it still comes back
+                after a reboot with no network (a few minutes of downtime may be missing).
+                This clears any Test Lab simulated clock.
+              </span>
+              <div class="button-row">
+                <button id="refreshSystemClock" type="button">Load Current Pi Time</button>
+                <button class="button--primary button--large" id="saveSystemClock" type="button">
+                  Set Pi System Time
+                </button>
+              </div>
+            </div>
+          </details>
+          <details class="admin-section">
             <summary>Logo</summary>
             <div class="branding__logo">
               <img alt="Current logo preview" class="branding__preview" id="logoPreview" hidden />
@@ -292,55 +352,18 @@
         <article class="panel" id="rulesPanel">
           <h2>Reminder Rules</h2>
 
-          <details class="admin-section">
-            <summary>LED Matrix</summary>
-            <div class="form">
-              <p class="led-status" id="matrixStatus">Matrix: checking…</p>
-              <p class="branding__hint">
-                On reminders, the matrix <strong>scrolls the message template</strong>
-                (with <code>{name}</code> filled in) in the rule LED color for
-                flash + chase duration. <strong>Test matrix</strong> uses the message
-                and light settings from the reminder sections below.
-              </p>
-              <div class="button-row">
-                <button id="testRuleMatrix" type="button">Test matrix</button>
-              </div>
-            </div>
-          </details>
-
-          <details class="admin-section">
-            <summary>BLE LED strip</summary>
-            <div class="form">
-              <p class="led-status" id="ledStatus">LED: checking…</p>
-              <label class="checkbox">
-                <input id="ledConfigEnabled" type="checkbox" />
-                Enable LED strip
-              </label>
-              <label>
-                Device address (MAC)
-                <div style="display:flex;gap:0.5rem;align-items:center">
-                  <input id="ledConfigAddress" type="text" placeholder="BE:28:79:00:06:CB" style="flex:1" />
-                  <button id="scanBle" type="button" style="white-space:nowrap">Scan BLE</button>
-                </div>
-              </label>
-              <select id="bleScanResults" hidden>
-                <option value="">— select a device —</option>
-              </select>
-              <label>
-                Device name
-                <input id="ledConfigName" type="text" placeholder="MELK-OT21   CB" />
-              </label>
-              <div class="button-row">
-                <button id="saveLedConfig" type="button">Save LED Config</button>
-                <button id="testRuleLed" type="button">Test BLE strip</button>
-              </div>
-            </div>
+          <details class="admin-section" open>
+            <summary>Saved rules</summary>
+            <div class="admin__list" id="ruleList"></div>
+            <p class="branding__hint">
+              Tap <strong>Edit</strong> on a rule, then set its message, matrix color, and HDMI sound in the section below.
+            </p>
           </details>
 
           <form id="ruleForm">
             <input id="ruleId" type="hidden" />
 
-            <details class="admin-section">
+            <details class="admin-section" open>
               <summary>Edit reminder</summary>
               <div class="form">
                 <label>
@@ -359,22 +382,15 @@
                   <input id="ruleEnabled" checked type="checkbox" />
                   Enabled
                 </label>
-                <div class="button-row">
-                  <button type="submit">Save Rule</button>
-                  <button id="clearRule" type="button">Clear</button>
-                </div>
-              </div>
-            </details>
 
-            <details class="admin-section">
-              <summary>Reminder lights</summary>
-              <div class="form">
+                <hr class="form-divider" />
+
                 <label class="checkbox">
                   <input id="ruleLedEnabled" type="checkbox" />
-                  Flash LED on reminder
+                  Flash lights / scroll matrix on reminder
                 </label>
                 <label>
-                  LED color
+                  Matrix / LED color
                   <input id="ruleLedColor" type="color" value="#ffc800" />
                 </label>
                 <div class="color-presets" role="group" aria-label="Matrix color presets">
@@ -391,6 +407,39 @@
                     <option value="pulse">Pulse scroll</option>
                   </select>
                 </label>
+
+                <hr class="form-divider" />
+
+                <label class="checkbox">
+                  <input id="ruleSoundEnabled" type="checkbox" />
+                  Play HDMI sound
+                </label>
+                <label>
+                  Sound file
+                  <select id="ruleSoundId">
+                    <option value="">— none —</option>
+                  </select>
+                </label>
+                <label>
+                  Sound volume (0-100)
+                  <input id="ruleSoundVolume" min="0" max="100" type="number" value="80" />
+                </label>
+                <p class="branding__hint">
+                  Upload files in the <strong>Sounds</strong> tab. Color presets and selects work with the gamepad.
+                </p>
+
+                <div class="button-row">
+                  <button class="button--primary" type="submit">Save Rule</button>
+                  <button id="clearRule" type="button">Clear</button>
+                  <button id="testRuleMatrix" type="button">Test matrix</button>
+                  <button id="testRuleSound" type="button">Test HDMI sound</button>
+                </div>
+              </div>
+            </details>
+
+            <details class="admin-section">
+              <summary>Light timing</summary>
+              <div class="form">
                 <label>
                   Flash interval (ms)
                   <input id="ruleLedInterval" min="100" max="5000" step="50" type="number" value="500" />
@@ -404,10 +453,9 @@
                   <input id="ruleLedChaseDuration" min="0" max="120" type="number" value="10" />
                 </label>
                 <p class="branding__hint">
-                  Chase runs back-and-forth on the <strong>BLE strip</strong> after flashing
-                  (set to 0 to skip). The <strong>matrix</strong> scrolls for flash + chase
-                  duration using the matrix effect above (rainbow ignores solid color for text).
-                  Test from the LED Matrix / BLE LED strip sections above.
+                  Chase runs on the <strong>BLE strip</strong> after flashing (0 = skip).
+                  The <strong>matrix</strong> scrolls for flash + chase using the color/effect above
+                  (rainbow ignores solid color for text).
                 </p>
               </div>
             </details>
@@ -445,39 +493,47 @@
                 </div>
               </div>
             </details>
-
-            <details class="admin-section">
-              <summary>Reminder HDMI sound</summary>
-              <div class="form">
-                <label class="checkbox">
-                  <input id="ruleSoundEnabled" type="checkbox" />
-                  Play HDMI sound
-                </label>
-                <label>
-                  Sound file
-                  <select id="ruleSoundId">
-                    <option value="">— none —</option>
-                  </select>
-                </label>
-                <label>
-                  Sound volume (0-100)
-                  <input id="ruleSoundVolume" min="0" max="100" type="number" value="80" />
-                </label>
-                <p class="branding__hint">
-                  Plays once over the HDMI monitor when the reminder fires (independent of the ESP32 buzzer).
-                  Upload files in the <strong>Sounds</strong> tab.
-                </p>
-                <div class="button-row">
-                  <button id="testRuleSound" type="button">Test HDMI sound</button>
-                </div>
-              </div>
-            </details>
-
           </form>
 
           <details class="admin-section">
-            <summary>Saved rules</summary>
-            <div class="admin__list" id="ruleList"></div>
+            <summary>LED Matrix hardware</summary>
+            <div class="form">
+              <p class="led-status" id="matrixStatus">Matrix: checking…</p>
+              <p class="branding__hint">
+                On reminders, the matrix <strong>scrolls the message template</strong>
+                (with <code>{name}</code> filled in) using that rule’s color and effect.
+                <strong>Test matrix</strong> is on the Edit reminder section.
+              </p>
+            </div>
+          </details>
+
+          <details class="admin-section">
+            <summary>BLE LED strip</summary>
+            <div class="form">
+              <p class="led-status" id="ledStatus">LED: checking…</p>
+              <label class="checkbox">
+                <input id="ledConfigEnabled" type="checkbox" />
+                Enable LED strip
+              </label>
+              <label>
+                Device address (MAC)
+                <div style="display:flex;gap:0.5rem;align-items:center">
+                  <input id="ledConfigAddress" type="text" placeholder="BE:28:79:00:06:CB" style="flex:1" />
+                  <button id="scanBle" type="button" style="white-space:nowrap">Scan BLE</button>
+                </div>
+              </label>
+              <select id="bleScanResults" hidden>
+                <option value="">— select a device —</option>
+              </select>
+              <label>
+                Device name
+                <input id="ledConfigName" type="text" placeholder="MELK-OT21   CB" />
+              </label>
+              <div class="button-row">
+                <button id="saveLedConfig" type="button">Save LED Config</button>
+                <button id="testRuleLed" type="button">Test BLE strip</button>
+              </div>
+            </div>
           </details>
         </article>
 

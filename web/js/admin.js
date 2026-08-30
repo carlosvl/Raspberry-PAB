@@ -111,6 +111,8 @@ function populateRuleForm(rule) {
     fillRuleSoundSelect(rule.sound_id ? String(rule.sound_id) : "");
     setFieldValue("ruleSoundVolume", String(rule.sound_volume ?? 80));
     showPanel("rulesPanel");
+    const editSection = ruleForm?.querySelector("details.admin-section");
+    if (editSection) editSection.open = true;
     ruleForm?.scrollIntoView({ behavior: "smooth", block: "start" });
     setOutput(`Editing rule: ${rule.message_template}`);
   } catch (error) {
@@ -181,13 +183,9 @@ function ruleLedSummary(rule) {
   }
   const color = rgbToHex(rule.led_red, rule.led_green, rule.led_blue);
   const effect = rule.matrix_effect && rule.matrix_effect !== "solid"
-    ? `, matrix ${rule.matrix_effect}`
+    ? ` ${rule.matrix_effect}`
     : "";
-  return ` · LED ${color} @ ${rule.led_flash_interval_ms}ms for ${rule.led_flash_duration_seconds}s` +
-    (rule.led_chase_duration_seconds > 0
-      ? `, then chase ${rule.led_chase_duration_seconds}s`
-      : "") +
-    effect;
+  return ` · Matrix ${color}${effect}`;
 }
 function adminPin() {
   return sessionStorage.getItem("pabAdminPin") || "";
@@ -532,16 +530,24 @@ async function loadRules() {
   if (!ruleList) return;
   ruleList.innerHTML = rules
     .map(
-      (rule) => `
+      (rule) => {
+        const color = rule.led_enabled
+          ? rgbToHex(rule.led_red ?? 255, rule.led_green ?? 200, rule.led_blue ?? 0)
+          : null;
+        const swatch = color
+          ? `<span class="rule-color-swatch" style="--swatch:${color}" title="${escapeHtml(color)}"></span>`
+          : "";
+        return `
         <div class="admin__item">
           <div class="admin__item-main">
-            <strong>${escapeHtml(rule.offset_minutes)} min: ${escapeHtml(rule.message_template)}</strong>
+            <strong>${swatch}${escapeHtml(rule.offset_minutes)} min: ${escapeHtml(rule.message_template)}</strong>
             <span>${rule.repeat_every_minutes ? `Repeats every ${escapeHtml(rule.repeat_every_minutes)} min` : "One time"} · ${rule.enabled ? "Enabled" : "Disabled"}${escapeHtml(ruleLedSummary(rule))}${escapeHtml(ruleBuzzerSummary(rule))}${escapeHtml(ruleSoundSummary(rule))}</span>
           </div>
           <button data-edit-rule="${rule.id}" type="button">Edit</button>
           <button data-delete-rule="${rule.id}" type="button">Delete</button>
         </div>
-      `,
+      `;
+      },
     )
     .join("");
 }
@@ -719,6 +725,13 @@ async function loadAll() {
   try {
     await Promise.all([
       loadBranding(),
+      loadSystemClock({ fillFields: true }).catch((error) => {
+        const status = document.getElementById("systemClockStatus");
+        if (status) {
+          status.textContent =
+            error instanceof Error ? error.message : "Could not load Pi clock";
+        }
+      }),
       loadTouchConfig(),
       loadParticipants(),
       loadSounds(),
@@ -1261,6 +1274,82 @@ async function saveBoardFont(event) {
   }
 }
 
+function daysInMonth(year, month) {
+  return new Date(year, month, 0).getDate();
+}
+
+function clampSystemClockDay() {
+  const year = Number(document.getElementById("sysClockYear")?.value || 2026);
+  const month = Number(document.getElementById("sysClockMonth")?.value || 1);
+  const dayInput = document.getElementById("sysClockDay");
+  if (!dayInput) return;
+  const maxDay = daysInMonth(year, month);
+  dayInput.max = String(maxDay);
+  const day = Number(dayInput.value || 1);
+  if (day > maxDay) dayInput.value = String(maxDay);
+}
+
+function fillSystemClockFields(localTime) {
+  // Expect YYYY-MM-DDTHH:MM:SS
+  const match = String(localTime || "").match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
+  );
+  if (!match) return;
+  const year = document.getElementById("sysClockYear");
+  const month = document.getElementById("sysClockMonth");
+  const day = document.getElementById("sysClockDay");
+  const hour = document.getElementById("sysClockHour");
+  const minute = document.getElementById("sysClockMinute");
+  if (year) year.value = String(Number(match[1]));
+  if (month) month.value = String(Number(match[2]));
+  if (day) day.value = String(Number(match[3]));
+  if (hour) hour.value = String(Number(match[4]));
+  if (minute) minute.value = String(Number(match[5]));
+  clampSystemClockDay();
+}
+
+function renderSystemClockStatus(clock) {
+  const status = document.getElementById("systemClockStatus");
+  if (!status) return;
+  const ntp = clock.ntp ? "NTP on" : "NTP off";
+  const persist = clock.persists_offline
+    ? "survives offline reboot"
+    : "may reset on reboot (fake-hwclock missing)";
+  const sim = clock.simulated_kiosk ? " · Test Lab sim active" : "";
+  status.textContent = `Pi clock: ${clock.local_time} (${clock.timezone}) · ${ntp} · ${persist}${sim}`;
+}
+
+async function loadSystemClock({ fillFields = true } = {}) {
+  const clock = await api("/api/admin/system-clock");
+  renderSystemClockStatus(clock);
+  if (fillFields) fillSystemClockFields(clock.local_time);
+  return clock;
+}
+
+async function saveSystemClock() {
+  clampSystemClockDay();
+  const payload = {
+    year: Number(document.getElementById("sysClockYear")?.value),
+    month: Number(document.getElementById("sysClockMonth")?.value),
+    day: Number(document.getElementById("sysClockDay")?.value),
+    hour: Number(document.getElementById("sysClockHour")?.value),
+    minute: Number(document.getElementById("sysClockMinute")?.value),
+    second: 0,
+  };
+  try {
+    setOutput("Setting Pi system time…");
+    const clock = await api("/api/admin/system-clock", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+    renderSystemClockStatus(clock);
+    fillSystemClockFields(clock.local_time);
+    setOutput(`Pi system time set to ${clock.local_time} (${clock.timezone}).`);
+  } catch (error) {
+    setOutput(error.message);
+  }
+}
+
 async function loadBranding() {
   const branding = await api("/api/admin/branding");
   renderBranding(branding);
@@ -1387,6 +1476,18 @@ ruleForm?.addEventListener("submit", async (event) => {
 document.getElementById("brandingForm")?.addEventListener("submit", saveBrandingTitle);
 document.getElementById("boardFontForm")?.addEventListener("submit", saveBoardFont);
 document.getElementById("boardFontScale")?.addEventListener("input", syncBoardFontLabel);
+document.getElementById("refreshSystemClock")?.addEventListener("click", async () => {
+  try {
+    await loadSystemClock({ fillFields: true });
+    setOutput("Loaded current Pi system time.");
+  } catch (error) {
+    setOutput(error.message);
+  }
+});
+document.getElementById("saveSystemClock")?.addEventListener("click", saveSystemClock);
+["sysClockYear", "sysClockMonth"].forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", clampSystemClockDay);
+});
 document.getElementById("touchForm")?.addEventListener("submit", saveTouchConfig);
 document.getElementById("gamepadForm")?.addEventListener("submit", saveGamepadConfig);
 

@@ -550,6 +550,23 @@ body.admin-page {
   box-shadow: inset 0 0 0 1px rgb(15 23 42 / 40%);
 }
 
+.form-divider {
+  border: 0;
+  border-top: 1px solid rgb(148 163 184 / 22%);
+  margin: 0.85rem 0;
+}
+
+.rule-color-swatch {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0.45rem;
+  border-radius: 999px;
+  vertical-align: -0.05rem;
+  background: var(--swatch, #94a3b8);
+  box-shadow: inset 0 0 0 1px rgb(15 23 42 / 45%);
+}
+
 .checkbox {
   display: flex !important;
   grid-template-columns: auto 1fr;
@@ -804,6 +821,13 @@ body.admin-page {
 .touch-stepper__value::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+.system-clock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.85rem 1rem;
+  margin: 0.75rem 0;
 }
 
 #gamepadForm input[type="range"] {

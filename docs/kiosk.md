@@ -261,7 +261,7 @@ See also [pi-wifi.md](pi-wifi.md) for hotspot + Wi-Fi changes, and [pi-set-time.
 **Wrong reminder times / board clock off**
 
 - Check OS time: `timedatectl` / `date` on the Pi
-- Fix with [pi-set-time.md](pi-set-time.md), then `sudo systemctl restart raspberry-pab`
+- Fix with Admin → Kiosk Branding → **System clock** (gamepad −/+), or [pi-set-time.md](pi-set-time.md), then restart the service if needed
 - If Admin Test Lab has a simulated clock enabled, clear it for real events
 
 **Black screen after boot**

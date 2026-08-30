@@ -54,6 +54,11 @@ sed \
     | sudo tee /etc/systemd/system/raspberry-pab.service >/dev/null
 sudo systemctl daemon-reload
 
+echo "==> Ensuring offline clock persistence (fake-hwclock)..."
+sudo apt-get install -y fake-hwclock >/dev/null
+sudo systemctl enable fake-hwclock-load.service fake-hwclock-save.service fake-hwclock-save.timer >/dev/null 2>&1 || true
+sudo fake-hwclock save >/dev/null 2>&1 || true
+
 echo "==> Allowing passwordless service restart from admin UI..."
 sudo tee /etc/sudoers.d/raspberry-pab-restart >/dev/null <<EOF
 ${INSTALL_USER} ALL=(ALL) NOPASSWD: /bin/systemctl restart raspberry-pab
@@ -67,6 +72,13 @@ sudo tee /etc/sudoers.d/raspberry-pab-wifi >/dev/null <<EOF
 ${INSTALL_USER} ALL=(ALL) NOPASSWD: ${HOME}/bin/manage-pi-wifi.sh
 EOF
 sudo chmod 440 /etc/sudoers.d/raspberry-pab-wifi
+
+echo "==> Allowing passwordless system clock changes from admin UI..."
+install -m 0755 scripts/set-pi-system-time.sh "${HOME}/bin/set-pi-system-time.sh"
+sudo tee /etc/sudoers.d/raspberry-pab-system-time >/dev/null <<EOF
+${INSTALL_USER} ALL=(ALL) NOPASSWD: ${HOME}/bin/set-pi-system-time.sh
+EOF
+sudo chmod 440 /etc/sudoers.d/raspberry-pab-system-time
 
 echo "==> Allowing sleep inhibition for the kiosk service user..."
 sed "s|@INSTALL_USER@|${INSTALL_USER}|g" \
@@ -142,6 +154,7 @@ install -m 0755 scripts/setup-touch-input.sh "${BIN_DIR}/setup-touch-input.sh"
 install -m 0755 scripts/apply-input-config.sh "${BIN_DIR}/apply-input-config.sh"
 install -m 0755 scripts/reload-kiosk-display.sh "${BIN_DIR}/reload-kiosk-display.sh"
 install -m 0755 scripts/manage-pi-wifi.sh "${BIN_DIR}/manage-pi-wifi.sh"
+install -m 0755 scripts/set-pi-system-time.sh "${BIN_DIR}/set-pi-system-time.sh"
 install -m 0755 scripts/configure-pi-wifi.sh "${BIN_DIR}/configure-pi-wifi.sh"
 
 echo ""
