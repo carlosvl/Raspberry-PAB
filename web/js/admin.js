@@ -31,6 +31,7 @@ const TIME_DISPLAY_OPTIONS = {
 
 let cachedRules = [];
 let cachedSounds = [];
+let musicBreakSoundIds = [];
 
 function localDateParam(now = new Date()) {
   const year = now.getFullYear();
@@ -586,6 +587,7 @@ async function loadSounds() {
   const sounds = await api("/api/admin/sounds");
   cachedSounds = sounds;
   fillRuleSoundSelect();
+  fillMusicBreakAddSelect();
   const soundList = document.getElementById("soundList");
   if (!soundList) return;
   if (!sounds.length) {
@@ -629,12 +631,187 @@ async function loadSounds() {
       try {
         await api(`/api/admin/sounds/${soundId}`, { method: "DELETE" });
         await loadSounds();
+        await loadMusicBreaks();
         await loadRules();
         setOutput("Sound deleted.");
       } catch (error) {
         setOutput(error instanceof Error ? error.message : String(error));
       }
     });
+  });
+}
+
+function soundNameById(soundId) {
+  const match = (cachedSounds || []).find((sound) => Number(sound.id) === Number(soundId));
+  return match ? match.original_name : `Sound #${soundId}`;
+}
+
+function fillMusicBreakAddSelect() {
+  const select = document.getElementById("musicBreakAddSound");
+  if (!select) return;
+  const options = (cachedSounds || [])
+    .map(
+      (sound) =>
+        `<option value="${sound.id}">${escapeHtml(sound.original_name)}</option>`,
+    )
+    .join("");
+  select.innerHTML = options || `<option value="">No sounds uploaded</option>`;
+}
+
+function renderMusicBreakPlaylist() {
+  const list = document.getElementById("musicBreakPlaylist");
+  if (!list) return;
+  if (!musicBreakSoundIds.length) {
+    list.innerHTML = `<p class="branding__hint">Playlist empty — add sounds above.</p>`;
+    return;
+  }
+  list.innerHTML = musicBreakSoundIds
+    .map(
+      (soundId, index) => `
+        <div class="admin__item">
+          <div class="admin__item-main">
+            <strong>${index + 1}. ${escapeHtml(soundNameById(soundId))}</strong>
+          </div>
+          <button data-music-up="${index}" type="button" ${index === 0 ? "disabled" : ""}>Up</button>
+          <button data-music-down="${index}" type="button" ${
+            index === musicBreakSoundIds.length - 1 ? "disabled" : ""
+          }>Down</button>
+          <button data-music-remove="${index}" type="button">Remove</button>
+        </div>
+      `,
+    )
+    .join("");
+
+  list.querySelectorAll("[data-music-up]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const index = Number(button.dataset.musicUp);
+      if (index <= 0) return;
+      const swap = musicBreakSoundIds[index - 1];
+      musicBreakSoundIds[index - 1] = musicBreakSoundIds[index];
+      musicBreakSoundIds[index] = swap;
+      renderMusicBreakPlaylist();
+    });
+  });
+  list.querySelectorAll("[data-music-down]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const index = Number(button.dataset.musicDown);
+      if (index >= musicBreakSoundIds.length - 1) return;
+      const swap = musicBreakSoundIds[index + 1];
+      musicBreakSoundIds[index + 1] = musicBreakSoundIds[index];
+      musicBreakSoundIds[index] = swap;
+      renderMusicBreakPlaylist();
+    });
+  });
+  list.querySelectorAll("[data-music-remove]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const index = Number(button.dataset.musicRemove);
+      musicBreakSoundIds.splice(index, 1);
+      renderMusicBreakPlaylist();
+    });
+  });
+}
+
+function formatMusicBreakStatus(status) {
+  const parts = [];
+  parts.push(status.enabled ? "ON" : "OFF");
+  if (status.playing) parts.push("playing now");
+  if (status.next_at) {
+    const when = new Date(status.next_at);
+    parts.push(
+      `next ${when.toLocaleTimeString(undefined, {
+        hour: "numeric",
+        minute: "2-digit",
+      })} (#${status.next_slot}, ${soundNameById(status.next_sound_id)})`,
+    );
+  } else if (status.enabled) {
+    parts.push("no upcoming slot");
+  }
+  return `Status: ${parts.join(" · ")}`;
+}
+
+async function loadMusicBreaks() {
+  const status = await api("/api/admin/music-breaks");
+  musicBreakSoundIds = Array.isArray(status.sound_ids)
+    ? status.sound_ids.map(Number)
+    : [];
+  const enabled = document.getElementById("musicBreakEnabled");
+  const start = document.getElementById("musicBreakStart");
+  const interval = document.getElementById("musicBreakInterval");
+  const volume = document.getElementById("musicBreakVolume");
+  const pulse = document.getElementById("musicBreakPulse");
+  const statusEl = document.getElementById("musicBreakStatus");
+  if (enabled) enabled.checked = Boolean(status.enabled);
+  if (start && status.start_time) start.value = status.start_time;
+  if (interval) interval.value = String(status.interval_minutes ?? 15);
+  if (volume) volume.value = String(status.volume ?? 80);
+  if (pulse) pulse.value = String(status.pulse_ms ?? 500);
+  if (statusEl) statusEl.textContent = formatMusicBreakStatus(status);
+  fillMusicBreakAddSelect();
+  renderMusicBreakPlaylist();
+}
+
+async function saveMusicBreaks() {
+  const body = {
+    enabled: Boolean(document.getElementById("musicBreakEnabled")?.checked),
+    start_time: document.getElementById("musicBreakStart")?.value || "09:00",
+    interval_minutes: Number(document.getElementById("musicBreakInterval")?.value || 15),
+    volume: Number(document.getElementById("musicBreakVolume")?.value || 80),
+    pulse_ms: Number(document.getElementById("musicBreakPulse")?.value || 500),
+    sound_ids: musicBreakSoundIds.map(Number),
+  };
+  const status = await api("/api/admin/music-breaks", {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+  musicBreakSoundIds = Array.isArray(status.sound_ids)
+    ? status.sound_ids.map(Number)
+    : [];
+  const statusEl = document.getElementById("musicBreakStatus");
+  if (statusEl) statusEl.textContent = formatMusicBreakStatus(status);
+  renderMusicBreakPlaylist();
+  setOutput("Music breaks saved.");
+}
+
+function configureMusicBreaks() {
+  document.getElementById("musicBreakForm")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      await saveMusicBreaks();
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    }
+  });
+  document.getElementById("musicBreakAdd")?.addEventListener("click", () => {
+    const select = document.getElementById("musicBreakAddSound");
+    const soundId = Number(select?.value);
+    if (!Number.isFinite(soundId) || soundId <= 0) {
+      setOutput("Upload a sound first.");
+      return;
+    }
+    musicBreakSoundIds.push(soundId);
+    renderMusicBreakPlaylist();
+  });
+  document.getElementById("musicBreakTest")?.addEventListener("click", async () => {
+    setOutput("Testing music break…");
+    try {
+      await saveMusicBreaks();
+      const status = await api("/api/admin/music-breaks/test", { method: "POST" });
+      const statusEl = document.getElementById("musicBreakStatus");
+      if (statusEl) statusEl.textContent = formatMusicBreakStatus(status);
+      setOutput("Music break test finished.");
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    }
+  });
+  document.getElementById("musicBreakStop")?.addEventListener("click", async () => {
+    try {
+      const status = await api("/api/admin/music-breaks/stop", { method: "POST" });
+      const statusEl = document.getElementById("musicBreakStatus");
+      if (statusEl) statusEl.textContent = formatMusicBreakStatus(status);
+      setOutput("Music break stopped.");
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    }
   });
 }
 
@@ -663,6 +840,7 @@ async function uploadSoundFile() {
     if (input) input.value = "";
     if (statusEl) statusEl.textContent = `Uploaded ${sound.original_name}.`;
     await loadSounds();
+    await loadMusicBreaks();
     setOutput(`Uploaded sound: ${sound.original_name}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -742,6 +920,7 @@ async function loadAll() {
       loadTouchConfig(),
       loadParticipants(),
       loadSounds(),
+      loadMusicBreaks(),
       loadRules(),
       loadRaceResults(),
       loadKioskClockStatus(),
@@ -1530,6 +1709,7 @@ if (gamepadSensitivity && gamepadSensitivityRange) {
 }
 
 initTouchSteppers();
+configureMusicBreaks();
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("uploadSound")?.addEventListener("click", uploadSoundFile);
 document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);

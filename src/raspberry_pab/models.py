@@ -213,6 +213,38 @@ class SoundTest(BaseModel):
     volume: int = Field(default=80, ge=0, le=100)
 
 
+class MusicBreakConfig(BaseModel):
+    enabled: bool = False
+    interval_minutes: int = Field(default=15, ge=1, le=1440)
+    start_time: str = "09:00"
+    sound_ids: list[int] = Field(default_factory=list)
+    volume: int = Field(default=80, ge=0, le=100)
+    pulse_ms: int = Field(default=500, ge=100, le=5000)
+
+
+class MusicBreakConfigUpdate(BaseModel):
+    enabled: bool
+    interval_minutes: int = Field(ge=1, le=1440)
+    start_time: str
+    sound_ids: list[int] = Field(default_factory=list)
+    volume: int = Field(ge=0, le=100)
+    pulse_ms: int = Field(ge=100, le=5000)
+
+
+class MusicBreakStatus(BaseModel):
+    enabled: bool
+    interval_minutes: int
+    start_time: str
+    sound_ids: list[int]
+    volume: int
+    pulse_ms: int
+    next_at: datetime | None = None
+    next_sound_id: int | None = None
+    next_slot: int | None = None
+    playing: bool = False
+    kiosk_now: datetime
+
+
 class BuzzerTest(BaseModel):
     buzzer_pitch_hz: int = Field(default=2500, ge=100, le=10000)
     buzzer_volume: int = Field(default=80, ge=0, le=100)

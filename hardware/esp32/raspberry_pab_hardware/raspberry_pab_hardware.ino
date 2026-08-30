@@ -230,6 +230,49 @@ void runScroll(uint8_t r, uint8_t g, uint8_t b, unsigned long ms, uint8_t mode, 
   matrixClear();
 }
 
+void runScrollOnce(uint8_t r, uint8_t g, uint8_t b, uint8_t mode, const char *text) {
+  char fallback[4];
+  if (!text || !text[0]) {
+    fallback[0] = 'P'; fallback[1] = 'A'; fallback[2] = 'B'; fallback[3] = '\0';
+    text = fallback;
+  }
+  if (mode > 2) mode = 0;
+  int16_t textW = 0;
+  for (const char *p = text; *p; p++) textW += CHAR_W;
+  int16_t x = MATRIX_W;
+  uint8_t frame = 0;
+  while (x >= -textW) {
+    uint8_t pulseScale = 255;
+    if (mode == 2) {
+      uint8_t t = (uint8_t)(frame % 40);
+      pulseScale = t < 20
+        ? (uint8_t)((uint16_t)t * 255 / 20)
+        : (uint8_t)((uint16_t)(40 - t) * 255 / 20);
+      if (pulseScale < 40) pulseScale = 40;
+    }
+    strip.clear();
+    drawTextEffect(x, 0, text, mode, r, g, b, frame, pulseScale);
+    strip.show();
+    delay(SCROLL_MS);
+    x -= 1;
+    frame++;
+  }
+  matrixClear();
+}
+
+void runRainbow(unsigned long ms) {
+  unsigned long frames = ms / SCROLL_MS;
+  if (frames < 1) frames = 1;
+  for (unsigned long i = 0; i < frames; i++) {
+    for (uint16_t px = 0; px < LED_COUNT; px++) {
+      strip.setPixelColor(px, colorWheel((uint8_t)((px + i) & 255)));
+    }
+    strip.show();
+    delay(SCROLL_MS);
+  }
+  matrixClear();
+}
+
 void handleLine(char *line) {
   if (strcmp(line, "PING") == 0) { Serial.println("PONG"); return; }
   if (strcmp(line, "INFO") == 0) {
@@ -306,6 +349,32 @@ void handleLine(char *line) {
       while (*p == ' ') p++;
     }
     runScroll(r, g, b, ms, mode, p);
+    Serial.println("OK");
+    return;
+  }
+  if (startsWith(line, "SCROLLONCE ")) {
+    int r, g, b;
+    const char *p = line + 11;
+    p = parseInt(p, &r); if (!p) { Serial.println("ERR scrollonce"); return; }
+    p = parseInt(p, &g); if (!p) { Serial.println("ERR scrollonce"); return; }
+    p = parseInt(p, &b); if (!p) { Serial.println("ERR scrollonce"); return; }
+    while (*p == ' ') p++;
+    uint8_t mode = 0;
+    if ((*p == '0' || *p == '1' || *p == '2') && (p[1] == ' ' || p[1] == '\0')) {
+      mode = (uint8_t)(*p - '0');
+      p++;
+      while (*p == ' ') p++;
+    }
+    runScrollOnce(r, g, b, mode, p);
+    Serial.println("OK");
+    return;
+  }
+  if (startsWith(line, "RAINBOW ")) {
+    int ms;
+    if (!parseInt(line + 8, &ms) || ms < 1) {
+      Serial.println("ERR rainbow"); return;
+    }
+    runRainbow((unsigned long)ms);
     Serial.println("OK");
     return;
   }

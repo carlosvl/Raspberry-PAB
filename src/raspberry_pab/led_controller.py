@@ -78,6 +78,30 @@ class LedController:
             return
         await self._start_flash(rule)
 
+    async def stop(self) -> None:
+        """Cancel any in-progress LED effect."""
+        if self._flash_task and not self._flash_task.done():
+            self._flash_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._flash_task
+        self._flash_task = None
+
+    async def rainbow_pulse(
+        self,
+        *,
+        pulse_ms: int = 500,
+        stop_event: asyncio.Event,
+    ) -> None:
+        """Cycle hue on the strip until stop_event is set (music-break mode)."""
+        if not self._settings.led_enabled or not self._settings.led_address:
+            await stop_event.wait()
+            return
+        await self.stop()
+        self._flash_task = asyncio.create_task(
+            self._run_rainbow_pulse(pulse_ms=pulse_ms, stop_event=stop_event),
+            name="led-rainbow-pulse",
+        )
+
     async def flash_test(
         self,
         *,
@@ -165,11 +189,7 @@ class LedController:
         )
 
     async def shutdown(self) -> None:
-        if self._flash_task and not self._flash_task.done():
-            self._flash_task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await self._flash_task
-        self._flash_task = None
+        await self.stop()
 
     def _should_flash(self, rule: ReminderRule) -> bool:
         return (
@@ -177,6 +197,41 @@ class LedController:
             and bool(self._settings.led_address)
             and rule.led_enabled
         )
+
+    async def _run_rainbow_pulse(
+        self,
+        *,
+        pulse_ms: int,
+        stop_event: asyncio.Event,
+    ) -> None:
+        from raspberry_pab.music_breaks import hsv_to_rgb
+
+        async with self._lock:
+            lamp: _LampProtocol | None = None
+            try:
+                lamp = await self._lamp_factory(self._settings)
+                await lamp.connect()
+                await lamp.power_on()
+                hue = 0.0
+                step = max(pulse_ms, 50) / 1000.0
+                while not stop_event.is_set():
+                    red, green, blue = hsv_to_rgb(hue)
+                    await lamp.set_rgb(red, green, blue)
+                    hue = (hue + 30.0) % 360.0
+                    try:
+                        await asyncio.wait_for(stop_event.wait(), timeout=step)
+                    except TimeoutError:
+                        continue
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                logger.exception("LED rainbow pulse failed")
+            finally:
+                if lamp is not None:
+                    with contextlib.suppress(Exception):
+                        await lamp.power_off()
+                    with contextlib.suppress(Exception):
+                        await lamp.disconnect()
 
     async def _run_flash_pulse(self, lamp: _LampProtocol, rule: ReminderRule) -> None:
         half_interval = rule.led_flash_interval_ms / 2000

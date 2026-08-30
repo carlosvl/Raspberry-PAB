@@ -147,6 +147,10 @@ class SoundController:
             raise FileNotFoundError(sound.stored_name)
         await self.play_file(path, volume=volume, wait=wait)
 
+    async def stop(self) -> None:
+        """Stop any in-progress HDMI playback immediately."""
+        await self._stop_current()
+
     async def shutdown(self) -> None:
         await self._stop_current()
 

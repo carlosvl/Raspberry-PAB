@@ -28,6 +28,7 @@ from raspberry_pab.kiosk_clock import get_clock_state
 from raspberry_pab.led_controller import LedController
 from raspberry_pab.matrix_controller import MatrixController
 from raspberry_pab.models import Alert
+from raspberry_pab.music_break_scheduler import MusicBreakScheduler
 from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.buzzer import router as buzzer_router
@@ -35,6 +36,7 @@ from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.kiosk_clock import router as kiosk_clock_router
 from raspberry_pab.routes.led import router as led_router
 from raspberry_pab.routes.matrix import router as matrix_router
+from raspberry_pab.routes.music_breaks import router as music_breaks_router
 from raspberry_pab.routes.race_results import router as race_results_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.routes.sounds import router as sounds_router
@@ -60,41 +62,51 @@ async def play_alert_groups(
     matrix_controller: MatrixController,
     buzzer_controller: BuzzerController,
     sound_controller: SoundController,
+    music_break_scheduler: MusicBreakScheduler | None = None,
+    alerts_busy: asyncio.Event | None = None,
 ) -> None:
     """Play each same-slot group: effects once, matrix messages in order."""
-    for group in groups:
-        if not group:
-            continue
-        rule = store.get_rule(group[0].rule_id)
-        if rule is None:
-            continue
-        try:
-            await led_controller.flash(rule)
-        except Exception:
-            logger.exception(
-                "LED listener failed for alert group rule %s", rule.id
-            )
-        try:
-            await buzzer_controller.beep(rule)
-        except Exception:
-            logger.exception(
-                "Buzzer listener failed for alert group rule %s", rule.id
-            )
-        try:
-            await sound_controller.play(rule)
-        except Exception:
-            logger.exception(
-                "Sound listener failed for alert group rule %s", rule.id
-            )
-        try:
-            await matrix_controller.show_sequence(
-                rule,
-                [alert.message for alert in group],
-            )
-        except Exception:
-            logger.exception(
-                "Matrix listener failed for alert group rule %s", rule.id
-            )
+    if music_break_scheduler is not None:
+        await music_break_scheduler.interrupt()
+    if alerts_busy is not None:
+        alerts_busy.set()
+    try:
+        for group in groups:
+            if not group:
+                continue
+            rule = store.get_rule(group[0].rule_id)
+            if rule is None:
+                continue
+            try:
+                await led_controller.flash(rule)
+            except Exception:
+                logger.exception(
+                    "LED listener failed for alert group rule %s", rule.id
+                )
+            try:
+                await buzzer_controller.beep(rule)
+            except Exception:
+                logger.exception(
+                    "Buzzer listener failed for alert group rule %s", rule.id
+                )
+            try:
+                await sound_controller.play(rule)
+            except Exception:
+                logger.exception(
+                    "Sound listener failed for alert group rule %s", rule.id
+                )
+            try:
+                await matrix_controller.show_sequence(
+                    rule,
+                    [alert.message for alert in group],
+                )
+            except Exception:
+                logger.exception(
+                    "Matrix listener failed for alert group rule %s", rule.id
+                )
+    finally:
+        if alerts_busy is not None:
+            alerts_busy.clear()
 
 
 def _local_ipv4_addresses() -> list[str]:
@@ -128,6 +140,7 @@ def create_app(settings: Settings) -> FastAPI:
     results_scheduler = RaceResultsSyncScheduler(store)
     led_controller = LedController(settings)
     hardware_lock = HARDWARE_SERIAL_LOCK
+    alerts_busy = asyncio.Event()
     buzzer_controller = BuzzerController(
         settings,
         hardware_lock=hardware_lock,
@@ -146,6 +159,17 @@ def create_app(settings: Settings) -> FastAPI:
     sound_controller = SoundController(
         settings,
         path_resolver=resolve_sound_path,
+    )
+    music_break_scheduler = MusicBreakScheduler(
+        store,
+        sound_controller=sound_controller,
+        led_controller=led_controller,
+        matrix_controller=matrix_controller,
+        sound_path_resolver=resolve_sound_path,
+        alerts_busy=alerts_busy,
+    )
+    broker.add_before_publish(
+        lambda _alert: music_break_scheduler.interrupt()
     )
 
     @asynccontextmanager
@@ -170,6 +194,8 @@ def create_app(settings: Settings) -> FastAPI:
                         matrix_controller=matrix_controller,
                         buzzer_controller=buzzer_controller,
                         sound_controller=sound_controller,
+                        music_break_scheduler=music_break_scheduler,
+                        alerts_busy=alerts_busy,
                     )
 
         hardware_task = asyncio.create_task(
@@ -177,6 +203,7 @@ def create_app(settings: Settings) -> FastAPI:
         )
         scheduler.start()
         results_scheduler.start()
+        music_break_scheduler.start()
         try:
             yield
         finally:
@@ -184,6 +211,7 @@ def create_app(settings: Settings) -> FastAPI:
             hardware_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await hardware_task
+            await music_break_scheduler.stop()
             await led_controller.shutdown()
             await matrix_controller.shutdown()
             await buzzer_controller.shutdown()
@@ -205,6 +233,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.matrix_controller = matrix_controller
     app.state.buzzer_controller = buzzer_controller
     app.state.sound_controller = sound_controller
+    app.state.music_break_scheduler = music_break_scheduler
     web_dir = settings.web_dir
 
     @app.get("/api/health")
@@ -269,6 +298,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(buzzer_router)
     app.include_router(matrix_router)
     app.include_router(sounds_router)
+    app.include_router(music_breaks_router)
     app.include_router(system_clock_router)
     app.include_router(race_results_router)
     app.include_router(test_scenarios_router)

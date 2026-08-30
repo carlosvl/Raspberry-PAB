@@ -32,8 +32,20 @@ class AlertBroker:
     def __init__(self) -> None:
         self._subscribers: set[asyncio.Queue[Alert]] = set()
         self.active_alert: Alert | None = None
+        self._before_publish: list = []
+
+    def add_before_publish(self, callback) -> None:
+        """Register an async callback invoked before each alert is broadcast."""
+        self._before_publish.append(callback)
 
     async def publish(self, alert: Alert) -> None:
+        for callback in self._before_publish:
+            try:
+                result = callback(alert)
+                if asyncio.iscoroutine(result):
+                    await result
+            except Exception:
+                logger.exception("Alert broker before_publish callback failed")
         self.active_alert = alert
         stale: list[asyncio.Queue[Alert]] = []
         for queue in self._subscribers:

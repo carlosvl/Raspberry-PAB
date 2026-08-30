@@ -1,6 +1,16 @@
 # Change Pi Wi-Fi (NetworkManager)
 
-Raspberry-PAB uses **NetworkManager** (`nmcli`). If the Pi is not on your network, use its **fallback hotspot** first, then join your Wi-Fi (e.g. **QualitySuites**).
+Raspberry-PAB uses **NetworkManager** (`nmcli`). If the Pi is not on your network, use its **fallback hotspot** first, then join your Wi-Fi (e.g. **QualitySuites** or **SFDC-MN**).
+
+Saved profiles on the kiosk Pi typically include venue networks such as **SFDC-MN** (autoconnect when in range). Add or update credentials with Admin → WiFi, or:
+
+```bash
+sudo nmcli connection add type wifi con-name "SFDC-MN" ifname wlan0 \
+  ssid "SFDC-MN" wifi-sec.key-mgmt wpa-psk wifi-sec.psk "YOUR_PASSWORD" \
+  connection.autoconnect yes
+# If the profile already exists, only update the password:
+sudo nmcli connection modify SFDC-MN wifi-sec.key-mgmt wpa-psk wifi-sec.psk "YOUR_PASSWORD"
+```
 
 ## Admin UI (Pi touchscreen)
 

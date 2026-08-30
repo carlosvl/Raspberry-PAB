@@ -31,6 +31,9 @@
         <button data-tab-panel="soundsPanel" type="button">
           Sounds
         </button>
+        <button data-tab-panel="musicBreaksPanel" type="button">
+          Music breaks
+        </button>
         <button data-tab-panel="touchPanel" type="button">
           Touch
         </button>
@@ -204,6 +207,60 @@
           <details class="admin-section" open>
             <summary>Library</summary>
             <div class="admin__list" id="soundList"></div>
+          </details>
+        </article>
+
+        <article class="panel" id="musicBreaksPanel">
+          <h2>Music breaks</h2>
+          <p class="branding__hint">
+            Play uploaded songs on a timer with rainbow matrix + LED flash.
+            First track plays at start time + interval, then the next track each
+            interval (wrapping). Reminder alerts stop music and animations immediately.
+          </p>
+          <p class="branding__hint" id="musicBreakStatus">Status: —</p>
+          <details class="admin-section" open>
+            <summary>Schedule</summary>
+            <form class="form" id="musicBreakForm">
+              <label class="checkbox-row">
+                <input id="musicBreakEnabled" type="checkbox" />
+                Enable music breaks
+              </label>
+              <label>
+                Start time (today)
+                <input id="musicBreakStart" required type="time" value="09:00" />
+              </label>
+              <label>
+                Interval (minutes)
+                <input id="musicBreakInterval" min="1" max="1440" required type="number" value="15" />
+              </label>
+              <label>
+                Volume
+                <input id="musicBreakVolume" min="0" max="100" required type="number" value="80" />
+              </label>
+              <label>
+                Rainbow pulse (ms)
+                <input id="musicBreakPulse" min="100" max="5000" required type="number" value="500" />
+                <span class="branding__hint">LED flash step; matrix scrolls MUSIC BREAK once, then full-panel rainbow, then repeats.</span>
+              </label>
+              <div class="button-row">
+                <button type="submit">Save music breaks</button>
+                <button id="musicBreakTest" type="button">Test (~10s)</button>
+                <button id="musicBreakStop" type="button">Stop</button>
+              </div>
+            </form>
+          </details>
+          <details class="admin-section" open>
+            <summary>Playlist (order)</summary>
+            <div class="form">
+              <label>
+                Add sound from library
+                <select id="musicBreakAddSound"></select>
+              </label>
+              <div class="button-row">
+                <button id="musicBreakAdd" type="button">Add to playlist</button>
+              </div>
+              <div class="admin__list" id="musicBreakPlaylist"></div>
+            </div>
           </details>
         </article>
 

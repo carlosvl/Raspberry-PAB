@@ -28,9 +28,11 @@ Daisy-chain: panel1 **DOUT →** panel2 **DIN →** panel3 **DIN**, shared 5V/GN
 
 ## Serial protocol (unchanged from Nano)
 
-Commands (newline-terminated): `PING`, `INFO`, `STOP`/`CLEAR`, `BEEP …`, `BRIGHT n`, `SOLID r g b ms`, `FLASH r g b ms interval`, `CHASE r g b ms`, `SCROLL r g b ms [mode] text`.
+Commands (newline-terminated): `PING`, `INFO`, `STOP`/`CLEAR`, `BEEP …`, `BRIGHT n`, `SOLID r g b ms`, `FLASH r g b ms interval`, `CHASE r g b ms`, `SCROLL r g b ms [mode] text`, `SCROLLONCE r g b [mode] text`, `RAINBOW ms`.
 
 - `SCROLL` optional `mode`: `0` solid, `1` rainbow, `2` pulse.
+- `SCROLLONCE`: one full pass across the matrix then clear (no wrap loop).
+- `RAINBOW`: animate a full-panel color wheel for `ms`.
 - Replies: `PONG`, `PIXELS n FREE m`, `OK`, `ERR …`
 - Handshake: accept any line `READY` or starting with `READY `; then `PING`→`PONG`.
 - Boot banner: `READY PIXELS 768 FREE …`

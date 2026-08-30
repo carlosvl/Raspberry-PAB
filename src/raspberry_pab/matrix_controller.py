@@ -78,6 +78,23 @@ def build_clear_command() -> str:
     return "CLEAR\n"
 
 
+def build_scroll_once_command(
+    *,
+    red: int,
+    green: int,
+    blue: int,
+    message: str,
+    effect: MatrixEffect | str = "rainbow",
+) -> str:
+    text = sanitize_matrix_message(message)
+    mode = matrix_effect_mode(effect)
+    return f"SCROLLONCE {red} {green} {blue} {mode} {text}\n"
+
+
+def build_rainbow_command(*, duration_ms: int) -> str:
+    return f"RAINBOW {max(duration_ms, 1)}\n"
+
+
 def matrix_display_duration_ms(rule: ReminderRule) -> int:
     """Total time to hold the matrix on for a reminder."""
     total_seconds = rule.led_flash_duration_seconds + max(
@@ -179,12 +196,39 @@ class MatrixController:
             matrix_effect=matrix_effect,
         )
 
-    async def shutdown(self) -> None:
+    async def stop(self) -> None:
+        """Cancel any in-progress matrix show."""
         if self._show_task and not self._show_task.done():
             self._show_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await self._show_task
         self._show_task = None
+
+    async def rainbow_pulse(
+        self,
+        *,
+        pulse_ms: int = 500,
+        stop_event: asyncio.Event,
+        message: str = "MUSIC BREAK",
+    ) -> None:
+        """Loop rainbow scrolling text until stop_event is set (music-break mode)."""
+        if not self._settings.matrix_enabled or not effective_matrix_port(
+            self._settings
+        ):
+            await stop_event.wait()
+            return
+        await self.stop()
+        self._show_task = asyncio.create_task(
+            self._run_rainbow_scroll(
+                pulse_ms=pulse_ms,
+                stop_event=stop_event,
+                message=message,
+            ),
+            name="matrix-rainbow-scroll",
+        )
+
+    async def shutdown(self) -> None:
+        await self.stop()
 
     async def _start_show(
         self,
@@ -245,6 +289,99 @@ class MatrixController:
                 logger.exception(
                     "Matrix show sequence failed for rule %s", rule.id
                 )
+
+    async def _run_rainbow_scroll(
+        self,
+        *,
+        pulse_ms: int,
+        stop_event: asyncio.Event,
+        message: str,
+    ) -> None:
+        # Full-panel rainbow after each completed text pass.
+        fill_ms = max(pulse_ms * 6, 3000)
+        try:
+            while not stop_event.is_set():
+                async with self._lock:
+                    async with self._hardware_lock:
+                        await asyncio.to_thread(
+                            self._execute_scroll_once,
+                            message,
+                            "rainbow",
+                        )
+                if stop_event.is_set():
+                    break
+                async with self._lock:
+                    async with self._hardware_lock:
+                        await asyncio.to_thread(
+                            self._execute_rainbow_fill,
+                            fill_ms,
+                        )
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception("Matrix rainbow scroll failed")
+
+    def _execute_scroll_once(
+        self,
+        message: str,
+        effect: MatrixEffect | str,
+    ) -> None:
+        display_message = sanitize_matrix_message(message)
+        port_name = effective_matrix_port(self._settings)
+        # One full pass across 8x96: width + text width, ~50ms/frame.
+        char_w = 6
+        text_w = max(len(display_message), 1) * char_w
+        pass_ms = (self._settings.matrix_width + text_w) * 50
+        logger.info(
+            "Matrix scroll-once (%s, ~%d ms): %s",
+            effect,
+            pass_ms,
+            display_message,
+        )
+        port = self._serial_factory(self._settings, port_name)
+        try:
+            handshake(port)
+            bright_cmd = build_bright_command(self._settings.matrix_brightness)
+            if transact_line(port, bright_cmd, {"OK"}, attempts=3) != "OK":
+                raise RuntimeError("Arduino did not accept BRIGHT command")
+            scroll_cmd = build_scroll_once_command(
+                red=255,
+                green=255,
+                blue=255,
+                message=display_message,
+                effect=effect,
+            )
+            port.write(scroll_cmd.encode("ascii"))
+            port.flush()
+            timeout = max(pass_ms / 1000.0 * 2.0 + 5.0, 20.0)
+            if not wait_for_ok(port, timeout=timeout):
+                raise RuntimeError("Arduino did not finish SCROLLONCE command")
+        finally:
+            with contextlib.suppress(Exception):
+                port.write(build_clear_command().encode("ascii"))
+                port.flush()
+            port.close()
+
+    def _execute_rainbow_fill(self, duration_ms: int) -> None:
+        port_name = effective_matrix_port(self._settings)
+        logger.info("Matrix rainbow fill (%d ms)", duration_ms)
+        port = self._serial_factory(self._settings, port_name)
+        try:
+            handshake(port)
+            bright_cmd = build_bright_command(self._settings.matrix_brightness)
+            if transact_line(port, bright_cmd, {"OK"}, attempts=3) != "OK":
+                raise RuntimeError("Arduino did not accept BRIGHT command")
+            cmd = build_rainbow_command(duration_ms=duration_ms)
+            port.write(cmd.encode("ascii"))
+            port.flush()
+            timeout = max(duration_ms / 1000.0 * 2.0 + 5.0, 10.0)
+            if not wait_for_ok(port, timeout=timeout):
+                raise RuntimeError("Arduino did not finish RAINBOW command")
+        finally:
+            with contextlib.suppress(Exception):
+                port.write(build_clear_command().encode("ascii"))
+                port.flush()
+            port.close()
 
     def _execute_show_sequence(self, rule: ReminderRule, message: str) -> None:
         duration_ms = matrix_display_duration_ms(rule)

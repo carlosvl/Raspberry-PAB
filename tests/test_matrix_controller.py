@@ -103,7 +103,23 @@ def test_sanitize_matrix_message() -> None:
     assert len(sanitize_matrix_message("A" * 120)) == 36
 
 
-def test_matrix_display_duration_ms() -> None:
+def test_build_scroll_once_and_rainbow_commands() -> None:
+    from raspberry_pab.matrix_controller import (
+        build_rainbow_command,
+        build_scroll_once_command,
+    )
+
+    assert (
+        build_scroll_once_command(
+            red=255,
+            green=255,
+            blue=255,
+            message="MUSIC BREAK",
+            effect="rainbow",
+        )
+        == "SCROLLONCE 255 255 255 1 MUSIC BREAK\n"
+    )
+    assert build_rainbow_command(duration_ms=3000) == "RAINBOW 3000\n"
     rule = _enabled_rule(
         led_flash_duration_seconds=10,
         led_chase_duration_seconds=5,
