@@ -630,35 +630,42 @@
         <article class="panel" id="raceResultsPanel">
           <h2>Race Results</h2>
           <p class="branding__hint">
-            Sync the MCA index from Precision Race, then pull ITS YOUR RACE results for a race day.
+            Pull MCA results from Precision Race / ITS YOUR RACE. Auto-sync runs from the
+            earliest start until the configured hours after the latest start.
           </p>
-          <details class="admin-section">
-            <summary>Sync for date</summary>
+          <details class="admin-section" open>
+            <summary>Sync</summary>
             <div class="form">
               <label>
                 Event Date
                 <input id="raceResultsDate" type="date" />
               </label>
               <div class="button-row">
+                <button class="button--primary button--large" id="syncRaceResults" type="button">
+                  Sync Now
+                </button>
                 <button id="syncRaceIndex" type="button">Sync MCA index</button>
-                <button id="syncRaceResults" type="button">Sync results for date</button>
               </div>
             </div>
           </details>
-          <details class="admin-section">
+          <details class="admin-section" open>
             <summary>Auto-sync</summary>
             <div class="form">
               <label>
-                Auto-sync interval (minutes, 0 = off)
-                <input id="syncIntervalMinutes" type="number" min="0" max="1440" step="1" />
+                Interval (minutes, 0 = off)
+                <input id="syncIntervalMinutes" max="1440" min="0" step="1" type="number" />
+              </label>
+              <label>
+                Window after last start (hours)
+                <input id="syncWindowHours" max="24" min="1" step="1" type="number" />
               </label>
               <div class="button-row">
-                <button id="saveSyncInterval" type="button">Save interval</button>
+                <button id="saveSyncConfig" type="button">Save auto-sync settings</button>
               </div>
               <p class="branding__hint" id="syncIntervalStatus"></p>
             </div>
           </details>
-          <details class="admin-section">
+          <details class="admin-section" open>
             <summary>Results</summary>
             <div class="admin__list" id="raceResultsList"></div>
           </details>

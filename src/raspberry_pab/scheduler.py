@@ -12,14 +12,18 @@ from datetime import datetime
 from pydantic import TypeAdapter
 
 from raspberry_pab.db import ScheduleStore
-from raspberry_pab.models import Alert
-from raspberry_pab.reminders import build_due_alerts
 from raspberry_pab.kiosk_clock import effective_now
+from raspberry_pab.models import Alert
+from raspberry_pab.race_results.window import (
+    DEFAULT_RESULTS_SYNC_MINUTES,
+    RESULTS_SYNC_INTERVAL_KEY,
+    read_interval_minutes,
+    results_sync_window,
+)
+from raspberry_pab.reminders import build_due_alerts
 
 logger = logging.getLogger(__name__)
 _ALERT_ADAPTER = TypeAdapter(Alert)
-
-DEFAULT_RESULTS_SYNC_MINUTES = 10
 
 
 class AlertBroker:
@@ -94,11 +98,8 @@ class ReminderScheduler:
         return published
 
 
-RESULTS_SYNC_INTERVAL_KEY = "results_sync_interval_minutes"
-
-
 class RaceResultsSyncScheduler:
-    """Periodically syncs race results in the background."""
+    """Periodically syncs race results in the background during the race window."""
 
     def __init__(
         self,
@@ -112,15 +113,9 @@ class RaceResultsSyncScheduler:
 
     @property
     def interval_minutes(self) -> int:
-        raw = self._store.get_setting(RESULTS_SYNC_INTERVAL_KEY)
-        if raw is not None:
-            try:
-                val = int(raw)
-                if val >= 1:
-                    return val
-            except ValueError:
-                pass
-        return self._default_interval
+        if self._store.get_setting(RESULTS_SYNC_INTERVAL_KEY) is None:
+            return self._default_interval
+        return read_interval_minutes(self._store)
 
     def start(self) -> None:
         if self._task is None or self._task.done():
@@ -161,6 +156,17 @@ class RaceResultsSyncScheduler:
         from raspberry_pab.race_results.sync import RaceResultsSync
 
         now = effective_now(self._store)
+        window = results_sync_window(self._store, now)
+        if not window.active:
+            logger.info(
+                "Race results auto-sync skipped outside window for %s "
+                "(start=%s end=%s)",
+                now.date(),
+                window.window_start,
+                window.window_end,
+            )
+            return
+
         sync = RaceResultsSync(self._store)
         try:
             sync.sync_date(now.date())

@@ -114,6 +114,21 @@ class RaceResultsSyncSummary(BaseModel):
     sessions_synced: int
 
 
+class RaceResultsSyncConfig(BaseModel):
+    interval_minutes: int
+    window_hours: int
+    active: bool
+    window_start: datetime | None = None
+    window_end: datetime | None = None
+    next_eligible: datetime | None = None
+    kiosk_now: datetime
+
+
+class RaceResultsSyncConfigUpdate(BaseModel):
+    interval_minutes: int = Field(ge=0, le=1440)
+    window_hours: int = Field(ge=1, le=24)
+
+
 class ManualRaceResultLink(BaseModel):
     participant_id: int
     iyr_session_id: int

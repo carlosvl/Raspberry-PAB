@@ -2011,40 +2011,73 @@ document.getElementById("syncRaceIndex")?.addEventListener("click", async () => 
 
 document.getElementById("syncRaceResults")?.addEventListener("click", async () => {
   const date = document.getElementById("raceResultsDate")?.value || todayParam;
-  setOutput(`Syncing race results for ${date}...`);
+  setOutput(`Sync Now: pulling race results for ${date}...`);
   try {
     const summary = await api(`/api/admin/race-results/sync-date?date=${date}`, {
       method: "POST",
       headers: { "X-Admin-Pin": adminPin() },
     });
     await loadRaceResults();
+    await loadSyncConfig();
     setOutput(
-      `Matched ${summary.matched}, unmatched ${summary.unmatched}, ambiguous ${summary.ambiguous}, sessions ${summary.sessions_synced}.`,
+      `Sync Now done — matched ${summary.matched}, unmatched ${summary.unmatched}, ambiguous ${summary.ambiguous}, sessions ${summary.sessions_synced}.`,
     );
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }
 });
 
-// --- Sync interval management ---
+// --- Sync config (interval + window) ---
 
-async function loadSyncInterval() {
-  const input = document.getElementById("syncIntervalMinutes");
+function formatSyncClock(iso) {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return String(iso);
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function renderSyncConfigStatus(data) {
   const statusEl = document.getElementById("syncIntervalStatus");
-  if (!input) return;
+  if (!statusEl) return;
+  if (!data || data.interval_minutes <= 0) {
+    statusEl.textContent = "Auto-sync disabled";
+    return;
+  }
+  const parts = [`Auto-sync ON · every ${data.interval_minutes} min`];
+  parts.push(`window ${data.window_hours}h after last start`);
+  if (data.active && data.window_end) {
+    parts.push(`active until ${formatSyncClock(data.window_end)}`);
+  } else if (data.next_eligible) {
+    parts.push(`waiting until first start ${formatSyncClock(data.next_eligible)}`);
+  } else if (data.window_end) {
+    parts.push(`ended ${formatSyncClock(data.window_end)}`);
+  } else {
+    parts.push("no starts scheduled today");
+  }
+  statusEl.textContent = parts.join(" · ");
+}
+
+async function loadSyncConfig() {
+  const intervalInput = document.getElementById("syncIntervalMinutes");
+  const windowInput = document.getElementById("syncWindowHours");
+  if (!intervalInput) return;
   try {
-    const data = await api("/api/admin/race-results/sync-interval", {
+    const data = await api("/api/admin/race-results/sync-config", {
       headers: { "X-Admin-Pin": adminPin() },
     });
-    input.value = data.interval_minutes;
-    if (statusEl) {
-      statusEl.textContent = data.interval_minutes > 0
-        ? `Auto-sync every ${data.interval_minutes} min`
-        : "Auto-sync disabled";
-    }
+    intervalInput.value = String(data.interval_minutes);
+    if (windowInput) windowInput.value = String(data.window_hours);
+    renderSyncConfigStatus(data);
   } catch {
     // not available
   }
+}
+
+async function loadSyncInterval() {
+  return loadSyncConfig();
 }
 
 async function loadHardwareStatus() {
@@ -2182,20 +2215,35 @@ document.getElementById("bleScanResults")?.addEventListener("change", (e) => {
   if (nameEl && opt.dataset.name) nameEl.value = opt.dataset.name;
 });
 
-document.getElementById("saveSyncInterval")?.addEventListener("click", async () => {
-  const input = document.getElementById("syncIntervalMinutes");
-  const val = parseInt(input?.value || "10", 10);
-  if (isNaN(val) || val < 0) {
+document.getElementById("saveSyncConfig")?.addEventListener("click", async () => {
+  const intervalInput = document.getElementById("syncIntervalMinutes");
+  const windowInput = document.getElementById("syncWindowHours");
+  const interval = parseInt(intervalInput?.value || "5", 10);
+  const windowHours = parseInt(windowInput?.value || "3", 10);
+  if (Number.isNaN(interval) || interval < 0) {
     setOutput("Enter a valid interval (0 = off, or 1–1440 minutes).");
     return;
   }
+  if (Number.isNaN(windowHours) || windowHours < 1 || windowHours > 24) {
+    setOutput("Enter a valid window (1–24 hours after last start).");
+    return;
+  }
   try {
-    await api("/api/admin/race-results/sync-interval", {
+    const data = await api("/api/admin/race-results/sync-config", {
       method: "PUT",
-      body: JSON.stringify({ interval_minutes: val }),
+      body: JSON.stringify({
+        interval_minutes: interval,
+        window_hours: windowHours,
+      }),
     });
-    await loadSyncInterval();
-    setOutput(val > 0 ? `Auto-sync set to every ${val} minutes.` : "Auto-sync disabled.");
+    renderSyncConfigStatus(data);
+    if (intervalInput) intervalInput.value = String(data.interval_minutes);
+    if (windowInput) windowInput.value = String(data.window_hours);
+    setOutput(
+      interval > 0
+        ? `Auto-sync every ${interval} min · ${windowHours}h after last start.`
+        : "Auto-sync disabled.",
+    );
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }

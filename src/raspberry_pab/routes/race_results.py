@@ -8,16 +8,27 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, Field
 
+from raspberry_pab.kiosk_clock import effective_now
 from raspberry_pab.models import (
     ManualRaceResultLink,
     ParticipantResultMatchRecord,
     RaceEvent,
     RaceResult,
+    RaceResultsSyncConfig,
+    RaceResultsSyncConfigUpdate,
     RaceResultsSyncSummary,
 )
 from raspberry_pab.race_results.sync import RaceResultsSync
+from raspberry_pab.race_results.window import (
+    DEFAULT_RESULTS_SYNC_MINUTES,
+    DEFAULT_RESULTS_SYNC_WINDOW_HOURS,
+    RESULTS_SYNC_INTERVAL_KEY,
+    RESULTS_SYNC_WINDOW_HOURS_KEY,
+    read_interval_minutes,
+    read_window_hours,
+    results_sync_window,
+)
 from raspberry_pab.routes.schedule import get_store, require_admin_pin
-from raspberry_pab.scheduler import DEFAULT_RESULTS_SYNC_MINUTES, RESULTS_SYNC_INTERVAL_KEY
 
 router = APIRouter(prefix="/api", tags=["race-results"])
 
@@ -28,6 +39,23 @@ class SyncIntervalUpdate(BaseModel):
 
 def get_sync(request: Request) -> RaceResultsSync:
     return RaceResultsSync(get_store(request))
+
+
+def _sync_config_response(request: Request) -> RaceResultsSyncConfig:
+    store = get_store(request)
+    now = effective_now(store)
+    interval = read_interval_minutes(store)
+    window_hours = read_window_hours(store)
+    window = results_sync_window(store, now, window_hours=window_hours)
+    return RaceResultsSyncConfig(
+        interval_minutes=interval,
+        window_hours=window_hours,
+        active=window.active and interval > 0,
+        window_start=window.window_start,
+        window_end=window.window_end,
+        next_eligible=window.next_eligible,
+        kiosk_now=now,
+    )
 
 
 @router.get("/race-results", response_model=list[ParticipantResultMatchRecord])
@@ -104,21 +132,42 @@ def link_race_result_manual(
 
 
 @router.get(
+    "/admin/race-results/sync-config",
+    response_model=RaceResultsSyncConfig,
+    dependencies=[Depends(require_admin_pin)],
+)
+def get_sync_config(request: Request) -> RaceResultsSyncConfig:
+    return _sync_config_response(request)
+
+
+@router.put(
+    "/admin/race-results/sync-config",
+    response_model=RaceResultsSyncConfig,
+    dependencies=[Depends(require_admin_pin)],
+)
+def set_sync_config(
+    request: Request,
+    body: RaceResultsSyncConfigUpdate,
+) -> RaceResultsSyncConfig:
+    store = get_store(request)
+    if body.interval_minutes == DEFAULT_RESULTS_SYNC_MINUTES:
+        store.delete_setting(RESULTS_SYNC_INTERVAL_KEY)
+    else:
+        store.set_setting(RESULTS_SYNC_INTERVAL_KEY, str(body.interval_minutes))
+    if body.window_hours == DEFAULT_RESULTS_SYNC_WINDOW_HOURS:
+        store.delete_setting(RESULTS_SYNC_WINDOW_HOURS_KEY)
+    else:
+        store.set_setting(RESULTS_SYNC_WINDOW_HOURS_KEY, str(body.window_hours))
+    return _sync_config_response(request)
+
+
+@router.get(
     "/admin/race-results/sync-interval",
     dependencies=[Depends(require_admin_pin)],
 )
 def get_sync_interval(request: Request) -> dict[str, int]:
-    store = get_store(request)
-    raw = store.get_setting(RESULTS_SYNC_INTERVAL_KEY)
-    interval = DEFAULT_RESULTS_SYNC_MINUTES
-    if raw is not None:
-        try:
-            val = int(raw)
-            if val >= 0:
-                interval = val
-        except ValueError:
-            pass
-    return {"interval_minutes": interval}
+    """Legacy interval-only endpoint. Prefer /sync-config."""
+    return {"interval_minutes": read_interval_minutes(get_store(request))}
 
 
 @router.put(
@@ -129,9 +178,10 @@ def set_sync_interval(
     request: Request,
     body: SyncIntervalUpdate,
 ) -> dict[str, int]:
+    """Legacy interval-only endpoint. Prefer /sync-config."""
     store = get_store(request)
     if body.interval_minutes == DEFAULT_RESULTS_SYNC_MINUTES:
         store.delete_setting(RESULTS_SYNC_INTERVAL_KEY)
     else:
         store.set_setting(RESULTS_SYNC_INTERVAL_KEY, str(body.interval_minutes))
-    return {"interval_minutes": body.interval_minutes}
+    return {"interval_minutes": read_interval_minutes(store)}

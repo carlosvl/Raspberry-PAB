@@ -169,13 +169,17 @@ class RaceResultsSync:
                 page=1,
             )
             first_page_html = self._fetch_text(first_page_url)
-            first_page = parse_results_page_html(
-                first_page_html,
-                results_url=first_page_url,
-                series_id=parsed_event.iyr_series_id,
-                season_year=parsed_event.season_year,
-                eid=category.eid,
-            )
+            try:
+                first_page = parse_results_page_html(
+                    first_page_html,
+                    results_url=first_page_url,
+                    series_id=parsed_event.iyr_series_id,
+                    season_year=parsed_event.season_year,
+                    eid=category.eid,
+                )
+            except ValueError:
+                # Categories with no posted date/results yet (empty header).
+                continue
             if first_page.race_date != event_date:
                 continue
             pages = [first_page]
