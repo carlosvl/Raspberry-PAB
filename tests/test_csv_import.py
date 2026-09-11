@@ -41,6 +41,18 @@ Carlos,11:00,2026-07-04
     assert schedule.event_date == date(2026, 7, 4)
 
 
+def test_parse_csv_ampm_with_seconds() -> None:
+    csv_text = """name,race,call_up,start_time,event_date
+Ryan Kokotovich,Freshman Boys,D2 Wave 1 - 4,8:30:00 AM,8/30/2026
+Allison Claydon,JV3 Girls,Wave 1 - 12,1:00:00 PM,8/30/2026
+"""
+    schedule = parse_schedule_csv(csv_text)
+    assert schedule.event_date == date(2026, 8, 30)
+    assert schedule.participants[0].start_time == time(8, 30)
+    assert schedule.participants[1].start_time == time(13, 0)
+    assert schedule.participants[0].call_up == "D2 Wave 1 - 4"
+
+
 def test_parse_csv_requires_event_date() -> None:
     with pytest.raises(ValueError, match="event_date"):
         parse_schedule_csv("name,start_time\nCarlos,11:00\n")

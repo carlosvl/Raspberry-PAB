@@ -2,16 +2,22 @@ sub init()
     m.titleLabel = m.top.findNode("titleLabel")
     m.clockLabel = m.top.findNode("clockLabel")
     m.dateLabel = m.top.findNode("dateLabel")
-    m.rowsLabel = m.top.findNode("rowsLabel")
     m.statusLabel = m.top.findNode("statusLabel")
+    m.pageLabel = m.top.findNode("pageLabel")
+    m.emptyLabel = m.top.findNode("emptyLabel")
+    m.scheduleGrid = m.top.findNode("scheduleGrid")
+    m.logoPoster = m.top.findNode("logoPoster")
     m.alertOverlay = m.top.findNode("alertOverlay")
     m.alertMessage = m.top.findNode("alertMessage")
     m.alertMeta = m.top.findNode("alertMeta")
 
     m.baseUrl = ""
+    m.logoUrl = ""
     m.pageOffset = 0
-    m.pageSize = 14
+    m.pageSize = 12
     m.participants = []
+    m.boardFontScale = 100
+
     m.pollTimer = createObject("roSGNode", "Timer")
     m.pollTimer.repeat = true
     m.pollTimer.duration = 2
@@ -33,7 +39,7 @@ sub onBaseUrlChanged()
         m.statusLabel.text = "No Pi URL (deep link contentId missing)"
         return
     end if
-    m.statusLabel.text = "Connecting to " + m.baseUrl + "…"
+    m.statusLabel.text = "Connecting…"
     m.pollTimer.control = "start"
     m.pageTimer.control = "start"
     fetchBoard()
@@ -74,9 +80,12 @@ sub onBoardError()
         err = m.fetchTask.error
     end if
     if err = invalid or err = ""
-        err = "request failed"
+        return
     end if
     m.statusLabel.text = "Reconnect: " + err
+    if m.baseUrl <> invalid and m.baseUrl <> ""
+        m.statusLabel.text = m.statusLabel.text + " · " + m.baseUrl
+    end if
     m.alertOverlay.visible = false
 end sub
 
@@ -84,7 +93,6 @@ sub onBoardResponse()
     if m.fetchTask = invalid then return
     raw = m.fetchTask.response
     if raw = invalid or raw = ""
-        onBoardError()
         return
     end if
 
@@ -99,11 +107,27 @@ sub onBoardResponse()
     end if
 
     if parsed.DoesExist("kiosk_now") and parsed.kiosk_now <> invalid
-        m.clockLabel.text = formatClock(parsed.kiosk_now.ToStr())
+        m.clockLabel.text = formatClock12(parsed.kiosk_now.ToStr())
     end if
 
     if parsed.DoesExist("display_date") and parsed.display_date <> invalid
-        m.dateLabel.text = parsed.display_date.ToStr()
+        m.dateLabel.text = formatPrettyDate(parsed.display_date.ToStr())
+    end if
+
+    if parsed.DoesExist("logo_url") and parsed.logo_url <> invalid and parsed.logo_url <> ""
+        logo = parsed.logo_url.ToStr()
+        if logo <> m.logoUrl
+            m.logoUrl = logo
+            m.logoPoster.uri = logo
+            m.logoPoster.visible = true
+            m.titleLabel.translation = [140, 28]
+            m.dateLabel.translation = [140, 78]
+        end if
+    else
+        m.logoPoster.visible = false
+        m.logoUrl = ""
+        m.titleLabel.translation = [48, 28]
+        m.dateLabel.translation = [48, 78]
     end if
 
     m.participants = []
@@ -126,10 +150,11 @@ sub onBoardResponse()
             meta = alert.name.ToStr()
         end if
         if alert.DoesExist("start_time") and alert.start_time <> invalid
+            startDisp = formatStartTime(alert.start_time.ToStr())
             if meta <> ""
-                meta = meta + " · start " + alert.start_time.ToStr()
+                meta = meta + " · start " + startDisp
             else
-                meta = "start " + alert.start_time.ToStr()
+                meta = "start " + startDisp
             end if
         end if
         m.alertMessage.text = msg
@@ -140,47 +165,67 @@ sub onBoardResponse()
     end if
 
     count = m.participants.Count()
-    m.statusLabel.text = count.ToStr() + " riders · " + m.baseUrl
+    m.statusLabel.text = count.ToStr() + " riders · updated " + m.clockLabel.text
+
+    sec = CreateObject("roRegistrySection", "pab")
+    sec.Write("baseUrl", m.baseUrl)
+    sec.Flush()
 end sub
 
 sub renderRows()
+    content = createObject("roSGNode", "ContentNode")
+
     if m.participants.Count() = 0
-        m.rowsLabel.text = "No riders scheduled for today."
+        m.scheduleGrid.content = content
+        m.emptyLabel.text = "No starts scheduled today."
+        m.emptyLabel.visible = true
+        m.pageLabel.text = ""
         return
     end if
+    m.emptyLabel.visible = false
 
-    lines = []
+    nextId = ""
+    for i = 0 to m.participants.Count() - 1
+        p = m.participants[i]
+        if LCase(fieldStr(p, "status")) = "upcoming"
+            nextId = fieldStr(p, "id")
+            exit for
+        end if
+    end for
+
     last = m.pageOffset + m.pageSize - 1
     if last >= m.participants.Count()
         last = m.participants.Count() - 1
     end if
+
     for i = m.pageOffset to last
         p = m.participants[i]
-        name = fieldStr(p, "name")
-        race = fieldStr(p, "race")
-        callUp = fieldStr(p, "call_up")
-        startTime = fieldStr(p, "start_time")
-        countdown = formatCountdown(p)
-        result = formatResult(p)
-        line = padRight(name, 24) + " " + padRight(race, 16) + " " + padRight(callUp, 16) + " " + padRight(startTime, 10) + " " + padRight(countdown, 10) + " " + result
-        lines.Push(line)
+        isNextStr = "false"
+        if fieldStr(p, "id") = nextId
+            isNextStr = "true"
+        end if
+        item = content.createChild("ContentNode")
+        item.addFields({
+            name: fieldStr(p, "name"),
+            race: fieldStr(p, "race"),
+            call_up: fieldStr(p, "call_up"),
+            start_display: formatStartTime(fieldStr(p, "start_time")),
+            countdown_display: formatCountdown(p),
+            result_display: formatResult(p),
+            status: fieldStr(p, "status"),
+            is_next: isNextStr
+        })
     end for
+
+    m.scheduleGrid.content = content
 
     if m.participants.Count() > m.pageSize
         page = Int(m.pageOffset / m.pageSize) + 1
         pages = Int((m.participants.Count() + m.pageSize - 1) / m.pageSize)
-        lines.Push("")
-        lines.Push("Page " + page.ToStr() + " / " + pages.ToStr())
+        m.pageLabel.text = "Page " + page.ToStr() + " / " + pages.ToStr()
+    else
+        m.pageLabel.text = ""
     end if
-
-    text = ""
-    for i = 0 to lines.Count() - 1
-        if i > 0
-            text = text + chr(10)
-        end if
-        text = text + lines[i]
-    end for
-    m.rowsLabel.text = text
 end sub
 
 function fieldStr(obj as object, key as string) as string
@@ -193,7 +238,7 @@ end function
 
 function formatCountdown(p as object) as string
     if not p.DoesExist("countdown_seconds") or p.countdown_seconds = invalid
-        return "--"
+        return "--:--:--"
     end if
     secs = Int(p.countdown_seconds)
     sign = ""
@@ -204,54 +249,89 @@ function formatCountdown(p as object) as string
     hours = Int(secs / 3600)
     minutes = Int((secs mod 3600) / 60)
     seconds = secs mod 60
-    if hours > 0
-        return sign + hours.ToStr() + "h" + pad2(minutes)
-    end if
-    return sign + pad2(minutes) + ":" + pad2(seconds)
+    return sign + pad2(hours) + ":" + pad2(minutes) + ":" + pad2(seconds)
 end function
 
 function formatResult(p as object) as string
     place = fieldStr(p, "finish_place")
     finish = fieldStr(p, "finish_time")
-    if place <> "" and finish <> ""
-        return "#" + place + " " + finish
+    category = fieldStr(p, "result_category")
+    if place = "" and finish = ""
+        return ""
     end if
+    parts = []
     if place <> ""
-        return "#" + place
+        parts.Push(pad2(Val(place)))
     end if
     if finish <> ""
-        return finish
-    end if
-    return ""
-end function
-
-function formatClock(iso as string) as string
-    ' Expect ISO-ish timestamps; show HH:MM:SS when possible.
-    if Len(iso) >= 19
-        ' 2026-09-11T14:30:00...
-        tPos = Instr(1, iso, "T")
-        if tPos > 0 and Len(iso) >= tPos + 8
-            return Mid(iso, tPos + 1, 8)
+        ' Strip fractional seconds for TV readability when present.
+        dot = Instr(1, finish, ".")
+        if dot > 0
+            finish = Left(finish, dot - 1)
         end if
+        parts.Push(finish)
     end if
-    return iso
-end function
-
-function padRight(text as string, width as integer) as string
-    if text = invalid then text = ""
-    if Len(text) >= width
-        return Left(text, width)
+    if category <> ""
+        parts.Push(category)
     end if
-    out = text
-    while Len(out) < width
-        out = out + " "
-    end while
+    out = ""
+    for i = 0 to parts.Count() - 1
+        if i > 0 then out = out + " · "
+        out = out + parts[i]
+    end for
     return out
 end function
 
-function pad2(n as integer) as string
-    if n < 10
-        return "0" + n.ToStr()
+function formatStartTime(raw as string) as string
+    ' Accept "HH:MM:SS" or "HH:MM" and show 12-hour time.
+    if raw = invalid or raw = "" then return ""
+    if Len(raw) < 4 then return raw
+    hour = Val(Left(raw, 2))
+    minute = 0
+    colon = Instr(1, raw, ":")
+    if colon > 0 and Len(raw) >= colon + 2
+        minute = Val(Mid(raw, colon + 1, 2))
     end if
-    return n.ToStr()
+    ampm = "AM"
+    if hour >= 12
+        ampm = "PM"
+    end if
+    hour12 = hour mod 12
+    if hour12 = 0 then hour12 = 12
+    return hour12.ToStr() + ":" + pad2(minute) + " " + ampm
+end function
+
+function formatClock12(iso as string) as string
+    ' 2026-08-30T13:24:18 -> 1:24:18 PM
+    if Len(iso) < 19 then return iso
+    tPos = Instr(1, iso, "T")
+    if tPos = 0 then return iso
+    hh = Val(Mid(iso, tPos + 1, 2))
+    mm = Mid(iso, tPos + 4, 2)
+    ss = Mid(iso, tPos + 7, 2)
+    ampm = "AM"
+    if hh >= 12 then ampm = "PM"
+    hour12 = hh mod 12
+    if hour12 = 0 then hour12 = 12
+    return hour12.ToStr() + ":" + mm + ":" + ss + " " + ampm
+end function
+
+function formatPrettyDate(isoDate as string) as string
+    ' Keep YYYY-MM-DD readable; BrightScript has limited locale date helpers.
+    if Len(isoDate) < 10 then return isoDate
+    year = Left(isoDate, 4)
+    month = Mid(isoDate, 6, 2)
+    day = Mid(isoDate, 9, 2)
+    months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    mi = Val(month)
+    if mi < 1 or mi > 12 then return isoDate
+    return months[mi - 1] + " " + Val(day).ToStr() + ", " + year
+end function
+
+function pad2(n as dynamic) as string
+    value = Int(Val(n.ToStr()))
+    if value < 10
+        return "0" + value.ToStr()
+    end if
+    return value.ToStr()
 end function

@@ -61,10 +61,17 @@ RESPONSE="$(
         "http://${ROKU_IP}/plugin_install"
 )"
 
-if echo "${RESPONSE}" | grep -qiE "Failed|Incorrect|error"; then
+# Roku returns an HTML installer page that often contains the word "error" in JS.
+# Prefer success markers; only fail on clear auth/install failures.
+if echo "${RESPONSE}" | grep -qiE "Incorrect password|Failed to install|HTTP Status: 401"; then
     echo "${RESPONSE}" >&2
-    echo "Sideload may have failed — check developer password and that installer is enabled." >&2
+    echo "Sideload failed — check developer password and that installer is enabled." >&2
     exit 1
+fi
+if echo "${RESPONSE}" | grep -qiE "Application Received|Install Success|Successful"; then
+    echo "==> Install reported success."
+else
+    echo "==> Install posted (Roku did not return a clear success banner; check the TV)."
 fi
 
 echo "==> Done. Launch with:"

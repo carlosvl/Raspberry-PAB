@@ -84,7 +84,9 @@ The installer also creates a `Raspberry-PAB` Wi-Fi fallback hotspot. If the Pi c
 
 ## Roku TV (no HDMI)
 
-When the Pi has no HDMI monitor, it can auto-launch a sideloaded **Raspberry-PAB** channel on a Roku on the same Wi‑Fi. HDMI kiosks keep working as before. Sideload once at home, then use **Admin → TVs** on race day. See [docs/roku.md](docs/roku.md).
+When the Pi has no HDMI monitor, it can auto-launch a sideloaded **Raspberry-PAB** channel on a Roku on the same Wi‑Fi. The channel draws a native board from the Pi API (not a cast of the HDMI screen). HDMI kiosks keep working as before.
+
+Sideload once at home; the install survives TV power cycles (not factory reset). On race day use **Admin → TVs**, or let auto-cast run with HDMI unplugged. See [docs/roku.md](docs/roku.md).
 
 ## ESP32 buzzer + LED matrix (production)
 

@@ -14,20 +14,39 @@
       color="0x0F172AFF"
     />
 
+    <Poster
+      id="logoPoster"
+      translation="[48,28]"
+      width="72"
+      height="72"
+      visible="false"
+      loadDisplayMode="scaleToFit"
+    />
+
     <Label
       id="titleLabel"
-      translation="[48,36]"
-      width="1400"
-      height="64"
+      translation="[140,28]"
+      width="1200"
+      height="48"
       font="font:LargeBoldSystemFont"
       color="0xF8FAFCFF"
       text="Raspberry-PAB"
     />
 
     <Label
+      id="dateLabel"
+      translation="[140,78]"
+      width="1200"
+      height="32"
+      font="font:SmallSystemFont"
+      color="0x94A3B8FF"
+      text=""
+    />
+
+    <Label
       id="clockLabel"
-      translation="[1500,36]"
-      width="380"
+      translation="[1480,36]"
+      width="400"
       height="64"
       horizAlign="right"
       font="font:LargeBoldSystemFont"
@@ -35,53 +54,117 @@
       text="--:--:--"
     />
 
+    <Rectangle
+      id="panelBg"
+      translation="[40,130]"
+      width="1840"
+      height="800"
+      color="0x111C33FF"
+    />
+
+    <Rectangle
+      id="headerBg"
+      translation="[40,130]"
+      width="1840"
+      height="56"
+      color="0x152238FF"
+    />
+
     <Label
-      id="dateLabel"
-      translation="[48,100]"
+      id="hName"
+      translation="[64,142]"
+      width="360"
+      height="32"
+      font="font:SmallBoldSystemFont"
+      color="0x94A3B8FF"
+      text="NAME"
+    />
+    <Label
+      id="hRace"
+      translation="[440,142]"
+      width="340"
+      height="32"
+      font="font:SmallBoldSystemFont"
+      color="0x94A3B8FF"
+      text="RACE"
+    />
+    <Label
+      id="hCallUp"
+      translation="[800,142]"
+      width="280"
+      height="32"
+      font="font:SmallBoldSystemFont"
+      color="0x94A3B8FF"
+      text="CALL UP"
+    />
+    <Label
+      id="hStart"
+      translation="[1100,142]"
+      width="200"
+      height="32"
+      font="font:SmallBoldSystemFont"
+      color="0x94A3B8FF"
+      text="START TIME"
+    />
+    <Label
+      id="hCountdown"
+      translation="[1320,142]"
+      width="220"
+      height="32"
+      font="font:SmallBoldSystemFont"
+      color="0x94A3B8FF"
+      text="COUNTDOWN"
+    />
+    <Label
+      id="hResult"
+      translation="[1560,142]"
+      width="280"
+      height="32"
+      font="font:SmallBoldSystemFont"
+      color="0x94A3B8FF"
+      text="RESULT"
+    />
+
+    <MarkupGrid
+      id="scheduleGrid"
+      translation="[48,196]"
+      itemComponentName="PabRowItem"
+      numColumns="1"
+      numRows="12"
+      itemSize="[1824,56]"
+      itemSpacing="[0,4]"
+      drawFocusFeedback="false"
+      focusable="false"
+    />
+
+    <Label
+      id="emptyLabel"
+      translation="[64,260]"
       width="1800"
-      height="40"
+      height="48"
       font="font:MediumSystemFont"
       color="0x94A3B8FF"
+      text=""
+      visible="false"
+    />
+
+    <Label
+      id="pageLabel"
+      translation="[48,950]"
+      width="900"
+      height="32"
+      font="font:SmallSystemFont"
+      color="0x64748BFF"
       text=""
     />
 
     <Label
-      id="headerLabel"
-      translation="[48,160]"
-      width="1824"
-      height="40"
-      font="font:SmallBoldSystemFont"
-      color="0xCBD5E1FF"
-      text="Name                    Race              Call Up           Start      Countdown   Result"
-    />
-
-    <Rectangle
-      id="headerLine"
-      translation="[48,204]"
-      width="1824"
-      height="2"
-      color="0x334155FF"
-    />
-
-    <Label
-      id="rowsLabel"
-      translation="[48,220]"
-      width="1824"
-      height="700"
-      font="font:SmallSystemFont"
-      color="0xF1F5F9FF"
-      wrap="true"
-      lineSpacing="8"
-      text="Connecting…"
-    />
-
-    <Label
       id="statusLabel"
-      translation="[48,980]"
+      translation="[48,990]"
       width="1824"
-      height="40"
+      height="36"
       font="font:SmallSystemFont"
-      color="0x64748BFF"
+      color="0x38BDF8FF"
       text="Waiting for Raspberry-PAB…"
     />
 
@@ -92,11 +175,18 @@
         height="1080"
         color="0x0F172AE6"
       />
+      <Rectangle
+        id="alertCard"
+        translation="[360,260]"
+        width="1200"
+        height="420"
+        color="0x152238FF"
+      />
       <Label
         id="alertEyebrow"
-        translation="[160,320]"
-        width="1600"
-        height="48"
+        translation="[400,300]"
+        width="1120"
+        height="40"
         horizAlign="center"
         font="font:MediumBoldSystemFont"
         color="0x38BDF8FF"
@@ -104,9 +194,9 @@
       />
       <Label
         id="alertMessage"
-        translation="[160,400]"
-        width="1600"
-        height="200"
+        translation="[400,360]"
+        width="1120"
+        height="180"
         horizAlign="center"
         font="font:LargeBoldSystemFont"
         color="0xFFFFFFFF"
@@ -115,9 +205,9 @@
       />
       <Label
         id="alertMeta"
-        translation="[160,640]"
-        width="1600"
-        height="60"
+        translation="[400,560]"
+        width="1120"
+        height="50"
         horizAlign="center"
         font="font:MediumSystemFont"
         color="0x94A3B8FF"

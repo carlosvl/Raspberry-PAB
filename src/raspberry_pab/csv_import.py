@@ -40,8 +40,15 @@ def _normalize_header(raw: str) -> str | None:
 
 
 def _parse_time(value: str) -> time:
-    text = value.strip()
-    for fmt in ("%H:%M", "%H:%M:%S", "%I:%M %p", "%I:%M%p"):
+    text = " ".join(value.strip().split())
+    for fmt in (
+        "%H:%M",
+        "%H:%M:%S",
+        "%I:%M:%S %p",
+        "%I:%M:%S%p",
+        "%I:%M %p",
+        "%I:%M%p",
+    ):
         try:
             return datetime.strptime(text, fmt).time().replace(second=0, microsecond=0)
         except ValueError:

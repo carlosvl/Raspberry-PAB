@@ -4,30 +4,30 @@ end sub
 
 sub fetch()
     url = m.top.url
-    m.top.error = ""
-    m.top.response = ""
     if url = invalid or url = ""
         m.top.error = "empty url"
         return
     end if
 
     xfer = CreateObject("roUrlTransfer")
-    xfer.SetUrl(url)
-    xfer.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    xfer.InitClientCertificates()
-    xfer.RetainBodyOnError(true)
-    xfer.SetRequest("GET")
-
     port = CreateObject("roMessagePort")
     xfer.SetMessagePort(port)
+    xfer.SetUrl(url)
+    xfer.RetainBodyOnError(true)
+    ' Plain HTTP to the Pi — do not InitClientCertificates (breaks LAN GETs).
+    if Left(LCase(url), 8) = "https://"
+        xfer.SetCertificatesFile("common:/certs/ca-bundle.crt")
+        xfer.InitClientCertificates()
+    end if
+
     if not xfer.AsyncGetToString()
         m.top.error = "async get failed"
         return
     end if
 
-    msg = wait(8000, port)
+    msg = wait(10000, port)
     if msg = invalid
-        m.top.error = "timeout"
+        m.top.error = "timeout " + url
         return
     end if
     if type(msg) <> "roUrlEvent"
@@ -38,7 +38,15 @@ sub fetch()
     code = msg.GetResponseCode()
     body = msg.GetString()
     if code < 200 or code >= 300
-        m.top.error = "HTTP " + code.ToStr()
+        failure = "HTTP " + code.ToStr()
+        if body <> invalid and body <> ""
+            failure = failure + " " + Left(body, 80)
+        end if
+        m.top.error = failure
+        return
+    end if
+    if body = invalid or body = ""
+        m.top.error = "empty body"
         return
     end if
     m.top.response = body

@@ -2,6 +2,8 @@
 
 Raspberry-PAB runs as a **local web server** plus a **fullscreen Chromium** window. The browser starts automatically when the `pi` user logs into the desktop, and the schedule/reminder data stays offline in SQLite.
 
+When the Pi has **no HDMI** monitor, it can instead drive a sideloaded Roku channel — see [roku.md](roku.md).
+
 ## Architecture
 
 ```

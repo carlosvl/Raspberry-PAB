@@ -16,8 +16,14 @@ sub Main(args as dynamic)
     end if
 
     if baseUrl = ""
-        ' Fallback when launched from the home row without a deep link.
-        baseUrl = "http://10.42.0.1:8080"
+        sec = CreateObject("roRegistrySection", "pab")
+        saved = sec.Read("baseUrl")
+        if saved <> invalid and saved <> ""
+            baseUrl = saved
+        else
+            ' Last resort when opened from the home row with no deep link.
+            baseUrl = "http://10.42.0.1:8080"
+        end if
     end if
 
     scene.baseUrl = baseUrl
