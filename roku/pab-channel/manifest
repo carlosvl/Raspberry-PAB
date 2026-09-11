@@ -1,0 +1,21 @@
+# Channel details
+title=Raspberry-PAB
+subtitle=Race day schedule board
+major_version=1
+minor_version=0
+build_version=1
+
+# Channel assets
+mm_icon_focus_hd=pkg:/images/icon_hd.png
+mm_icon_focus_sd=pkg:/images/icon_sd.png
+
+# Resolution
+ui_resolutions=fhd
+
+# Splash
+splash_screen_fhd=pkg:/images/splash_fhd.png
+splash_color=#0f172a
+splash_min_time=1000
+
+# Deep linking
+supports_input_launch=1

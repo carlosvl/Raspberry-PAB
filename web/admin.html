@@ -52,6 +52,9 @@
         <button data-tab-panel="wifiPanel" type="button">
           WiFi
         </button>
+        <button data-tab-panel="tvsPanel" type="button">
+          TVs
+        </button>
         <button data-tab-panel="importPanel" type="button">
           Import / Export
         </button>
@@ -842,6 +845,53 @@
             </div>
           </details>
         </article>
+
+        <article class="panel" id="tvsPanel">
+          <h2>Roku TVs</h2>
+          <p class="branding__hint">
+            HDMI kiosk first: auto-cast only runs when no HDMI monitor is connected.
+            Manual Show board still works with HDMI plugged in. Sideload the channel once at home —
+            <code>./scripts/sideload-roku-channel.sh &lt;roku-ip&gt;</code>
+          </p>
+
+          <details class="admin-section" open>
+            <summary>Status</summary>
+            <p class="wifi-status" id="rokuStatusText">Checking…</p>
+            <p class="branding__hint" id="rokuPreferredUrl"></p>
+            <div class="button-row">
+              <button id="refreshRokuStatus" type="button">Refresh Status</button>
+              <button class="button--primary" id="scanRoku" type="button">Scan TVs</button>
+            </div>
+          </details>
+
+          <details class="admin-section" open>
+            <summary>Auto-cast</summary>
+            <label>
+              Mode
+              <select id="rokuAutocastMode">
+                <option value="hdmi-fallback">HDMI fallback (default)</option>
+                <option value="on">Always on</option>
+                <option value="off">Off</option>
+              </select>
+            </label>
+            <label class="branding__hint">
+              <input id="rokuAutocastEnabled" type="checkbox" />
+              Allow auto-cast (uncheck to pause re-launch)
+            </label>
+            <div class="button-row">
+              <button id="saveRokuAutocast" type="button">Save auto-cast</button>
+            </div>
+          </details>
+
+          <details class="admin-section" open>
+            <summary>Discovered TVs</summary>
+            <div class="button-row">
+              <button class="button--primary" id="rokuShowAll" type="button">Show on all ready TVs</button>
+            </div>
+            <div class="admin__list" id="rokuDeviceList"></div>
+          </details>
+        </article>
+
         <pre class="admin__output" id="adminOutput"></pre>
       </section>
 

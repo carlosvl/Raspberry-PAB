@@ -350,6 +350,55 @@ class Alert(BaseModel):
     sound_enabled: bool = False
 
 
+class TvBoardResponse(BaseModel):
+    """Compact board payload for the sideloaded Roku channel."""
+
+    display_title: str
+    logo_url: str | None = None
+    board_font_scale: int = 100
+    kiosk_now: str
+    display_date: str
+    participants: list[ParticipantStatus]
+    active_alert: Alert | None = None
+    lan_urls: list[str] = Field(default_factory=list)
+    poll_seconds: int = 2
+
+
+class RokuDevice(BaseModel):
+    ip: str
+    port: int = 8060
+    friendly_name: str = ""
+    model_name: str = ""
+    serial_number: str = ""
+    has_pab_channel: bool = False
+    active_app_id: str = ""
+    active_app_name: str = ""
+
+
+class RokuScanResponse(BaseModel):
+    devices: list[RokuDevice]
+    hdmi_connected: bool
+    autocast_mode: str
+    autocast_enabled: bool
+    autocast_paused: bool = False
+    preferred_url: str | None = None
+
+
+class RokuStatusResponse(BaseModel):
+    hdmi_connected: bool
+    autocast_mode: str
+    autocast_enabled: bool
+    autocast_paused: bool = False
+    preferred_url: str | None = None
+    last_error: str | None = None
+    devices: list[RokuDevice] = Field(default_factory=list)
+
+
+class RokuAutocastUpdate(BaseModel):
+    enabled: bool | None = None
+    mode: Literal["on", "off", "hdmi-fallback"] | None = None
+
+
 class TestScenarioRider(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     day: str = Field(pattern=r"^(saturday|sunday)$")

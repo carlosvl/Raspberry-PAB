@@ -44,8 +44,10 @@ Raspberry-PAB/
 │   ├── upload-esp32-hardware.sh   # Flash combined ESP32 firmware
 │   ├── upload-esp32-matrix-test.sh # ESP32 wiring smoke test
 │   └── kiosk.sh               # Launch fullscreen browser
+├── roku/pab-channel/          # Sideloaded Roku SceneGraph board
 ├── docs/kiosk.md              # Full kiosk setup guide
-└── docs/pi-wifi.md            # Admin Wi-Fi tab + fallback hotspot
+├── docs/pi-wifi.md            # Admin Wi-Fi tab + fallback hotspot
+└── docs/roku.md               # Roku sideload + HDMI-fallback auto-cast
 ```
 
 ## Quick start (development)
@@ -79,6 +81,10 @@ sudo reboot
 ```
 
 The installer also creates a `Raspberry-PAB` Wi-Fi fallback hotspot. If the Pi cannot connect to a known Wi-Fi network, it broadcasts that hotspot and serves the app at `http://10.42.0.1:8080/admin`. On the Pi touchscreen, use **Admin → WiFi** to scan and join a network (local only). See [docs/pi-wifi.md](docs/pi-wifi.md).
+
+## Roku TV (no HDMI)
+
+When the Pi has no HDMI monitor, it can auto-launch a sideloaded **Raspberry-PAB** channel on a Roku on the same Wi‑Fi. HDMI kiosks keep working as before. Sideload once at home, then use **Admin → TVs** on race day. See [docs/roku.md](docs/roku.md).
 
 ## ESP32 buzzer + LED matrix (production)
 
@@ -190,6 +196,9 @@ The admin **Race Results** panel syncs the [Precision Race MCA index](https://ww
 | `PAB_MATRIX_BAUD`      | `115200`                       | Matrix serial baud rate                      |
 | `PAB_SOUND_ENABLED`    | `true`                         | Enable HDMI alert sound playback             |
 | `PAB_SOUND_SINK`       | *(empty)*                      | Optional HDMI PipeWire/Pulse sink override   |
+| `PAB_ROKU_ENABLED`     | `true`                         | Enable Roku discovery / Admin TVs tab        |
+| `PAB_ROKU_AUTOCAST`    | `hdmi-fallback`                | `on` / `off` / `hdmi-fallback` (no HDMI)     |
+| `PAB_ROKU_CHANNEL_ID`  | `dev`                          | Sideloaded Roku channel id                   |
 
 On the Pi touchscreen, tap **Keyboard** on the admin PIN screen to open the installed OS on-screen keyboard. `scripts/install.sh` tries to install common keyboard packages (`wvkbd`, `matchbox-keyboard`, `onboard`) and `scripts/touch-keyboard.sh` launches whichever is available for the current desktop session.
 

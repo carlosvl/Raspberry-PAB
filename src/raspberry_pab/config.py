@@ -54,6 +54,10 @@ class Settings:
     matrix_baud: int = 115200
     sound_enabled: bool = True
     sound_sink: str = ""
+    roku_enabled: bool = True
+    roku_autocast: str = "hdmi-fallback"  # on | off | hdmi-fallback
+    roku_channel_id: str = "dev"
+    roku_scan_interval_seconds: float = 15.0
 
     @property
     def kiosk_url(self) -> str:
@@ -108,4 +112,26 @@ class Settings:
             matrix_baud=int(os.getenv("PAB_MATRIX_BAUD", str(cls.matrix_baud))),
             sound_enabled=_env_bool("PAB_SOUND_ENABLED", cls.sound_enabled),
             sound_sink=os.getenv("PAB_SOUND_SINK", cls.sound_sink),
+            roku_enabled=_env_bool("PAB_ROKU_ENABLED", cls.roku_enabled),
+            roku_autocast=_normalize_roku_autocast(
+                os.getenv("PAB_ROKU_AUTOCAST", cls.roku_autocast)
+            ),
+            roku_channel_id=os.getenv("PAB_ROKU_CHANNEL_ID", cls.roku_channel_id),
+            roku_scan_interval_seconds=float(
+                os.getenv(
+                    "PAB_ROKU_SCAN_INTERVAL",
+                    str(cls.roku_scan_interval_seconds),
+                )
+            ),
         )
+
+
+def _normalize_roku_autocast(raw: str) -> str:
+    value = raw.strip().lower()
+    if value in {"1", "true", "yes", "on"}:
+        return "on"
+    if value in {"0", "false", "no", "off"}:
+        return "off"
+    if value in {"hdmi-fallback", "hdmi_fallback", "fallback"}:
+        return "hdmi-fallback"
+    return "hdmi-fallback"

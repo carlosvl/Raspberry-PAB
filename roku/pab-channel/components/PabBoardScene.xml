@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="PabBoardScene" extends="Scene">
+  <script type="text/brightscript" uri="PabBoardScene.brs" />
+
+  <interface>
+    <field id="baseUrl" type="string" onChange="onBaseUrlChanged" />
+  </interface>
+
+  <children>
+    <Rectangle
+      id="bg"
+      width="1920"
+      height="1080"
+      color="0x0F172AFF"
+    />
+
+    <Label
+      id="titleLabel"
+      translation="[48,36]"
+      width="1400"
+      height="64"
+      font="font:LargeBoldSystemFont"
+      color="0xF8FAFCFF"
+      text="Raspberry-PAB"
+    />
+
+    <Label
+      id="clockLabel"
+      translation="[1500,36]"
+      width="380"
+      height="64"
+      horizAlign="right"
+      font="font:LargeBoldSystemFont"
+      color="0x38BDF8FF"
+      text="--:--:--"
+    />
+
+    <Label
+      id="dateLabel"
+      translation="[48,100]"
+      width="1800"
+      height="40"
+      font="font:MediumSystemFont"
+      color="0x94A3B8FF"
+      text=""
+    />
+
+    <Label
+      id="headerLabel"
+      translation="[48,160]"
+      width="1824"
+      height="40"
+      font="font:SmallBoldSystemFont"
+      color="0xCBD5E1FF"
+      text="Name                    Race              Call Up           Start      Countdown   Result"
+    />
+
+    <Rectangle
+      id="headerLine"
+      translation="[48,204]"
+      width="1824"
+      height="2"
+      color="0x334155FF"
+    />
+
+    <Label
+      id="rowsLabel"
+      translation="[48,220]"
+      width="1824"
+      height="700"
+      font="font:SmallSystemFont"
+      color="0xF1F5F9FF"
+      wrap="true"
+      lineSpacing="8"
+      text="Connecting…"
+    />
+
+    <Label
+      id="statusLabel"
+      translation="[48,980]"
+      width="1824"
+      height="40"
+      font="font:SmallSystemFont"
+      color="0x64748BFF"
+      text="Waiting for Raspberry-PAB…"
+    />
+
+    <Group id="alertOverlay" visible="false">
+      <Rectangle
+        id="alertBg"
+        width="1920"
+        height="1080"
+        color="0x0F172AE6"
+      />
+      <Label
+        id="alertEyebrow"
+        translation="[160,320]"
+        width="1600"
+        height="48"
+        horizAlign="center"
+        font="font:MediumBoldSystemFont"
+        color="0x38BDF8FF"
+        text="REMINDER"
+      />
+      <Label
+        id="alertMessage"
+        translation="[160,400]"
+        width="1600"
+        height="200"
+        horizAlign="center"
+        font="font:LargeBoldSystemFont"
+        color="0xFFFFFFFF"
+        wrap="true"
+        text=""
+      />
+      <Label
+        id="alertMeta"
+        translation="[160,640]"
+        width="1600"
+        height="60"
+        horizAlign="center"
+        font="font:MediumSystemFont"
+        color="0x94A3B8FF"
+        text=""
+      />
+    </Group>
+  </children>
+</component>

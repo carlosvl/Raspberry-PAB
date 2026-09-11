@@ -29,6 +29,8 @@ from raspberry_pab.led_controller import LedController
 from raspberry_pab.matrix_controller import MatrixController
 from raspberry_pab.models import Alert
 from raspberry_pab.music_break_scheduler import MusicBreakScheduler
+from raspberry_pab.network_info import HOTSPOT_IPV4, lan_base_urls
+from raspberry_pab.roku_autocast import RokuAutocastWatcher
 from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.buzzer import router as buzzer_router
@@ -38,11 +40,13 @@ from raspberry_pab.routes.led import router as led_router
 from raspberry_pab.routes.matrix import router as matrix_router
 from raspberry_pab.routes.music_breaks import router as music_breaks_router
 from raspberry_pab.routes.race_results import router as race_results_router
+from raspberry_pab.routes.roku import router as roku_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.routes.sounds import router as sounds_router
 from raspberry_pab.routes.system_clock import router as system_clock_router
 from raspberry_pab.routes.test_scenarios import router as test_scenarios_router
 from raspberry_pab.routes.touch import router as touch_router
+from raspberry_pab.routes.tv_board import router as tv_board_router
 from raspberry_pab.routes.wifi import router as wifi_router
 from raspberry_pab.scheduler import (
     AlertBroker,
@@ -109,29 +113,6 @@ async def play_alert_groups(
             alerts_busy.clear()
 
 
-def _local_ipv4_addresses() -> list[str]:
-    addresses: set[str] = set()
-    try:
-        for family, _, _, _, sockaddr in socket.getaddrinfo(socket.gethostname(), None):
-            if family == socket.AF_INET:
-                address = sockaddr[0]
-                if isinstance(address, str) and not address.startswith("127."):
-                    addresses.add(address)
-    except socket.gaierror:
-        pass
-
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.connect(("8.8.8.8", 80))
-            address = sock.getsockname()[0]
-            if isinstance(address, str) and not address.startswith("127."):
-                addresses.add(address)
-    except OSError:
-        pass
-
-    return sorted(addresses)
-
-
 def create_app(settings: Settings) -> FastAPI:
     """Build the FastAPI app that serves the kiosk UI and API routes."""
     store = ScheduleStore(settings.db_path)
@@ -168,6 +149,7 @@ def create_app(settings: Settings) -> FastAPI:
         sound_path_resolver=resolve_sound_path,
         alerts_busy=alerts_busy,
     )
+    roku_autocast = RokuAutocastWatcher(settings, store)
     broker.add_before_publish(
         lambda _alert: music_break_scheduler.interrupt()
     )
@@ -204,6 +186,7 @@ def create_app(settings: Settings) -> FastAPI:
         scheduler.start()
         results_scheduler.start()
         music_break_scheduler.start()
+        roku_autocast.start()
         try:
             yield
         finally:
@@ -211,6 +194,7 @@ def create_app(settings: Settings) -> FastAPI:
             hardware_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await hardware_task
+            await roku_autocast.stop()
             await music_break_scheduler.stop()
             await led_controller.shutdown()
             await matrix_controller.shutdown()
@@ -234,6 +218,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.buzzer_controller = buzzer_controller
     app.state.sound_controller = sound_controller
     app.state.music_break_scheduler = music_break_scheduler
+    app.state.roku_autocast = roku_autocast
     web_dir = settings.web_dir
 
     @app.get("/api/health")
@@ -281,11 +266,8 @@ def create_app(settings: Settings) -> FastAPI:
             "hostname": hostname,
             "mdns_name": f"{hostname}.local",
             "port": settings.port,
-            "urls": [
-                f"http://{address}:{settings.port}"
-                for address in _local_ipv4_addresses()
-            ],
-            "hotspot_url": f"http://10.42.0.1:{settings.port}",
+            "urls": lan_base_urls(settings.port),
+            "hotspot_url": f"http://{HOTSPOT_IPV4}:{settings.port}",
         }
 
     app.include_router(schedule_router)
@@ -303,6 +285,8 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(race_results_router)
     app.include_router(test_scenarios_router)
     app.include_router(kiosk_clock_router)
+    app.include_router(tv_board_router)
+    app.include_router(roku_router)
 
     if web_dir.is_dir():
         for subdir in ("css", "js", "assets"):

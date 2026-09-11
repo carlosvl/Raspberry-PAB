@@ -9,7 +9,7 @@
 5. Reboot — Chromium should open fullscreen to the kiosk UI.
 6. On an iPhone, open the remote `/admin` URL shown on the kiosk screen and use Safari **Add to Home Screen** for app-style access.
 
-Full details: [kiosk.md](kiosk.md)
+Full details: [kiosk.md](kiosk.md). For a Roku as the field display when HDMI is unplugged: [roku.md](roku.md).
 
 The installer also creates a fallback `Raspberry-PAB` Wi-Fi hotspot. When the Pi cannot join a known Wi-Fi network, connect the iPhone to that hotspot and open `http://10.42.0.1:8080/admin`. To put the Pi on venue Wi-Fi from the touchscreen, use **Admin → WiFi** (local only); details in [pi-wifi.md](pi-wifi.md).
 
@@ -36,6 +36,7 @@ Use the admin page to enter participants and reminder rules, or import `data/sch
 | Settings | `src/raspberry_pab/config.py` + `.env` |
 | Fallback Wi-Fi hotspot | `deploy/network/` + `deploy/systemd/pab-autohotspot.*` |
 | Admin Wi-Fi scan/connect | `scripts/manage-pi-wifi.sh` + `src/raspberry_pab/routes/wifi.py` |
+| Roku TV board (no HDMI) | `roku/pab-channel/` + `docs/roku.md` + Admin → TVs |
 
 ## GPIO / hardware (optional)
 

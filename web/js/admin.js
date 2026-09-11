@@ -930,6 +930,7 @@ async function loadAll() {
       loadLedConfig(),
       loadMatrixStatus(),
       loadWifiPanel(),
+      loadRokuStatus().catch(() => {}),
     ]);
     setOutput("Loaded.");
   } catch (error) {
@@ -1326,6 +1327,136 @@ async function forgetSavedNetwork(name) {
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }
+}
+
+let cachedRokuDevices = [];
+
+function renderRokuStatus(payload) {
+  const statusEl = document.getElementById("rokuStatusText");
+  const urlEl = document.getElementById("rokuPreferredUrl");
+  const modeEl = document.getElementById("rokuAutocastMode");
+  const enabledEl = document.getElementById("rokuAutocastEnabled");
+  if (!statusEl) return;
+
+  const lines = [];
+  lines.push(payload.hdmi_connected ? "HDMI: connected (auto-cast off in fallback mode)" : "HDMI: not connected");
+  lines.push(`Auto-cast mode: ${payload.autocast_mode}`);
+  lines.push(payload.autocast_enabled ? "Auto-cast: would run now" : "Auto-cast: idle");
+  if (payload.last_error) lines.push(`Last error: ${payload.last_error}`);
+  statusEl.textContent = lines.join("\n");
+
+  if (urlEl) {
+    urlEl.textContent = payload.preferred_url
+      ? `Pi URL for deep link: ${payload.preferred_url}`
+      : "No LAN URL yet — connect Wi‑Fi or use the hotspot.";
+  }
+  if (modeEl && payload.autocast_mode) modeEl.value = payload.autocast_mode;
+  if (enabledEl) {
+    enabledEl.checked = !payload.autocast_paused;
+  }
+}
+
+function renderRokuDevices(devices) {
+  cachedRokuDevices = devices || [];
+  const list = document.getElementById("rokuDeviceList");
+  if (!list) return;
+  list.innerHTML = "";
+  if (!cachedRokuDevices.length) {
+    list.innerHTML = "<p class=\"branding__hint\">No Roku TVs found. Same Wi‑Fi as the Pi? Try Scan TVs.</p>";
+    return;
+  }
+  for (const device of cachedRokuDevices) {
+    const item = document.createElement("div");
+    item.className = "admin__item wifi-item";
+    const name = device.friendly_name || device.model_name || "Roku";
+    const channel = device.has_pab_channel
+      ? '<span class="wifi-badge">PAB channel</span>'
+      : '<span class="wifi-badge">sideload needed</span>';
+    const active = device.active_app_id
+      ? `<span>Active: ${escapeHtml(device.active_app_name || device.active_app_id)}</span>`
+      : "";
+    const actions = device.has_pab_channel
+      ? `
+          <button class="button--primary" type="button" data-roku-play="${escapeAttr(device.ip)}">Show board</button>
+          <button type="button" data-roku-stop="${escapeAttr(device.ip)}">Home</button>
+        `
+      : `<p class="branding__hint">Sideload from a laptop: <code>./scripts/sideload-roku-channel.sh ${escapeHtml(device.ip)}</code></p>`;
+    item.innerHTML = `
+      <div class="admin__item-main">
+        <strong>${escapeHtml(name)}</strong>
+        <div class="wifi-item__meta">
+          <span>${escapeHtml(device.ip)}</span>
+          ${device.model_name ? `<span>${escapeHtml(device.model_name)}</span>` : ""}
+          ${channel}
+          ${active}
+        </div>
+        <div class="wifi-item__actions">${actions}</div>
+      </div>
+    `;
+    list.appendChild(item);
+  }
+}
+
+async function loadRokuStatus() {
+  const payload = await api("/api/admin/roku/status");
+  renderRokuStatus(payload);
+  if (payload.devices?.length) renderRokuDevices(payload.devices);
+  return payload;
+}
+
+async function scanRokuDevices() {
+  const button = document.getElementById("scanRoku");
+  if (button) button.disabled = true;
+  try {
+    setOutput("Scanning for Roku TVs…");
+    const payload = await api("/api/admin/roku/scan", { method: "POST" });
+    renderRokuStatus(payload);
+    renderRokuDevices(payload.devices || []);
+    setOutput(`Found ${(payload.devices || []).length} Roku device(s).`);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function saveRokuAutocast() {
+  const mode = document.getElementById("rokuAutocastMode")?.value || "hdmi-fallback";
+  const enabled = Boolean(document.getElementById("rokuAutocastEnabled")?.checked);
+  const payload = await api("/api/admin/roku/autocast", {
+    method: "POST",
+    body: JSON.stringify({
+      mode,
+      enabled,
+    }),
+  });
+  renderRokuStatus(payload);
+  setOutput(`Auto-cast saved (mode=${payload.autocast_mode}, paused=${payload.autocast_paused}).`);
+}
+
+async function rokuPlay(ip) {
+  await api(`/api/admin/roku/${encodeURIComponent(ip)}/play`, { method: "POST" });
+  setOutput(`Show board sent to ${ip}.`);
+  await scanRokuDevices();
+}
+
+async function rokuStop(ip) {
+  await api(`/api/admin/roku/${encodeURIComponent(ip)}/stop`, { method: "POST" });
+  setOutput(`Home sent to ${ip}.`);
+  await scanRokuDevices();
+}
+
+async function rokuShowAllReady() {
+  const ready = cachedRokuDevices.filter((d) => d.has_pab_channel);
+  if (!ready.length) {
+    setOutput("No TVs with the PAB channel installed.");
+    return;
+  }
+  for (const device of ready) {
+    await api(`/api/admin/roku/${encodeURIComponent(device.ip)}/play`, { method: "POST" });
+  }
+  setOutput(`Show board sent to ${ready.length} TV(s).`);
+  await scanRokuDevices();
 }
 
 function readTouchConfigPayload() {
@@ -2511,6 +2642,49 @@ document.getElementById("openWifiKeyboard")?.addEventListener("click", () => {
   openWifiKeyboard();
 });
 document.getElementById("wifiKeyboard")?.addEventListener("click", handleWifiKeyboardClick);
+
+document.getElementById("refreshRokuStatus")?.addEventListener("click", async () => {
+  try {
+    await loadRokuStatus();
+    setOutput("Roku status refreshed.");
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+document.getElementById("scanRoku")?.addEventListener("click", scanRokuDevices);
+document.getElementById("saveRokuAutocast")?.addEventListener("click", async () => {
+  try {
+    await saveRokuAutocast();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+document.getElementById("rokuShowAll")?.addEventListener("click", async () => {
+  try {
+    await rokuShowAllReady();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+document.getElementById("rokuDeviceList")?.addEventListener("click", async (event) => {
+  const playBtn = event.target.closest("[data-roku-play]");
+  if (playBtn) {
+    try {
+      await rokuPlay(playBtn.dataset.rokuPlay || "");
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    }
+    return;
+  }
+  const stopBtn = event.target.closest("[data-roku-stop]");
+  if (stopBtn) {
+    try {
+      await rokuStop(stopBtn.dataset.rokuStop || "");
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    }
+  }
+});
 
 document.getElementById("wifiSavedList")?.addEventListener("click", async (event) => {
   const connectBtn = event.target.closest("[data-wifi-connect-saved]");
