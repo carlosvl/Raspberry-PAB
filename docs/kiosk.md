@@ -266,6 +266,8 @@ Override with `PAB_SOUND_SINK` if needed. The systemd service sets `XDG_RUNTIME_
 
 **Admin → Music Breaks** plays a playlist on an interval with BLE LED rainbow + matrix “MUSIC BREAK” scroll (when those hardware pieces are enabled).
 
+The matrix **repeats** a rainbow scroll of “MUSIC BREAK” then a full-panel rainbow fill for the **full track**. Admin **Test** may only show one cycle when the clip is short (~10s).
+
 | Piece | How to enable |
 |-------|----------------|
 | Audio | Same sink as alerts (Bluetooth preferred when connected) |
