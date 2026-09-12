@@ -47,7 +47,7 @@ def _effective_led_config(settings: Settings, store: ScheduleStore) -> LedConfig
 def _apply_led_config_to_settings(
     request: Request, config: LedConfig
 ) -> None:
-    """Update the in-memory Settings with new LED values.
+    """Update the in-memory Settings + LED controller with new LED values.
 
     Settings is a frozen dataclass, so we replace it on app.state.
     """
@@ -59,6 +59,25 @@ def _apply_led_config_to_settings(
         led_name=config.led_name,
     )
     request.app.state.settings = new
+    get_led_controller(request).update_settings(new)
+
+
+def apply_persisted_led_config(
+    *,
+    settings: Settings,
+    store: ScheduleStore,
+    led_controller: LedController,
+) -> Settings:
+    """Load Admin-saved LED settings into Settings + controller (boot / restart)."""
+    config = _effective_led_config(settings, store)
+    updated = dataclasses.replace(
+        settings,
+        led_enabled=config.led_enabled,
+        led_address=config.led_address,
+        led_name=config.led_name,
+    )
+    led_controller.update_settings(updated)
+    return updated
 
 
 # ── Config ──────────────────────────────────────────────────────────

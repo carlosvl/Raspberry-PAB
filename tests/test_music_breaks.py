@@ -114,6 +114,57 @@ def test_music_break_interrupt_stops_sound(tmp_path: Path) -> None:
     asyncio.run(run())
 
 
+def test_rainbow_pulse_noop_when_led_disabled() -> None:
+    async def run() -> None:
+        from raspberry_pab.config import Settings
+        from raspberry_pab.led_controller import LedController
+
+        led = LedController(Settings(led_enabled=False, led_address=""))
+        stop = asyncio.Event()
+        await asyncio.wait_for(led.rainbow_pulse(pulse_ms=300, stop_event=stop), timeout=0.5)
+
+    asyncio.run(run())
+
+
+def test_music_break_test_returns_quickly(tmp_path: Path) -> None:
+    web_dir = tmp_path / "web"
+    (web_dir / "css").mkdir(parents=True)
+    (web_dir / "js").mkdir()
+    (web_dir / "index.html").write_text("<html></html>", encoding="utf-8")
+    (web_dir / "admin.html").write_text("<html></html>", encoding="utf-8")
+    (web_dir / "manifest.webmanifest").write_text("{}", encoding="utf-8")
+    (web_dir / "sw.js").write_text("", encoding="utf-8")
+    settings = Settings(
+        data_dir=tmp_path / "data",
+        web_dir=web_dir,
+        admin_pin="9999",
+        sound_enabled=True,
+        led_enabled=False,
+        matrix_enabled=False,
+    )
+    store = ScheduleStore(settings.db_path)
+    store.initialize()
+    settings.sounds_dir.mkdir(parents=True, exist_ok=True)
+    sound = store.create_sound(
+        original_name="break.wav",
+        stored_name="1.wav",
+        content_type="audio/wav",
+        size_bytes=12,
+    )
+    (settings.sounds_dir / "1.wav").write_bytes(b"RIFF........")
+    save_config(
+        store,
+        MusicBreakConfig(enabled=True, sound_ids=[sound.id], interval_minutes=15),
+    )
+
+    with TestClient(create_app(settings)) as client:
+        headers = {"X-Admin-Pin": "9999"}
+        response = client.post("/api/admin/music-breaks/test", headers=headers)
+        assert response.status_code == 200, response.text
+        # Session is backgrounded; may already have finished if audio tools are absent.
+        assert "playing" in response.json()
+
+
 def test_music_breaks_api_round_trip(tmp_path: Path) -> None:
     web_dir = tmp_path / "web"
     (web_dir / "css").mkdir(parents=True)

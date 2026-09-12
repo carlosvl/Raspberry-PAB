@@ -111,6 +111,22 @@
               <button type="submit">Save Font Size</button>
             </form>
           </details>
+          <details class="admin-section" open>
+            <summary>Board colors (TV / kiosk)</summary>
+            <form class="form" id="boardThemeForm">
+              <label>
+                Display theme
+                <select id="boardTheme">
+                  <option value="classic">Classic blue (indoor / darker rooms)</option>
+                  <option value="daylight">Daylight high-contrast (bright rooms)</option>
+                </select>
+                <span class="branding__hint">
+                  Daylight uses white text on near-black with amber accents so the board stays readable on LCD TVs in bright light. Applies to HDMI kiosk and Roku (Roku needs the channel sideloaded with theme support).
+                </span>
+              </label>
+              <button type="submit">Save Theme</button>
+            </form>
+          </details>
           <details class="admin-section">
             <summary>System clock</summary>
             <div class="form" id="systemClockForm">
@@ -189,11 +205,28 @@
         </article>
 
         <article class="panel" id="soundsPanel">
-          <h2>HDMI Sound Library</h2>
+          <h2>Alert Sound Library</h2>
           <p class="branding__hint">
-            Upload WAV, MP3, or OGG (max 8 MB). Reminder rules can play a file once over HDMI
-            when they fire. Files stay on this Pi under the app data directory.
+            Upload WAV, MP3, or OGG (max 8 MB). Reminder rules can play a file once over the
+            active audio sink (Bluetooth speaker when connected, otherwise HDMI).
+            Files stay on this Pi under the app data directory.
           </p>
+
+          <details class="admin-section" open>
+            <summary>Bluetooth speaker</summary>
+            <p class="wifi-status" id="bluetoothStatusText">Checking…</p>
+            <p class="branding__hint" id="bluetoothSinkText"></p>
+            <div class="button-row">
+              <button id="refreshBluetoothStatus" type="button">Refresh Status</button>
+              <button class="button--primary" id="scanBluetooth" type="button">Scan Nearby</button>
+              <button id="disconnectBluetooth" type="button">Disconnect</button>
+            </div>
+            <h3 class="branding__hint">Paired</h3>
+            <div class="admin__list" id="bluetoothPairedList"></div>
+            <h3 class="branding__hint">Nearby</h3>
+            <div class="admin__list" id="bluetoothScanList"></div>
+          </details>
+
           <details class="admin-section" open>
             <summary>Upload</summary>
             <div class="form">
@@ -416,7 +449,7 @@
             <summary>Saved rules</summary>
             <div class="admin__list" id="ruleList"></div>
             <p class="branding__hint">
-              Tap <strong>Edit</strong> on a rule, then set its message, matrix color, and HDMI sound in the section below.
+              Tap <strong>Edit</strong> on a rule, then set its message, matrix color, and alert sound in the section below.
             </p>
           </details>
 
@@ -472,7 +505,7 @@
 
                 <label class="checkbox">
                   <input id="ruleSoundEnabled" type="checkbox" />
-                  Play HDMI sound
+                  Play alert sound
                 </label>
                 <label>
                   Sound file
@@ -492,7 +525,7 @@
                   <button class="button--primary" type="submit">Save Rule</button>
                   <button id="clearRule" type="button">Clear</button>
                   <button id="testRuleMatrix" type="button">Test matrix</button>
-                  <button id="testRuleSound" type="button">Test HDMI sound</button>
+                  <button id="testRuleSound" type="button">Test alert sound</button>
                 </div>
               </div>
             </details>

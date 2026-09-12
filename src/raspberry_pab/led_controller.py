@@ -73,6 +73,10 @@ class LedController:
         self._lock = asyncio.Lock()
         self._flash_task: asyncio.Task[None] | None = None
 
+    def update_settings(self, settings: Settings) -> None:
+        """Apply Admin/DB LED config without recreating the controller."""
+        self._settings = settings
+
     async def flash(self, rule: ReminderRule) -> None:
         if not self._should_flash(rule):
             return
@@ -94,7 +98,6 @@ class LedController:
     ) -> None:
         """Cycle hue on the strip until stop_event is set (music-break mode)."""
         if not self._settings.led_enabled or not self._settings.led_address:
-            await stop_event.wait()
             return
         await self.stop()
         self._flash_task = asyncio.create_task(

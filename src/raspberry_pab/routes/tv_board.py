@@ -8,6 +8,7 @@ from fastapi import APIRouter, Request
 
 from raspberry_pab.branding import (
     effective_board_font_scale,
+    effective_board_theme,
     effective_display_title,
     logo_url,
 )
@@ -70,6 +71,7 @@ def tv_board(request: Request) -> TvBoardResponse:
         display_title=effective_display_title(settings, store),
         logo_url=logo,
         board_font_scale=effective_board_font_scale(store),
+        board_theme=effective_board_theme(store),
         kiosk_now=str(clock["kiosk_now"]),
         display_date=str(clock["display_date"]),
         participants=participants,

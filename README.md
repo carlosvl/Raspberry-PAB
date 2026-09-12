@@ -11,7 +11,7 @@ Fullscreen **offline schedule and reminder kiosk** for **Raspberry Pi OS**. A lo
 5. **Kiosk shell** — Chromium launches via desktop autostart with `--kiosk`
 6. **Boot** — systemd starts the server; autologin + autostart opens the browser
 
-See [docs/kiosk.md](docs/kiosk.md) for autologin, screen blanking, and troubleshooting. Set the Pi clock over SSH with [docs/pi-set-time.md](docs/pi-set-time.md).
+See [docs/kiosk.md](docs/kiosk.md) for autologin, screen blanking, board colors, and troubleshooting. Bluetooth speakers: [docs/bluetooth-audio.md](docs/bluetooth-audio.md). Set the Pi clock over SSH with [docs/pi-set-time.md](docs/pi-set-time.md).
 
 ## Project structure
 
@@ -40,6 +40,7 @@ Raspberry-PAB/
 ├── scripts/
 │   ├── install.sh             # Pi install (chromium, unclutter, services)
 │   ├── manage-pi-wifi.sh      # Wi-Fi status/scan/connect (admin + CLI)
+│   ├── manage-pi-bluetooth.sh # Bluetooth speaker pair/connect (admin + CLI)
 │   ├── configure-pi-wifi.sh   # Thin CLI wrapper for manage-pi-wifi.sh
 │   ├── upload-esp32-hardware.sh   # Flash combined ESP32 firmware
 │   ├── upload-esp32-matrix-test.sh # ESP32 wiring smoke test
@@ -47,6 +48,7 @@ Raspberry-PAB/
 ├── roku/pab-channel/          # Sideloaded Roku SceneGraph board
 ├── docs/kiosk.md              # Full kiosk setup guide
 ├── docs/pi-wifi.md            # Admin Wi-Fi tab + fallback hotspot
+├── docs/bluetooth-audio.md    # Bluetooth speaker pairing + sink routing
 └── docs/roku.md               # Roku sideload + HDMI-fallback auto-cast
 ```
 
@@ -196,8 +198,8 @@ The admin **Race Results** panel syncs the [Precision Race MCA index](https://ww
 | `PAB_MATRIX_HEIGHT`    | `8`                            | Matrix height in pixels                      |
 | `PAB_MATRIX_BRIGHTNESS`| `64`                           | Max matrix brightness (0–255; field ≤128)  |
 | `PAB_MATRIX_BAUD`      | `115200`                       | Matrix serial baud rate                      |
-| `PAB_SOUND_ENABLED`    | `true`                         | Enable HDMI alert sound playback             |
-| `PAB_SOUND_SINK`       | *(empty)*                      | Optional HDMI PipeWire/Pulse sink override   |
+| `PAB_SOUND_ENABLED`    | `true`                         | Enable alert sound playback (PipeWire)       |
+| `PAB_SOUND_SINK`       | *(empty)*                      | Optional sink override (else BT → HDMI)      |
 | `PAB_ROKU_ENABLED`     | `true`                         | Enable Roku discovery / Admin TVs tab        |
 | `PAB_ROKU_AUTOCAST`    | `hdmi-fallback`                | `on` / `off` / `hdmi-fallback` (no HDMI)     |
 | `PAB_ROKU_CHANNEL_ID`  | `dev`                          | Sideloaded Roku channel id                   |

@@ -215,7 +215,6 @@ class MatrixController:
         if not self._settings.matrix_enabled or not effective_matrix_port(
             self._settings
         ):
-            await stop_event.wait()
             return
         await self.stop()
         self._show_task = asyncio.create_task(

@@ -11,7 +11,7 @@
 
 Full details: [kiosk.md](kiosk.md). For a Roku as the field display when HDMI is unplugged: [roku.md](roku.md).
 
-The installer also creates a fallback `Raspberry-PAB` Wi-Fi hotspot. When the Pi cannot join a known Wi-Fi network, connect the iPhone to that hotspot and open `http://10.42.0.1:8080/admin`. To put the Pi on venue Wi-Fi from the touchscreen, use **Admin → WiFi** (local only); details in [pi-wifi.md](pi-wifi.md).
+The installer also creates a fallback `Raspberry-PAB` Wi-Fi hotspot. When the Pi cannot join a known Wi-Fi network, connect the iPhone to that hotspot and open `http://10.42.0.1:8080/admin`. To put the Pi on venue Wi-Fi from the touchscreen, use **Admin → WiFi** (local only); details in [pi-wifi.md](pi-wifi.md). Pair a Bluetooth speaker from **Admin → Sounds** (works remotely with the admin PIN); details in [bluetooth-audio.md](bluetooth-audio.md).
 
 ## Development on Mac/Linux
 
@@ -36,6 +36,7 @@ Use the admin page to enter participants and reminder rules, or import `data/sch
 | Settings | `src/raspberry_pab/config.py` + `.env` |
 | Fallback Wi-Fi hotspot | `deploy/network/` + `deploy/systemd/pab-autohotspot.*` |
 | Admin Wi-Fi scan/connect | `scripts/manage-pi-wifi.sh` + `src/raspberry_pab/routes/wifi.py` |
+| Bluetooth speaker audio | `scripts/manage-pi-bluetooth.sh` + [bluetooth-audio.md](bluetooth-audio.md) |
 | Roku TV board (no HDMI) | `roku/pab-channel/` + `docs/roku.md` + Admin → TVs |
 
 ## GPIO / hardware (optional)

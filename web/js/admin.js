@@ -612,13 +612,13 @@ async function loadSounds() {
   soundList.querySelectorAll("[data-test-sound]").forEach((button) => {
     button.addEventListener("click", async () => {
       const soundId = button.dataset.testSound;
-      setOutput("Testing HDMI sound...");
+      setOutput("Testing alert sound...");
       try {
         await api(`/api/admin/sounds/${soundId}/test`, {
           method: "POST",
           body: JSON.stringify({ volume: 80 }),
         });
-        setOutput("HDMI sound test started.");
+        setOutput("Alert sound test started.");
       } catch (error) {
         setOutput(error instanceof Error ? error.message : String(error));
       }
@@ -639,6 +639,171 @@ async function loadSounds() {
       }
     });
   });
+}
+
+function renderBluetoothStatus(payload) {
+  const statusEl = document.getElementById("bluetoothStatusText");
+  const sinkEl = document.getElementById("bluetoothSinkText");
+  if (!statusEl) return;
+  const lines = [];
+  lines.push(payload.powered ? "Adapter: powered on" : "Adapter: off / unavailable");
+  if (payload.connected && payload.name) {
+    lines.push(`Connected: ${payload.name} (${payload.mac || ""})`);
+  } else if (payload.preferred_name || payload.preferred_mac) {
+    lines.push(
+      `Saved speaker: ${payload.preferred_name || payload.preferred_mac} (not connected)`,
+    );
+  } else {
+    lines.push("No speaker connected");
+  }
+  statusEl.textContent = lines.join("\n");
+  if (sinkEl) {
+    const src = payload.sink_source || "none";
+    const sink = payload.resolved_sink || payload.sink || "(none)";
+    sinkEl.textContent = `Playback sink: ${sink} · source=${src}`;
+  }
+}
+
+function renderBluetoothDeviceList(listId, devices, { showPair = false } = {}) {
+  const list = document.getElementById(listId);
+  if (!list) return;
+  list.innerHTML = "";
+  if (!devices?.length) {
+    list.innerHTML = "<p class=\"branding__hint\">No devices.</p>";
+    return;
+  }
+  for (const device of devices) {
+    const item = document.createElement("div");
+    item.className = "admin__item wifi-item";
+    const badges = [];
+    if (device.connected) badges.push('<span class="wifi-badge">Connected</span>');
+    if (device.paired) badges.push('<span class="wifi-badge">Paired</span>');
+    const actions = [];
+    if (!device.paired && showPair) {
+      actions.push(
+        `<button type="button" data-bt-pair="${escapeAttr(device.mac)}">Pair</button>`,
+      );
+    }
+    actions.push(
+      `<button class="button--primary" type="button" data-bt-connect="${escapeAttr(device.mac)}">Connect</button>`,
+    );
+    if (device.paired) {
+      actions.push(
+        `<button type="button" data-bt-forget="${escapeAttr(device.mac)}">Forget</button>`,
+      );
+    }
+    const rawName = String(device.name || "").trim();
+    const mac = String(device.mac || "").trim();
+    const hasFriendlyName =
+      rawName &&
+      rawName.toLowerCase() !== "unknown device" &&
+      rawName.replace(/[^0-9a-f]/gi, "").toUpperCase() !==
+        mac.replace(/[^0-9a-f]/gi, "").toUpperCase();
+    const title = hasFriendlyName ? rawName : "Unknown device";
+    if (device.audio) badges.push('<span class="wifi-badge">Audio</span>');
+    const metaBits = [];
+    if (hasFriendlyName) {
+      metaBits.push(`<span class="wifi-item__mac">${escapeHtml(mac)}</span>`);
+    } else if (mac) {
+      metaBits.push(`<span class="wifi-item__mac">Address ${escapeHtml(mac)}</span>`);
+    }
+    item.innerHTML = `
+      <div class="admin__item-main">
+        <strong>${escapeHtml(title)}</strong>
+        <div class="wifi-item__meta">
+          ${metaBits.join(" ")}
+          ${badges.join(" ")}
+        </div>
+        <div class="wifi-item__actions">${actions.join("")}</div>
+      </div>
+    `;
+    list.appendChild(item);
+  }
+}
+
+async function loadBluetoothStatus() {
+  const payload = await api("/api/admin/bluetooth/status");
+  renderBluetoothStatus(payload);
+  return payload;
+}
+
+async function loadBluetoothPaired() {
+  const payload = await api("/api/admin/bluetooth/paired");
+  renderBluetoothDeviceList("bluetoothPairedList", payload.devices || [], {
+    showPair: false,
+  });
+}
+
+async function loadBluetoothPanel() {
+  try {
+    await Promise.all([loadBluetoothStatus(), loadBluetoothPaired()]);
+  } catch (error) {
+    const statusEl = document.getElementById("bluetoothStatusText");
+    if (statusEl) {
+      statusEl.textContent =
+        error instanceof Error ? error.message : "Bluetooth unavailable";
+    }
+  }
+}
+
+async function scanBluetoothDevices() {
+  const button = document.getElementById("scanBluetooth");
+  if (button) button.disabled = true;
+  try {
+    setOutput("Scanning for Bluetooth devices…");
+    const payload = await api("/api/admin/bluetooth/scan", { method: "POST" });
+    renderBluetoothDeviceList("bluetoothScanList", payload.devices || [], {
+      showPair: true,
+    });
+    setOutput(`Found ${(payload.devices || []).length} Bluetooth device(s).`);
+    await loadBluetoothPaired();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function bluetoothPair(mac) {
+  setOutput(`Pairing ${mac}…`);
+  await api("/api/admin/bluetooth/pair", {
+    method: "POST",
+    body: JSON.stringify({ mac }),
+  });
+  setOutput(`Paired ${mac}. Connecting…`);
+  await bluetoothConnect(mac);
+}
+
+async function bluetoothConnect(mac) {
+  setOutput(`Connecting ${mac}…`);
+  const payload = await api("/api/admin/bluetooth/connect", {
+    method: "POST",
+    body: JSON.stringify({ mac }),
+  });
+  setOutput(
+    payload.sink
+      ? `Connected. Sink: ${payload.sink}`
+      : `Connected ${mac}. Waiting for audio sink…`,
+  );
+  await loadBluetoothPanel();
+}
+
+async function bluetoothDisconnect() {
+  await api("/api/admin/bluetooth/disconnect", { method: "POST" });
+  setOutput("Bluetooth speaker disconnected.");
+  await loadBluetoothPanel();
+}
+
+async function bluetoothForget(mac) {
+  if (!window.confirm(`Forget Bluetooth device ${mac}?`)) return;
+  await api("/api/admin/bluetooth/forget", {
+    method: "POST",
+    body: JSON.stringify({ mac }),
+  });
+  setOutput(`Forgot ${mac}.`);
+  await loadBluetoothPanel();
+  const scanList = document.getElementById("bluetoothScanList");
+  if (scanList) scanList.innerHTML = "";
 }
 
 function soundNameById(soundId) {
@@ -920,6 +1085,7 @@ async function loadAll() {
       loadTouchConfig(),
       loadParticipants(),
       loadSounds(),
+      loadBluetoothPanel(),
       loadMusicBreaks(),
       loadRules(),
       loadRaceResults(),
@@ -1549,10 +1715,15 @@ function renderBranding(branding) {
   const status = document.getElementById("logoStatus");
   const fontScale = document.getElementById("boardFontScale");
   const fontLabel = document.getElementById("boardFontScaleLabel");
+  const themeSelect = document.getElementById("boardTheme");
   if (titleInput) titleInput.value = branding.display_title || "";
   if (fontScale && Number.isFinite(Number(branding.board_font_scale))) {
     fontScale.value = String(branding.board_font_scale);
     if (fontLabel) fontLabel.textContent = `${branding.board_font_scale}%`;
+  }
+  if (themeSelect) {
+    themeSelect.value =
+      branding.board_theme === "daylight" ? "daylight" : "classic";
   }
   if (preview && status) {
     if (branding.logo_url) {
@@ -1586,6 +1757,26 @@ async function saveBoardFont(event) {
     });
     renderBranding(branding);
     setOutput(`Board font size saved (${branding.board_font_scale}%).`);
+  } catch (error) {
+    setOutput(error.message);
+  }
+}
+
+async function saveBoardTheme(event) {
+  event.preventDefault();
+  const themeSelect = document.getElementById("boardTheme");
+  if (!themeSelect) return;
+  try {
+    const branding = await api("/api/admin/branding/board-theme", {
+      method: "PUT",
+      body: JSON.stringify({ board_theme: themeSelect.value }),
+    });
+    renderBranding(branding);
+    const label =
+      branding.board_theme === "daylight"
+        ? "Daylight high-contrast"
+        : "Classic blue";
+    setOutput(`Board theme saved (${label}). HDMI updates within about a second; reopen the Roku channel if it was already open.`);
   } catch (error) {
     setOutput(error.message);
   }
@@ -1792,6 +1983,7 @@ ruleForm?.addEventListener("submit", async (event) => {
 
 document.getElementById("brandingForm")?.addEventListener("submit", saveBrandingTitle);
 document.getElementById("boardFontForm")?.addEventListener("submit", saveBoardFont);
+document.getElementById("boardThemeForm")?.addEventListener("submit", saveBoardTheme);
 document.getElementById("boardFontScale")?.addEventListener("input", syncBoardFontLabel);
 document.getElementById("refreshSystemClock")?.addEventListener("click", async () => {
   try {
@@ -1843,6 +2035,61 @@ initTouchSteppers();
 configureMusicBreaks();
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("uploadSound")?.addEventListener("click", uploadSoundFile);
+
+document.getElementById("refreshBluetoothStatus")?.addEventListener("click", async () => {
+  try {
+    await loadBluetoothPanel();
+    setOutput("Bluetooth status refreshed.");
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+document.getElementById("scanBluetooth")?.addEventListener("click", scanBluetoothDevices);
+document.getElementById("disconnectBluetooth")?.addEventListener("click", async () => {
+  try {
+    await bluetoothDisconnect();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+document.getElementById("bluetoothPairedList")?.addEventListener("click", async (event) => {
+  const connectBtn = event.target.closest("[data-bt-connect]");
+  if (connectBtn) {
+    try {
+      await bluetoothConnect(connectBtn.dataset.btConnect || "");
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    }
+    return;
+  }
+  const forgetBtn = event.target.closest("[data-bt-forget]");
+  if (forgetBtn) {
+    try {
+      await bluetoothForget(forgetBtn.dataset.btForget || "");
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    }
+  }
+});
+document.getElementById("bluetoothScanList")?.addEventListener("click", async (event) => {
+  const pairBtn = event.target.closest("[data-bt-pair]");
+  if (pairBtn) {
+    try {
+      await bluetoothPair(pairBtn.dataset.btPair || "");
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    }
+    return;
+  }
+  const connectBtn = event.target.closest("[data-bt-connect]");
+  if (connectBtn) {
+    try {
+      await bluetoothConnect(connectBtn.dataset.btConnect || "");
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    }
+  }
+});
 document.getElementById("removeLogo")?.addEventListener("click", removeLogoFile);
 document.getElementById("clearParticipant")?.addEventListener("click", clearParticipantForm);
 document.getElementById("clearRule")?.addEventListener("click", clearRuleForm);
@@ -1881,13 +2128,13 @@ document.getElementById("testRuleSound")?.addEventListener("click", async () => 
     setOutput("Choose a sound file first (upload in Sounds tab).");
     return;
   }
-  setOutput("Testing HDMI sound...");
+  setOutput("Testing alert sound...");
   try {
     await api(`/api/admin/sounds/${soundSettings.sound_id}/test`, {
       method: "POST",
       body: JSON.stringify({ volume: soundSettings.sound_volume }),
     });
-    setOutput(`HDMI sound test started (volume ${soundSettings.sound_volume}).`);
+    setOutput(`Alert sound test started (volume ${soundSettings.sound_volume}).`);
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }
@@ -2405,7 +2652,7 @@ async function loadHardwareStatus() {
     else if (!hw.led_address) issues.push("BLE LED address not set (PAB_LED_ADDRESS)");
     if (!hw.matrix_enabled) issues.push("Matrix disabled (PAB_MATRIX_ENABLED)");
     else if (!hw.matrix_port) issues.push("Matrix port not set (PAB_MATRIX_PORT)");
-    if (!hw.sound_enabled) issues.push("HDMI sound disabled (PAB_SOUND_ENABLED)");
+    if (!hw.sound_enabled) issues.push("Alert sound disabled (PAB_SOUND_ENABLED)");
     if (issues.length > 0) {
       el.textContent = "⚠ " + issues.join(" · ");
       el.hidden = false;

@@ -10,13 +10,19 @@ from fastapi.responses import FileResponse, Response
 
 from raspberry_pab.branding import (
     BOARD_FONT_SCALE_KEY,
+    BOARD_THEME_KEY,
     DISPLAY_TITLE_KEY,
     LOGO_UPDATED_AT_KEY,
     MAX_LOGO_BYTES,
     PNG_SIGNATURE,
     branding_response,
 )
-from raspberry_pab.models import BoardFontUpdate, BrandingResponse, BrandingUpdate
+from raspberry_pab.models import (
+    BoardFontUpdate,
+    BoardThemeUpdate,
+    BrandingResponse,
+    BrandingUpdate,
+)
 from raspberry_pab.routes.schedule import get_settings, get_store, require_admin_pin
 
 router = APIRouter(prefix="/api", tags=["branding"])
@@ -66,6 +72,18 @@ def update_board_font(request: Request, update: BoardFontUpdate) -> BrandingResp
     settings = get_settings(request)
     store = get_store(request)
     store.set_setting(BOARD_FONT_SCALE_KEY, str(update.board_font_scale))
+    return branding_response(settings, store)
+
+
+@router.put(
+    "/admin/branding/board-theme",
+    response_model=BrandingResponse,
+    dependencies=[Depends(require_admin_pin)],
+)
+def update_board_theme(request: Request, update: BoardThemeUpdate) -> BrandingResponse:
+    settings = get_settings(request)
+    store = get_store(request)
+    store.set_setting(BOARD_THEME_KEY, update.board_theme)
     return branding_response(settings, store)
 
 

@@ -302,9 +302,14 @@ class BoardFontUpdate(BaseModel):
     board_font_scale: int = Field(ge=70, le=140)
 
 
+class BoardThemeUpdate(BaseModel):
+    board_theme: str = Field(pattern=r"^(classic|daylight)$")
+
+
 class BrandingResponse(BaseModel):
     display_title: str
     board_font_scale: int = 100
+    board_theme: str = "classic"
     has_logo: bool
     logo_url: str | None = None
 
@@ -356,6 +361,7 @@ class TvBoardResponse(BaseModel):
     display_title: str
     logo_url: str | None = None
     board_font_scale: int = 100
+    board_theme: str = "classic"
     kiosk_now: str
     display_date: str
     participants: list[ParticipantStatus]
@@ -524,3 +530,45 @@ class WifiConnectResponse(BaseModel):
 class WifiForgetResponse(BaseModel):
     ok: bool = True
     forgotten: str
+
+
+class BluetoothDevice(BaseModel):
+    mac: str
+    name: str = ""
+    paired: bool = False
+    trusted: bool = False
+    connected: bool = False
+
+
+class BluetoothStatus(BaseModel):
+    powered: bool = False
+    connected: bool = False
+    paired: bool = False
+    trusted: bool = False
+    mac: str | None = None
+    name: str | None = None
+    sink: str | None = None
+    preferred_mac: str | None = None
+    preferred_name: str | None = None
+    resolved_sink: str | None = None
+    sink_source: str = "none"  # override | bluetooth | hdmi | none
+
+
+class BluetoothDevicesResponse(BaseModel):
+    devices: list[BluetoothDevice] = Field(default_factory=list)
+
+
+class BluetoothMacRequest(BaseModel):
+    mac: str = Field(min_length=11, max_length=32)
+
+
+class BluetoothActionResponse(BaseModel):
+    ok: bool = True
+    mac: str | None = None
+    name: str | None = None
+    connected: bool | None = None
+    paired: bool | None = None
+    trusted: bool | None = None
+    sink: str | None = None
+    disconnected: bool | None = None
+    forgotten: str | None = None

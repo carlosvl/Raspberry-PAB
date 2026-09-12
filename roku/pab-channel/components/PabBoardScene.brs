@@ -17,6 +17,20 @@ sub init()
     m.pageSize = 12
     m.participants = []
     m.boardFontScale = 100
+    m.boardTheme = "classic"
+
+    m.bg = m.top.findNode("bg")
+    m.panelBg = m.top.findNode("panelBg")
+    m.headerBg = m.top.findNode("headerBg")
+    m.alertBg = m.top.findNode("alertBg")
+    m.alertCard = m.top.findNode("alertCard")
+    m.alertEyebrow = m.top.findNode("alertEyebrow")
+    m.hName = m.top.findNode("hName")
+    m.hRace = m.top.findNode("hRace")
+    m.hCallUp = m.top.findNode("hCallUp")
+    m.hStart = m.top.findNode("hStart")
+    m.hCountdown = m.top.findNode("hCountdown")
+    m.hResult = m.top.findNode("hResult")
 
     m.pollTimer = createObject("roSGNode", "Timer")
     m.pollTimer.repeat = true
@@ -112,6 +126,17 @@ sub onBoardResponse()
 
     if parsed.DoesExist("display_date") and parsed.display_date <> invalid
         m.dateLabel.text = formatPrettyDate(parsed.display_date.ToStr())
+    end if
+
+    if parsed.DoesExist("board_theme") and parsed.board_theme <> invalid
+        theme = LCase(parsed.board_theme.ToStr())
+        if theme <> "daylight"
+            theme = "classic"
+        end if
+        if theme <> m.boardTheme
+            m.boardTheme = theme
+            applyBoardTheme()
+        end if
     end if
 
     if parsed.DoesExist("logo_url") and parsed.logo_url <> invalid and parsed.logo_url <> ""
@@ -213,7 +238,8 @@ sub renderRows()
             countdown_display: formatCountdown(p),
             result_display: formatResult(p),
             status: fieldStr(p, "status"),
-            is_next: isNextStr
+            is_next: isNextStr,
+            theme: m.boardTheme
         })
     end for
 
@@ -226,6 +252,51 @@ sub renderRows()
     else
         m.pageLabel.text = ""
     end if
+end sub
+
+sub applyBoardTheme()
+    daylight = (m.boardTheme = "daylight")
+    if daylight
+        bg = "0x0B0B0BFF"
+        panel = "0x161616FF"
+        header = "0x1F1F1FFF"
+        muted = "0xE5E5E5FF"
+        dim = "0x9CA3AFFF"
+        accent = "0xF5C518FF"
+        alertScrim = "0x0B0B0BF0"
+        alertCard = "0x121212FF"
+        title = "0xFFFFFFFF"
+    else
+        bg = "0x0F172AFF"
+        panel = "0x111C33FF"
+        header = "0x152238FF"
+        muted = "0x94A3B8FF"
+        dim = "0x64748BFF"
+        accent = "0x38BDF8FF"
+        alertScrim = "0x0F172AE6"
+        alertCard = "0x152238FF"
+        title = "0xF8FAFCFF"
+    end if
+
+    if m.bg <> invalid then m.bg.color = bg
+    if m.panelBg <> invalid then m.panelBg.color = panel
+    if m.headerBg <> invalid then m.headerBg.color = header
+    if m.titleLabel <> invalid then m.titleLabel.color = title
+    if m.dateLabel <> invalid then m.dateLabel.color = muted
+    if m.clockLabel <> invalid then m.clockLabel.color = accent
+    if m.statusLabel <> invalid then m.statusLabel.color = accent
+    if m.pageLabel <> invalid then m.pageLabel.color = dim
+    if m.emptyLabel <> invalid then m.emptyLabel.color = muted
+    if m.hName <> invalid then m.hName.color = muted
+    if m.hRace <> invalid then m.hRace.color = muted
+    if m.hCallUp <> invalid then m.hCallUp.color = muted
+    if m.hStart <> invalid then m.hStart.color = muted
+    if m.hCountdown <> invalid then m.hCountdown.color = muted
+    if m.hResult <> invalid then m.hResult.color = muted
+    if m.alertBg <> invalid then m.alertBg.color = alertScrim
+    if m.alertCard <> invalid then m.alertCard.color = alertCard
+    if m.alertEyebrow <> invalid then m.alertEyebrow.color = accent
+    if m.alertMeta <> invalid then m.alertMeta.color = muted
 end sub
 
 function fieldStr(obj as object, key as string) as string

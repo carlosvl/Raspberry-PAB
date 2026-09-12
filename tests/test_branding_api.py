@@ -45,6 +45,7 @@ def test_public_config_uses_saved_title(client: TestClient) -> None:
     assert config["display_title"] == "Race Day"
     assert config["logo_url"] is None
     assert config["board_font_scale"] == 100
+    assert config["board_theme"] == "classic"
 
 
 def test_board_font_scale_saved(client: TestClient) -> None:
@@ -63,6 +64,33 @@ def test_board_font_scale_saved(client: TestClient) -> None:
         headers={"X-Admin-Pin": "9999"},
     )
     assert too_low.status_code == 422
+
+
+def test_board_theme_saved(client: TestClient) -> None:
+    response = client.put(
+        "/api/admin/branding/board-theme",
+        json={"board_theme": "daylight"},
+        headers={"X-Admin-Pin": "9999"},
+    )
+    assert response.status_code == 200
+    assert response.json()["board_theme"] == "daylight"
+    assert client.get("/api/config").json()["board_theme"] == "daylight"
+    assert client.get("/api/tv-board").json()["board_theme"] == "daylight"
+
+    classic = client.put(
+        "/api/admin/branding/board-theme",
+        json={"board_theme": "classic"},
+        headers={"X-Admin-Pin": "9999"},
+    )
+    assert classic.status_code == 200
+    assert classic.json()["board_theme"] == "classic"
+
+    bad = client.put(
+        "/api/admin/branding/board-theme",
+        json={"board_theme": "neon"},
+        headers={"X-Admin-Pin": "9999"},
+    )
+    assert bad.status_code == 422
 
 
 def test_upload_and_serve_logo(client: TestClient) -> None:

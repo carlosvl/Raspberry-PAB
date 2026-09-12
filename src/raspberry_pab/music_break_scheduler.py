@@ -130,7 +130,11 @@ class MusicBreakScheduler:
         return True
 
     async def run_test(self, *, duration_seconds: float = 10.0) -> None:
-        """Admin test: play first playlist track (or silence animations only)."""
+        """Admin test: play first playlist track (or silence animations only).
+
+        Starts the session in the background so the Admin API can return
+        immediately instead of blocking for the full clip.
+        """
         await self.interrupt()
         config = load_config(self._store)
         if not config.sound_ids:
@@ -145,8 +149,6 @@ class MusicBreakScheduler:
             ),
             name="music-break-test",
         )
-        await self._session_task
-
     async def _run_session(
         self,
         *,
