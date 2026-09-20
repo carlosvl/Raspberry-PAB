@@ -3,7 +3,7 @@ title=Raspberry-PAB
 subtitle=Race day schedule board
 major_version=1
 minor_version=0
-build_version=3
+build_version=4
 
 # Channel assets
 mm_icon_focus_hd=pkg:/images/icon_hd.png

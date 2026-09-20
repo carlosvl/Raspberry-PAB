@@ -21,29 +21,55 @@ sub onContentChanged()
 
     status = LCase(safeStr(item.status))
     isNext = (safeStr(item.is_next) = "true")
+    daylight = (LCase(safeStr(item.theme)) = "daylight")
 
-    ' Defaults match kiosk upcoming rows.
-    m.rowBg.color = "0x111C33FF"
-    m.nameLabel.color = "0xFFFFFFFF"
-    m.raceLabel.color = "0xE2E8F0FF"
-    m.callUpLabel.color = "0xE2E8F0FF"
-    m.startLabel.color = "0xE2E8F0FF"
-    m.countdownLabel.color = "0xF8FAFCFF"
-    m.resultLabel.color = "0x22C55EFF"
+    if daylight
+        rowDefault = "0x161616FF"
+        rowPast = "0x0B0B0BFF"
+        rowLive = "0x12301FFF"
+        rowNext = "0x2A2208FF"
+        textPrimary = "0xFFFFFFFF"
+        textSecondary = "0xE5E5E5FF"
+        textDim = "0x9CA3AFFF"
+        countdown = "0xFFFFFFFF"
+        nextAccent = "0xF5C518FF"
+        liveAccent = "0x3DFF8AFF"
+        result = "0x3DFF8AFF"
+    else
+        rowDefault = "0x111C33FF"
+        rowPast = "0x0F172AFF"
+        rowLive = "0x163B2CFF"
+        rowNext = "0x1A3A52FF"
+        textPrimary = "0xFFFFFFFF"
+        textSecondary = "0xE2E8F0FF"
+        textDim = "0x64748BFF"
+        countdown = "0xF8FAFCFF"
+        nextAccent = "0x38BDF8FF"
+        liveAccent = "0x4ADE80FF"
+        result = "0x22C55EFF"
+    end if
+
+    m.rowBg.color = rowDefault
+    m.nameLabel.color = textPrimary
+    m.raceLabel.color = textSecondary
+    m.callUpLabel.color = textSecondary
+    m.startLabel.color = textSecondary
+    m.countdownLabel.color = countdown
+    m.resultLabel.color = result
 
     if status = "past"
-        m.rowBg.color = "0x0F172AFF"
-        m.nameLabel.color = "0x64748BFF"
-        m.raceLabel.color = "0x64748BFF"
-        m.callUpLabel.color = "0x64748BFF"
-        m.startLabel.color = "0x64748BFF"
-        m.countdownLabel.color = "0x64748BFF"
+        m.rowBg.color = rowPast
+        m.nameLabel.color = textDim
+        m.raceLabel.color = textDim
+        m.callUpLabel.color = textDim
+        m.startLabel.color = textDim
+        m.countdownLabel.color = textDim
     else if status = "live"
-        m.rowBg.color = "0x163B2CFF"
-        m.countdownLabel.color = "0x4ADE80FF"
+        m.rowBg.color = rowLive
+        m.countdownLabel.color = liveAccent
     else if isNext
-        m.rowBg.color = "0x1A3A52FF"
-        m.countdownLabel.color = "0x38BDF8FF"
+        m.rowBg.color = rowNext
+        m.countdownLabel.color = nextAccent
     end if
 end sub
 

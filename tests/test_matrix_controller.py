@@ -177,3 +177,88 @@ def test_show_sends_bright_and_scroll() -> None:
         assert serial.closed is True
 
     asyncio.run(run())
+
+
+class EndlessOkSerial:
+    """Serial stub that handshakes once then always returns OK."""
+
+    def __init__(self) -> None:
+        self.writes: list[bytes] = []
+        self.closed = False
+        self._boot = [b"READY\n", b"PONG\n"]
+
+    def readline(self) -> bytes:
+        if self._boot:
+            return self._boot.pop(0)
+        return b"OK\n"
+
+    def write(self, data: bytes) -> int:
+        self.writes.append(data)
+        return len(data)
+
+    def flush(self) -> None:
+        return None
+
+    def close(self) -> None:
+        self.closed = True
+
+
+def test_rainbow_pulse_cycles_until_stop() -> None:
+    async def run() -> None:
+        serial = EndlessOkSerial()
+
+        def factory(_settings: Settings, _port: str) -> EndlessOkSerial:
+            return serial
+
+        controller = MatrixController(
+            Settings(
+                matrix_enabled=True,
+                buzzer_port="/dev/ttyUSB0",
+                matrix_brightness=64,
+            ),
+            serial_factory=factory,
+        )
+        stop_event = asyncio.Event()
+        await controller.rainbow_pulse(
+            pulse_ms=100,
+            stop_event=stop_event,
+            message="MUSIC BREAK",
+        )
+
+        deadline = asyncio.get_running_loop().time() + 5.0
+        while asyncio.get_running_loop().time() < deadline:
+            scroll_count = sum(
+                1 for write in serial.writes if write.startswith(b"SCROLLONCE")
+            )
+            fill_count = sum(
+                1 for write in serial.writes if write.startswith(b"RAINBOW")
+            )
+            if scroll_count >= 3 and fill_count >= 2:
+                stop_event.set()
+                break
+            await asyncio.sleep(0.01)
+        else:
+            stop_event.set()
+            await controller.stop()
+            raise AssertionError(
+                f"Expected multiple cycles, got scrolls="
+                f"{sum(1 for w in serial.writes if w.startswith(b'SCROLLONCE'))} "
+                f"fills={sum(1 for w in serial.writes if w.startswith(b'RAINBOW'))}"
+            )
+
+        await controller.stop()
+        scroll_count = sum(
+            1 for write in serial.writes if write.startswith(b"SCROLLONCE")
+        )
+        fill_count = sum(
+            1 for write in serial.writes if write.startswith(b"RAINBOW")
+        )
+        assert scroll_count >= 3
+        assert fill_count >= 2
+        assert any(write == b"STOP\n" for write in serial.writes)
+        assert any(write == b"CLEAR\n" for write in serial.writes)
+        assert serial.closed is True
+        # One open session for the whole music-break animation.
+        assert sum(1 for write in serial.writes if write == b"PING\n") == 1
+
+    asyncio.run(run())

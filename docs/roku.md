@@ -44,7 +44,7 @@ Manual **Admin → TVs → Show board** still works even with HDMI plugged in (c
    - Join the Pi hotspot `Raspberry-PAB` / `RaspberryPAB123` and use `http://10.42.0.1:8080`
 3. Within ~15–20 seconds the Pi SSDP-discovers the TV and POSTs  
    `http://ROKU:8060/launch/dev?contentId=http://<pi-ip>:8080`
-4. The channel shows **Connecting…**, then the live board (polls `GET /api/tv-board` every ~2s): title, logo, schedule table, countdown, results, reminder overlay.
+4. The channel shows **Connecting…**, then the live board (polls `GET /api/tv-board` every ~2s): title, logo, schedule table, countdown, results, reminder overlay. **Admin → Branding → Board colors** selects Classic vs Daylight (high-contrast for bright rooms); re-sideload channel build ≥ 4 for theme support.
 5. Manage the schedule from the phone: `http://<pi-ip>:8080/admin`
 
 ESP32 matrix / buzzer keep working; they never needed HDMI.

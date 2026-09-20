@@ -1,4 +1,4 @@
-"""Play reminder sound files once over HDMI via PipeWire/PulseAudio."""
+"""Play reminder and music sound files via PipeWire/PulseAudio."""
 
 from __future__ import annotations
 
@@ -11,7 +11,9 @@ import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
+from raspberry_pab.audio_sink import BT_SPEAKER_MAC_KEY, resolve_playback_sink
 from raspberry_pab.config import Settings
+from raspberry_pab.db import ScheduleStore
 from raspberry_pab.models import ReminderRule, SoundFile
 
 logger = logging.getLogger(__name__)
@@ -32,39 +34,24 @@ def _default_player(command: list[str], env: dict[str, str]) -> subprocess.Popen
 
 
 def resolve_hdmi_sink(settings: Settings) -> str | None:
-    """Return a PipeWire/Pulse sink name that looks like HDMI audio."""
-    if settings.sound_sink.strip():
-        return settings.sound_sink.strip()
+    """Backward-compatible alias: resolve preferred playback sink."""
+    sink, _source = resolve_playback_sink(settings)
+    return sink
 
-    env = os.environ.copy()
-    if "XDG_RUNTIME_DIR" not in env:
-        runtime = Path(f"/run/user/{os.getuid()}")
-        if runtime.is_dir():
-            env["XDG_RUNTIME_DIR"] = str(runtime)
 
-    if shutil.which("pactl"):
-        try:
-            result = subprocess.run(
-                ["pactl", "list", "short", "sinks"],
-                check=False,
-                capture_output=True,
-                text=True,
-                env=env,
-                timeout=5,
-            )
-        except (OSError, subprocess.TimeoutExpired):
-            return None
-        if result.returncode != 0:
-            return None
-        for line in result.stdout.splitlines():
-            parts = line.split()
-            if len(parts) < 2:
-                continue
-            name = parts[1]
-            if "hdmi" in name.lower():
-                return name
+def make_store_sink_resolver(store: ScheduleStore) -> SinkResolver:
+    """Build a sink resolver that prefers the Admin-saved Bluetooth speaker."""
 
-    return "alsa_output.platform-fef00700.hdmi.hdmi-stereo"
+    def _resolve(settings: Settings) -> str | None:
+        preferred = store.get_setting(BT_SPEAKER_MAC_KEY)
+        sink, source = resolve_playback_sink(
+            settings,
+            preferred_mac=preferred or None,
+        )
+        logger.debug("Resolved audio sink %s (%s)", sink, source)
+        return sink
+
+    return _resolve
 
 
 def build_play_command(
@@ -98,7 +85,7 @@ def build_play_command(
 
 
 class SoundController:
-    """Plays uploaded sound files once over HDMI for reminder alerts."""
+    """Plays uploaded sound files once for reminder alerts and music breaks."""
 
     def __init__(
         self,
@@ -148,7 +135,7 @@ class SoundController:
         await self.play_file(path, volume=volume, wait=wait)
 
     async def stop(self) -> None:
-        """Stop any in-progress HDMI playback immediately."""
+        """Stop any in-progress playback immediately."""
         await self._stop_current()
 
     async def shutdown(self) -> None:
@@ -171,7 +158,7 @@ class SoundController:
         await self._stop_current()
         self._play_task = asyncio.create_task(
             self._run_play(path=path, volume=volume),
-            name="hdmi-sound-play",
+            name="alert-sound-play",
         )
         if wait:
             await self._play_task
@@ -220,5 +207,5 @@ class SoundController:
                 self._terminate_process()
                 raise
             except Exception:
-                logger.exception("HDMI sound playback failed for %s", path)
+                logger.exception("Alert sound playback failed for %s", path)
                 self._terminate_process()

@@ -67,6 +67,7 @@ def test_public_config_endpoint(settings: Settings) -> None:
         "app_name": "Raspberry-PAB",
         "display_title": "Start List",
         "board_font_scale": 100,
+        "board_theme": "classic",
         "logo_url": None,
         "port": 8080,
         "kiosk_simulated": False,

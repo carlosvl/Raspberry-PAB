@@ -9,9 +9,14 @@ from raspberry_pab.models import BrandingResponse
 DISPLAY_TITLE_KEY = "display_title"
 LOGO_UPDATED_AT_KEY = "logo_updated_at"
 BOARD_FONT_SCALE_KEY = "board_font_scale"
+BOARD_THEME_KEY = "board_theme"
 DEFAULT_BOARD_FONT_SCALE = 100
 MIN_BOARD_FONT_SCALE = 70
 MAX_BOARD_FONT_SCALE = 140
+BOARD_THEME_CLASSIC = "classic"
+BOARD_THEME_DAYLIGHT = "daylight"
+BOARD_THEMES = frozenset({BOARD_THEME_CLASSIC, BOARD_THEME_DAYLIGHT})
+DEFAULT_BOARD_THEME = BOARD_THEME_CLASSIC
 MAX_LOGO_BYTES = 512 * 1024
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
@@ -34,6 +39,16 @@ def effective_board_font_scale(store: ScheduleStore) -> int:
     return max(MIN_BOARD_FONT_SCALE, min(MAX_BOARD_FONT_SCALE, value))
 
 
+def effective_board_theme(store: ScheduleStore) -> str:
+    raw = store.get_setting(BOARD_THEME_KEY)
+    if raw is None:
+        return DEFAULT_BOARD_THEME
+    value = str(raw).strip().lower()
+    if value in BOARD_THEMES:
+        return value
+    return DEFAULT_BOARD_THEME
+
+
 def logo_updated_at(store: ScheduleStore) -> str | None:
     value = store.get_setting(LOGO_UPDATED_AT_KEY)
     return value if value else None
@@ -54,6 +69,7 @@ def branding_response(settings: Settings, store: ScheduleStore) -> BrandingRespo
     return BrandingResponse(
         display_title=effective_display_title(settings, store),
         board_font_scale=effective_board_font_scale(store),
+        board_theme=effective_board_theme(store),
         has_logo=has_logo(settings),
         logo_url=logo_url(settings, store),
     )

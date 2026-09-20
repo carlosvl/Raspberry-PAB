@@ -159,6 +159,7 @@ Edit files under `web/`:
 | `web/admin.html` | Admin page |
 | `web/js/admin.js` | Admin behavior |
 | `scripts/manage-pi-wifi.sh` | Local Wi-Fi status/scan/connect helper |
+| `scripts/manage-pi-bluetooth.sh` | Bluetooth speaker pair/connect helper |
 | `src/raspberry_pab/routes/wifi.py` | Admin WiFi API (Pi touchscreen only) |
 
 Add API routes under `src/raspberry_pab/routes/` for buttons, sensors, or backend data.
@@ -182,7 +183,7 @@ PAB_LED_NAME="MELKL-OT21 CB"
    - **Chase duration (seconds)** — after flashing, runs the strip back and forth (default 10s; set to 0 to skip)
    - Use **Test LED strip** to preview the current color and timing without waiting for a reminder
 
-3. Close the Lotus Lamp X iPhone app while the kiosk runs — the controller accepts only one BLE connection at a time.
+3. Close the Lotus Lamp X iPhone app while the kiosk runs — the controller accepts only one BLE connection at a time. For a **standalone music/beat light** (app Device MIC / Phone MIC, or bypassing the BLE box), see [hardware/sound-reactive-24v-strip/README.md](../hardware/sound-reactive-24v-strip/README.md#kiosk-melk--lotus-lamp-strip).
 
 4. Smoke-test BLE from the project venv:
 
@@ -243,20 +244,39 @@ Legacy Nano (two panels): [hardware/arduino/README.md](../hardware/arduino/READM
 | `PAB_MATRIX_ENABLED` | `false` | Enable WS2812 matrix scroll on alerts |
 | `PAB_MATRIX_WIDTH` | `96` | Matrix width (three 8×32 panels) |
 | `PAB_MATRIX_BRIGHTNESS` | `64` | Matrix max brightness (field ≤128) |
-| `PAB_SOUND_ENABLED` | `true` | Enable HDMI alert sound playback |
-| `PAB_SOUND_SINK` | *(empty)* | Optional PipeWire/Pulse sink name (auto-detects HDMI) |
+| `PAB_SOUND_ENABLED` | `true` | Enable alert sound playback (PipeWire) |
+| `PAB_SOUND_SINK` | *(empty)* | Optional sink override (else Bluetooth → HDMI) |
 
-### HDMI alert sounds
+### Board colors (bright rooms)
 
-Reminder rules can play an uploaded WAV/MP3/OGG **once** over HDMI when they fire (independent of the ESP32 buzzer).
+**Admin → Branding → Board colors**: choose **Daylight high-contrast** for LCD TVs in bright rooms (white text, amber accents on near-black). **Classic blue** is the original slate/cyan look. The setting applies to the HDMI kiosk immediately and to the Roku board after the channel is sideloaded with theme support (build ≥ 4).
+
+### Alert sounds (HDMI or Bluetooth)
+
+Reminder rules can play an uploaded WAV/MP3/OGG **once** over the active PipeWire sink when they fire (independent of the ESP32 buzzer). When a Bluetooth speaker is connected, that A2DP sink is preferred over HDMI.
 
 1. Open **Admin → Sounds** and upload a file (max 8 MB).
-2. In **Admin → Rules → Reminder HDMI sound**, enable playback, pick the file, set volume.
-3. Use **Test HDMI sound** (or Test on a library row) to verify PipeWire reaches the monitor.
+2. Optional: pair a speaker under **Bluetooth speaker** (see [bluetooth-audio.md](bluetooth-audio.md)).
+3. In **Admin → Rules → Play alert sound**, enable playback, pick the file, set volume.
+4. Use **Test alert sound** (or Test on a library row) to verify audio.
 
-Playback targets the HDMI sink by name (not the default analog jack). Override with `PAB_SOUND_SINK` if needed. The systemd service sets `XDG_RUNTIME_DIR` so the server can talk to the desktop PipeWire session.
+Override with `PAB_SOUND_SINK` if needed. The systemd service sets `XDG_RUNTIME_DIR` so the server can talk to the desktop PipeWire session.
 
-See also [pi-wifi.md](pi-wifi.md) for hotspot + Wi-Fi changes, and [pi-set-time.md](pi-set-time.md) to set the system clock over SSH.
+### Music breaks
+
+**Admin → Music Breaks** plays a playlist on an interval with BLE LED rainbow + matrix “MUSIC BREAK” scroll (when those hardware pieces are enabled).
+
+The matrix **repeats** a rainbow scroll of “MUSIC BREAK” then a full-panel rainbow fill for the **full track**. Admin **Test** may only show one cycle when the clip is short (~10s).
+
+| Piece | How to enable |
+|-------|----------------|
+| Audio | Same sink as alerts (Bluetooth preferred when connected) |
+| BLE LED lamp | **Admin →** LED config (saved in SQLite; reloads on service start) |
+| WS2812 matrix | `.env`: `PAB_MATRIX_ENABLED=true` and port (or share `PAB_BUZZER_PORT`) — see §6.2 |
+
+**Test** starts a short session in the background (does not block Admin). **Stop** ends audio and animations immediately. Reminder alerts also interrupt an active music break.
+
+See also [pi-wifi.md](pi-wifi.md) for hotspot + Wi-Fi changes, [bluetooth-audio.md](bluetooth-audio.md) for speakers, and [pi-set-time.md](pi-set-time.md) to set the system clock over SSH.
 
 ## Troubleshooting
 

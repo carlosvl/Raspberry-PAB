@@ -141,6 +141,9 @@ async function loadAppConfig() {
         String(fontScale / 100)
       );
     }
+    const theme =
+      config.board_theme === "daylight" ? "daylight" : "classic";
+    document.documentElement.dataset.boardTheme = theme;
   } catch {
     // The hard-coded title remains usable if config loading fails.
   }

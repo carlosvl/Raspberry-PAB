@@ -23,7 +23,7 @@ sudo apt-get install -y \
     python3 python3-venv python3-pip git \
     chromium unclutter curl \
     network-manager avahi-daemon \
-    x11-xserver-utils
+    x11-xserver-utils bluez pulseaudio-utils
 
 echo "==> Installing optional on-screen keyboard packages..."
 for keyboard_package in wvkbd matchbox-keyboard onboard; do
@@ -72,6 +72,13 @@ sudo tee /etc/sudoers.d/raspberry-pab-wifi >/dev/null <<EOF
 ${INSTALL_USER} ALL=(ALL) NOPASSWD: ${HOME}/bin/manage-pi-wifi.sh
 EOF
 sudo chmod 440 /etc/sudoers.d/raspberry-pab-wifi
+
+echo "==> Allowing passwordless Bluetooth speaker management from admin UI..."
+install -m 0755 scripts/manage-pi-bluetooth.sh "${HOME}/bin/manage-pi-bluetooth.sh"
+sudo tee /etc/sudoers.d/raspberry-pab-bluetooth >/dev/null <<EOF
+${INSTALL_USER} ALL=(ALL) NOPASSWD: ${HOME}/bin/manage-pi-bluetooth.sh
+EOF
+sudo chmod 440 /etc/sudoers.d/raspberry-pab-bluetooth
 
 echo "==> Allowing passwordless system clock changes from admin UI..."
 install -m 0755 scripts/set-pi-system-time.sh "${HOME}/bin/set-pi-system-time.sh"
@@ -154,6 +161,7 @@ install -m 0755 scripts/setup-touch-input.sh "${BIN_DIR}/setup-touch-input.sh"
 install -m 0755 scripts/apply-input-config.sh "${BIN_DIR}/apply-input-config.sh"
 install -m 0755 scripts/reload-kiosk-display.sh "${BIN_DIR}/reload-kiosk-display.sh"
 install -m 0755 scripts/manage-pi-wifi.sh "${BIN_DIR}/manage-pi-wifi.sh"
+install -m 0755 scripts/manage-pi-bluetooth.sh "${BIN_DIR}/manage-pi-bluetooth.sh"
 install -m 0755 scripts/set-pi-system-time.sh "${BIN_DIR}/set-pi-system-time.sh"
 install -m 0755 scripts/configure-pi-wifi.sh "${BIN_DIR}/configure-pi-wifi.sh"
 

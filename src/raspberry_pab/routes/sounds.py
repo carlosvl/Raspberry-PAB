@@ -158,7 +158,7 @@ async def test_sound(
     if not settings.sound_enabled:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="HDMI sound is disabled (PAB_SOUND_ENABLED)",
+            detail="Alert sound is disabled (PAB_SOUND_ENABLED)",
         )
     store = get_store(request)
     sound = store.get_sound(sound_id)

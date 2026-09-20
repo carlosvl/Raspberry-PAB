@@ -63,6 +63,65 @@ def test_led_test_requires_configuration(tmp_path: Path) -> None:
     assert response.status_code == 503
 
 
+def test_led_config_save_updates_controller(tmp_path: Path) -> None:
+    settings = Settings(
+        admin_pin="9999",
+        data_dir=tmp_path / "data",
+        web_dir=make_web_dir(tmp_path),
+        led_enabled=False,
+        led_address="",
+    )
+    with TestClient(create_app(settings)) as client:
+        controller = cast(LedController, client.app.state.led_controller)
+        assert controller._settings.led_enabled is False  # noqa: SLF001
+        response = client.put(
+            "/api/admin/led/config",
+            headers={"X-Admin-Pin": "9999"},
+            json={
+                "led_enabled": True,
+                "led_address": "BE:28:79:00:06:CB",
+                "led_name": "MELK-OT21   CB",
+            },
+        )
+        assert response.status_code == 200
+        assert controller._settings.led_enabled is True  # noqa: SLF001
+        assert controller._settings.led_address == "BE:28:79:00:06:CB"  # noqa: SLF001
+
+
+def test_led_config_reloads_from_db_on_boot(tmp_path: Path) -> None:
+    data_dir = tmp_path / "data"
+    web_dir = make_web_dir(tmp_path)
+    settings = Settings(
+        admin_pin="9999",
+        data_dir=data_dir,
+        web_dir=web_dir,
+        led_enabled=False,
+    )
+    with TestClient(create_app(settings)) as client:
+        client.put(
+            "/api/admin/led/config",
+            headers={"X-Admin-Pin": "9999"},
+            json={
+                "led_enabled": True,
+                "led_address": "AA:BB:CC:DD:EE:FF",
+                "led_name": "Strip",
+            },
+        )
+
+    # New process/app: env still disabled, but DB should win after lifespan.
+    cold = Settings(
+        admin_pin="9999",
+        data_dir=data_dir,
+        web_dir=web_dir,
+        led_enabled=False,
+        led_address="",
+    )
+    with TestClient(create_app(cold)) as client:
+        controller = cast(LedController, client.app.state.led_controller)
+        assert controller._settings.led_enabled is True  # noqa: SLF001
+        assert controller._settings.led_address == "AA:BB:CC:DD:EE:FF"  # noqa: SLF001
+
+
 def test_led_test_triggers_controller(tmp_path: Path) -> None:
     settings = Settings(
         admin_pin="9999",

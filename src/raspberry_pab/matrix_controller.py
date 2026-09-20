@@ -118,6 +118,7 @@ class MatrixController:
         self._hardware_lock = hardware_lock or HARDWARE_SERIAL_LOCK
         self._lock = asyncio.Lock()
         self._show_task: asyncio.Task[None] | None = None
+        self._session_port: object | None = None
 
     async def show(self, rule: ReminderRule, message: str) -> None:
         if not self._should_show(rule):
@@ -198,6 +199,10 @@ class MatrixController:
 
     async def stop(self) -> None:
         """Cancel any in-progress matrix show."""
+        port = self._session_port
+        if port is not None:
+            with contextlib.suppress(Exception):
+                await asyncio.to_thread(self._best_effort_stop_clear, port)
         if self._show_task and not self._show_task.done():
             self._show_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
@@ -215,7 +220,6 @@ class MatrixController:
         if not self._settings.matrix_enabled or not effective_matrix_port(
             self._settings
         ):
-            await stop_event.wait()
             return
         await self.stop()
         self._show_task = asyncio.create_task(
@@ -297,37 +301,77 @@ class MatrixController:
         stop_event: asyncio.Event,
         message: str,
     ) -> None:
-        # Full-panel rainbow after each completed text pass.
+        # Full-panel rainbow after each completed text pass; one serial session
+        # for the whole music-break so cycles stay continuous and resilient.
         fill_ms = max(pulse_ms * 6, 3000)
+        port_name = effective_matrix_port(self._settings)
         try:
-            while not stop_event.is_set():
-                async with self._lock:
-                    async with self._hardware_lock:
-                        await asyncio.to_thread(
-                            self._execute_scroll_once,
-                            message,
-                            "rainbow",
-                        )
-                if stop_event.is_set():
-                    break
-                async with self._lock:
-                    async with self._hardware_lock:
-                        await asyncio.to_thread(
-                            self._execute_rainbow_fill,
-                            fill_ms,
-                        )
+            async with self._lock:
+                async with self._hardware_lock:
+                    port = self._serial_factory(self._settings, port_name)
+                    self._session_port = port
+                    try:
+                        await asyncio.to_thread(self._prepare_music_break_port, port)
+                        while not stop_event.is_set():
+                            try:
+                                await asyncio.to_thread(
+                                    self._scroll_once_on_port,
+                                    port,
+                                    message,
+                                    "rainbow",
+                                )
+                            except asyncio.CancelledError:
+                                raise
+                            except Exception:
+                                logger.exception(
+                                    "Matrix music-break scroll phase failed"
+                                )
+                                with contextlib.suppress(Exception):
+                                    await asyncio.to_thread(
+                                        self._prepare_music_break_port, port
+                                    )
+                            if stop_event.is_set():
+                                break
+                            try:
+                                await asyncio.to_thread(
+                                    self._rainbow_fill_on_port,
+                                    port,
+                                    fill_ms,
+                                )
+                            except asyncio.CancelledError:
+                                raise
+                            except Exception:
+                                logger.exception(
+                                    "Matrix music-break fill phase failed"
+                                )
+                                with contextlib.suppress(Exception):
+                                    await asyncio.to_thread(
+                                        self._prepare_music_break_port, port
+                                    )
+                    finally:
+                        self._session_port = None
+                        with contextlib.suppress(Exception):
+                            await asyncio.to_thread(
+                                self._close_music_break_port, port
+                            )
         except asyncio.CancelledError:
             raise
         except Exception:
             logger.exception("Matrix rainbow scroll failed")
 
-    def _execute_scroll_once(
+    def _prepare_music_break_port(self, port: object) -> None:
+        handshake(port)
+        bright_cmd = build_bright_command(self._settings.matrix_brightness)
+        if transact_line(port, bright_cmd, {"OK"}, attempts=3) != "OK":
+            raise RuntimeError("Arduino did not accept BRIGHT command")
+
+    def _scroll_once_on_port(
         self,
+        port: object,
         message: str,
         effect: MatrixEffect | str,
     ) -> None:
         display_message = sanitize_matrix_message(message)
-        port_name = effective_matrix_port(self._settings)
         # One full pass across 8x96: width + text width, ~50ms/frame.
         char_w = 6
         text_w = max(len(display_message), 1) * char_w
@@ -338,50 +382,41 @@ class MatrixController:
             pass_ms,
             display_message,
         )
-        port = self._serial_factory(self._settings, port_name)
-        try:
-            handshake(port)
-            bright_cmd = build_bright_command(self._settings.matrix_brightness)
-            if transact_line(port, bright_cmd, {"OK"}, attempts=3) != "OK":
-                raise RuntimeError("Arduino did not accept BRIGHT command")
-            scroll_cmd = build_scroll_once_command(
-                red=255,
-                green=255,
-                blue=255,
-                message=display_message,
-                effect=effect,
-            )
-            port.write(scroll_cmd.encode("ascii"))
-            port.flush()
-            timeout = max(pass_ms / 1000.0 * 2.0 + 5.0, 20.0)
-            if not wait_for_ok(port, timeout=timeout):
-                raise RuntimeError("Arduino did not finish SCROLLONCE command")
-        finally:
-            with contextlib.suppress(Exception):
-                port.write(build_clear_command().encode("ascii"))
-                port.flush()
-            port.close()
+        scroll_cmd = build_scroll_once_command(
+            red=255,
+            green=255,
+            blue=255,
+            message=display_message,
+            effect=effect,
+        )
+        port.write(scroll_cmd.encode("ascii"))  # type: ignore[attr-defined]
+        port.flush()  # type: ignore[attr-defined]
+        timeout = max(pass_ms / 1000.0 * 2.0 + 5.0, 20.0)
+        if not wait_for_ok(port, timeout=timeout):  # type: ignore[arg-type]
+            raise RuntimeError("Arduino did not finish SCROLLONCE command")
 
-    def _execute_rainbow_fill(self, duration_ms: int) -> None:
-        port_name = effective_matrix_port(self._settings)
+    def _rainbow_fill_on_port(self, port: object, duration_ms: int) -> None:
         logger.info("Matrix rainbow fill (%d ms)", duration_ms)
-        port = self._serial_factory(self._settings, port_name)
-        try:
-            handshake(port)
-            bright_cmd = build_bright_command(self._settings.matrix_brightness)
-            if transact_line(port, bright_cmd, {"OK"}, attempts=3) != "OK":
-                raise RuntimeError("Arduino did not accept BRIGHT command")
-            cmd = build_rainbow_command(duration_ms=duration_ms)
-            port.write(cmd.encode("ascii"))
-            port.flush()
-            timeout = max(duration_ms / 1000.0 * 2.0 + 5.0, 10.0)
-            if not wait_for_ok(port, timeout=timeout):
-                raise RuntimeError("Arduino did not finish RAINBOW command")
-        finally:
-            with contextlib.suppress(Exception):
-                port.write(build_clear_command().encode("ascii"))
-                port.flush()
-            port.close()
+        cmd = build_rainbow_command(duration_ms=duration_ms)
+        port.write(cmd.encode("ascii"))  # type: ignore[attr-defined]
+        port.flush()  # type: ignore[attr-defined]
+        timeout = max(duration_ms / 1000.0 * 2.0 + 5.0, 10.0)
+        if not wait_for_ok(port, timeout=timeout):  # type: ignore[arg-type]
+            raise RuntimeError("Arduino did not finish RAINBOW command")
+
+    @staticmethod
+    def _best_effort_stop_clear(port: object) -> None:
+        with contextlib.suppress(Exception):
+            port.write(b"STOP\n")  # type: ignore[attr-defined]
+            port.flush()  # type: ignore[attr-defined]
+        with contextlib.suppress(Exception):
+            port.write(build_clear_command().encode("ascii"))  # type: ignore[attr-defined]
+            port.flush()  # type: ignore[attr-defined]
+
+    def _close_music_break_port(self, port: object) -> None:
+        self._best_effort_stop_clear(port)
+        with contextlib.suppress(Exception):
+            port.close()  # type: ignore[attr-defined]
 
     def _execute_show_sequence(self, rule: ReminderRule, message: str) -> None:
         duration_ms = matrix_display_duration_ms(rule)

@@ -9,6 +9,7 @@ import socket
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import cast
 
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
@@ -18,6 +19,7 @@ from raspberry_pab.alert_batch import drain_alert_queue, group_alerts_by_slot
 from raspberry_pab.arduino_serial import HARDWARE_SERIAL_LOCK
 from raspberry_pab.branding import (
     effective_board_font_scale,
+    effective_board_theme,
     effective_display_title,
     logo_url,
 )
@@ -32,10 +34,13 @@ from raspberry_pab.music_break_scheduler import MusicBreakScheduler
 from raspberry_pab.network_info import HOTSPOT_IPV4, lan_base_urls
 from raspberry_pab.roku_autocast import RokuAutocastWatcher
 from raspberry_pab.routes.alerts import router as alerts_router
+from raspberry_pab.routes.bluetooth import router as bluetooth_router
+from raspberry_pab.routes.bluetooth import try_reconnect_saved_speaker
 from raspberry_pab.routes.branding import router as branding_router
 from raspberry_pab.routes.buzzer import router as buzzer_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.kiosk_clock import router as kiosk_clock_router
+from raspberry_pab.routes.led import apply_persisted_led_config
 from raspberry_pab.routes.led import router as led_router
 from raspberry_pab.routes.matrix import router as matrix_router
 from raspberry_pab.routes.music_breaks import router as music_breaks_router
@@ -53,7 +58,7 @@ from raspberry_pab.scheduler import (
     RaceResultsSyncScheduler,
     ReminderScheduler,
 )
-from raspberry_pab.sound_controller import SoundController
+from raspberry_pab.sound_controller import SoundController, make_store_sink_resolver
 
 logger = logging.getLogger(__name__)
 
@@ -140,6 +145,7 @@ def create_app(settings: Settings) -> FastAPI:
     sound_controller = SoundController(
         settings,
         path_resolver=resolve_sound_path,
+        sink_resolver=make_store_sink_resolver(store),
     )
     music_break_scheduler = MusicBreakScheduler(
         store,
@@ -158,6 +164,12 @@ def create_app(settings: Settings) -> FastAPI:
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         store.initialize()
         settings.sounds_dir.mkdir(parents=True, exist_ok=True)
+        # Admin-saved LED address must reach LedController (frozen Settings copy).
+        app.state.settings = apply_persisted_led_config(
+            settings=cast(Settings, app.state.settings),
+            store=store,
+            led_controller=led_controller,
+        )
         stop_event = asyncio.Event()
 
         async def hardware_listener() -> None:
@@ -187,6 +199,10 @@ def create_app(settings: Settings) -> FastAPI:
         results_scheduler.start()
         music_break_scheduler.start()
         roku_autocast.start()
+        asyncio.create_task(
+            try_reconnect_saved_speaker(store),
+            name="bluetooth-reconnect",
+        )
         try:
             yield
         finally:
@@ -232,6 +248,7 @@ def create_app(settings: Settings) -> FastAPI:
             "app_name": settings.app_name,
             "display_title": effective_display_title(settings, store),
             "board_font_scale": effective_board_font_scale(store),
+            "board_theme": effective_board_theme(store),
             "logo_url": logo_url(settings, store),
             "port": settings.port,
             "kiosk_now": clock["kiosk_now"],
@@ -274,6 +291,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(branding_router)
     app.include_router(touch_router)
     app.include_router(wifi_router)
+    app.include_router(bluetooth_router)
     app.include_router(alerts_router)
     app.include_router(kiosk_router)
     app.include_router(led_router)
