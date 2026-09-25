@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 from pathlib import Path
 
@@ -36,6 +37,7 @@ class MusicBreakScheduler:
         matrix_controller: MatrixController,
         sound_path_resolver,
         alerts_busy: asyncio.Event | None = None,
+        skip_when: Callable[[], Awaitable[bool]] | None = None,
     ) -> None:
         self._store = store
         self._sound = sound_controller
@@ -43,6 +45,7 @@ class MusicBreakScheduler:
         self._matrix = matrix_controller
         self._sound_path_resolver = sound_path_resolver
         self._alerts_busy = alerts_busy
+        self._skip_when = skip_when
         self._task: asyncio.Task[None] | None = None
         self._session_task: asyncio.Task[None] | None = None
         self._stop_event = asyncio.Event()
@@ -119,6 +122,10 @@ class MusicBreakScheduler:
         if was_slot_fired(self._store, current.date(), slot.slot_index):
             return False
         mark_slot_fired(self._store, current.date(), slot.slot_index)
+        if self._skip_when is not None and await self._skip_when():
+            # Spotify is online: skip this slot (marked fired so it never plays late).
+            logger.info("Skipping music break slot %d", slot.slot_index)
+            return False
         self._session_task = asyncio.create_task(
             self._run_session(
                 sound_id=slot.sound_id,

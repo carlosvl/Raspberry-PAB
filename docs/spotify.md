@@ -44,6 +44,15 @@ curl -s 127.0.0.1:3678/status
 
 `/status` returns **204 No Content** until the login is done, and JSON with `username` and the current `track` after that.
 
+## How the kiosk uses Spotify
+
+Turn it on with `PAB_SPOTIFY_ENABLED=1` in `.env` (or from the Admin page once it has a Spotify section), then restart `raspberry-pab`. The server talks to go-librespot at `PAB_SPOTIFY_API_URL` (default `http://127.0.0.1:3678`).
+
+- **Online** means Spotify is enabled, go-librespot answers, and it is logged in. The status is re-checked about every 10 seconds.
+- **Alerts:** if Spotify is playing when a reminder fires, it pauses, the alert plays, and Spotify resumes afterward. If it was already paused, it stays paused.
+- **Music breaks** only play when Spotify is **offline**. While Spotify is online, each break slot is skipped (and never plays late).
+- **Speaker:** go-librespot plays to PipeWire's default output. While it plays, the server moves its stream to the same output alerts use (saved Bluetooth speaker, then HDMI), if that output exists.
+
 ## Troubleshooting
 
 - **No sound:** confirm `pactl list short sinks` shows the Bluetooth or HDMI sink, and that alert sounds play there. go-librespot uses the default Pulse sink.

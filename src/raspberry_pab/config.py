@@ -58,6 +58,8 @@ class Settings:
     roku_autocast: str = "hdmi-fallback"  # on | off | hdmi-fallback
     roku_channel_id: str = "dev"
     roku_scan_interval_seconds: float = 15.0
+    spotify_enabled: bool = False
+    spotify_api_url: str = "http://127.0.0.1:3678"
 
     @property
     def kiosk_url(self) -> str:
@@ -123,6 +125,8 @@ class Settings:
                     str(cls.roku_scan_interval_seconds),
                 )
             ),
+            spotify_enabled=_env_bool("PAB_SPOTIFY_ENABLED", cls.spotify_enabled),
+            spotify_api_url=os.getenv("PAB_SPOTIFY_API_URL", cls.spotify_api_url),
         )
 
 

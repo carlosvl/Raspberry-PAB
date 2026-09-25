@@ -287,6 +287,7 @@ class MusicBreakStatus(BaseModel):
     next_sound_id: int | None = None
     next_slot: int | None = None
     playing: bool = False
+    spotify_online: bool = False
     kiosk_now: datetime
 
 
