@@ -45,9 +45,14 @@ Re-run after more categories post; Cloudflare may 403 occasionally — wait and 
 | HTTP client | [`src/raspberry_pab/race_results/client.py`](../src/raspberry_pab/race_results/client.py) |
 | Tests | [`tests/test_mca_scoring.py`](../tests/test_mca_scoring.py) |
 
+## Live on the kiosk
+
+Admin → **Race Results** → **Live team standings** enables background polling of the series URL. The kiosk shows a bottom ticker (focus team place + top 3). Every interval (default 5 minutes) the matrix runs SCROLLONCE with a short place message (rotating buckets). Matrix updates skip while reminder alerts are busy.
+
 ## Checklist
 
 1. `make install-dev`
 2. Run the command above (quote the URL in zsh)
 3. Open [`mca-team-results.md`](mca-team-results.md) for standings + focus-team detail
 4. Re-run when skipped categories later get results
+5. On the Pi: enable Live team standings in Admin and confirm the kiosk ticker

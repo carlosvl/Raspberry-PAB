@@ -1,0 +1,40 @@
+---
+paths:
+  - "hardware/esp32/**"
+  - "hardware/arduino/**"
+  - "src/raspberry_pab/**/*matrix*"
+  - "src/raspberry_pab/arduino_serial.py"
+  - "scripts/upload-*matrix*"
+  - "scripts/upload-*hardware*"
+  - "scripts/upload-esp32*"
+---
+
+# LED matrix on ESP32 (production) / Nano (legacy)
+
+## Production (ESP32)
+
+- Combined board: buzzer **GPIO 4**, WS2812 DIN **GPIO 16**, **768** LEDs (`MATRIX_W=96`).
+- Firmware: `hardware/esp32/raspberry_pab_hardware/`. Wiring: `hardware/esp32/WIRING.md`.
+- Upload: `scripts/upload-esp32-hardware.sh` (FQBN `esp32:esp32:esp32`).
+- Same serial protocol as Nano (`READY`, `PING`, `SCROLL …`, `BEEP`, …). Env `PAB_MATRIX_WIDTH=96`.
+- Power LEDs from external **5.1 V** rail only — never ESP32 `5V`. Common GND required.
+- 3.3 V data into 5 V panels: short wire + 330 Ω; level-shift if needed.
+
+## Legacy Nano (do not scale to 3 panels)
+
+- Nano has **2 KB SRAM**. Dual 8×32 = **512 × 3 = 1536 B** pixel buffer.
+- **Three panels (768 LEDs)** need **2304 B** — impossible on Nano. Keep Nano sketches at 512 / width 64.
+- Prefer `Adafruit_NeoPixel` only on Nano — no NeoMatrix/GFX for 512 LEDs.
+- Never use `sscanf` on Nano — stack blows the pixel buffer.
+
+## Firmware / protocol rules
+
+- Handshake banner may be `READY` or `READY PIXELS n FREE …`. Python must accept `startswith("READY")`.
+- Scroll timing: prefer **frame counts**; give Python **≥ ~2× duration + 5s** to wait for `OK`.
+- `SCROLL r g b ms [mode] text` — mode `0` solid, `1` rainbow, `2` pulse.
+- Keep SCROLL lines under RX limits: sanitize message to **36** chars (`MAX_MATRIX_MESSAGE_CHARS` in `matrix_controller.py`).
+
+## Verify
+
+- ESP32 `matrix_test` lights three panels → wiring/power OK.
+- Production: `PIXELS 768`, SOLID then SCROLL visible across all panels; buzzer on same USB port.

@@ -759,6 +759,36 @@
             </div>
           </details>
           <details class="admin-section" open>
+            <summary>Live team standings</summary>
+            <p class="branding__hint">
+              Polls ITS YOUR RACE for MCA team scores (focus team + top 3). Shows on the
+              kiosk ticker and scrolls the matrix every interval.
+            </p>
+            <div class="form">
+              <label class="checkbox-row">
+                <input id="teamStandingsEnabled" type="checkbox" />
+                Enabled
+              </label>
+              <label>
+                Series URL
+                <input id="teamStandingsUrl" type="url" />
+              </label>
+              <label>
+                Focus team
+                <input id="teamStandingsTeam" type="text" />
+              </label>
+              <label>
+                Interval (minutes, 0 = off)
+                <input id="teamStandingsInterval" max="1440" min="0" step="1" type="number" />
+              </label>
+              <div class="button-row">
+                <button id="saveTeamStandings" type="button">Save live standings</button>
+                <button id="refreshTeamStandings" type="button">Refresh now</button>
+              </div>
+              <p class="branding__hint" id="teamStandingsStatus"></p>
+            </div>
+          </details>
+          <details class="admin-section" open>
             <summary>Results</summary>
             <div class="admin__list" id="raceResultsList"></div>
           </details>

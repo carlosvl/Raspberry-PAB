@@ -231,8 +231,91 @@ class MatrixController:
             name="matrix-rainbow-scroll",
         )
 
+    async def scroll_once(
+        self,
+        message: str,
+        *,
+        effect: MatrixEffect | str = "solid",
+        red: int = 255,
+        green: int = 255,
+        blue: int = 255,
+    ) -> None:
+        """One SCROLLONCE pass then clear (live team standings, etc.)."""
+        if not self._settings.matrix_enabled or not effective_matrix_port(
+            self._settings
+        ):
+            return
+        await self.stop()
+        self._show_task = asyncio.create_task(
+            self._run_scroll_once(
+                message,
+                effect=effect,
+                red=red,
+                green=green,
+                blue=blue,
+            ),
+            name="matrix-scroll-once",
+        )
+        await self._show_task
+
     async def shutdown(self) -> None:
         await self.stop()
+
+    async def _run_scroll_once(
+        self,
+        message: str,
+        *,
+        effect: MatrixEffect | str,
+        red: int,
+        green: int,
+        blue: int,
+    ) -> None:
+        port_name = effective_matrix_port(self._settings)
+        try:
+            async with self._lock, self._hardware_lock:
+                port = await asyncio.to_thread(
+                    self._serial_factory, self._settings, port_name
+                )
+                self._session_port = port
+                try:
+                    await asyncio.to_thread(self._prepare_music_break_port, port)
+                    display_message = sanitize_matrix_message(message)
+                    char_w = 6
+                    text_w = max(len(display_message), 1) * char_w
+                    pass_ms = (self._settings.matrix_width + text_w) * 50
+                    logger.info(
+                        "Matrix scroll-once (%s, ~%d ms): %s",
+                        effect,
+                        pass_ms,
+                        display_message,
+                    )
+                    scroll_cmd = build_scroll_once_command(
+                        red=red,
+                        green=green,
+                        blue=blue,
+                        message=display_message,
+                        effect=effect,
+                    )
+                    port.write(scroll_cmd.encode("ascii"))  # type: ignore[attr-defined]
+                    port.flush()  # type: ignore[attr-defined]
+                    timeout = max(pass_ms / 1000.0 * 2.0 + 5.0, 20.0)
+                    ok = await asyncio.to_thread(
+                        wait_for_ok, port, timeout=timeout
+                    )
+                    if not ok:
+                        raise RuntimeError(
+                            "Arduino did not finish SCROLLONCE command"
+                        )
+                finally:
+                    self._session_port = None
+                    with contextlib.suppress(Exception):
+                        await asyncio.to_thread(
+                            self._close_music_break_port, port
+                        )
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception("Matrix scroll-once failed")
 
     async def _start_show(
         self,
@@ -306,54 +389,53 @@ class MatrixController:
         fill_ms = max(pulse_ms * 6, 3000)
         port_name = effective_matrix_port(self._settings)
         try:
-            async with self._lock:
-                async with self._hardware_lock:
-                    port = self._serial_factory(self._settings, port_name)
-                    self._session_port = port
-                    try:
-                        await asyncio.to_thread(self._prepare_music_break_port, port)
-                        while not stop_event.is_set():
-                            try:
-                                await asyncio.to_thread(
-                                    self._scroll_once_on_port,
-                                    port,
-                                    message,
-                                    "rainbow",
-                                )
-                            except asyncio.CancelledError:
-                                raise
-                            except Exception:
-                                logger.exception(
-                                    "Matrix music-break scroll phase failed"
-                                )
-                                with contextlib.suppress(Exception):
-                                    await asyncio.to_thread(
-                                        self._prepare_music_break_port, port
-                                    )
-                            if stop_event.is_set():
-                                break
-                            try:
-                                await asyncio.to_thread(
-                                    self._rainbow_fill_on_port,
-                                    port,
-                                    fill_ms,
-                                )
-                            except asyncio.CancelledError:
-                                raise
-                            except Exception:
-                                logger.exception(
-                                    "Matrix music-break fill phase failed"
-                                )
-                                with contextlib.suppress(Exception):
-                                    await asyncio.to_thread(
-                                        self._prepare_music_break_port, port
-                                    )
-                    finally:
-                        self._session_port = None
-                        with contextlib.suppress(Exception):
+            async with self._lock, self._hardware_lock:
+                port = self._serial_factory(self._settings, port_name)
+                self._session_port = port
+                try:
+                    await asyncio.to_thread(self._prepare_music_break_port, port)
+                    while not stop_event.is_set():
+                        try:
                             await asyncio.to_thread(
-                                self._close_music_break_port, port
+                                self._scroll_once_on_port,
+                                port,
+                                message,
+                                "rainbow",
                             )
+                        except asyncio.CancelledError:
+                            raise
+                        except Exception:
+                            logger.exception(
+                                "Matrix music-break scroll phase failed"
+                            )
+                            with contextlib.suppress(Exception):
+                                await asyncio.to_thread(
+                                    self._prepare_music_break_port, port
+                                )
+                        if stop_event.is_set():
+                            break
+                        try:
+                            await asyncio.to_thread(
+                                self._rainbow_fill_on_port,
+                                port,
+                                fill_ms,
+                            )
+                        except asyncio.CancelledError:
+                            raise
+                        except Exception:
+                            logger.exception(
+                                "Matrix music-break fill phase failed"
+                            )
+                            with contextlib.suppress(Exception):
+                                await asyncio.to_thread(
+                                    self._prepare_music_break_port, port
+                                )
+                finally:
+                    self._session_port = None
+                    with contextlib.suppress(Exception):
+                        await asyncio.to_thread(
+                            self._close_music_break_port, port
+                        )
         except asyncio.CancelledError:
             raise
         except Exception:

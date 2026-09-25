@@ -32,6 +32,7 @@ from raspberry_pab.matrix_controller import MatrixController
 from raspberry_pab.models import Alert
 from raspberry_pab.music_break_scheduler import MusicBreakScheduler
 from raspberry_pab.network_info import HOTSPOT_IPV4, lan_base_urls
+from raspberry_pab.race_results.team_standings_scheduler import TeamStandingsScheduler
 from raspberry_pab.roku_autocast import RokuAutocastWatcher
 from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.bluetooth import router as bluetooth_router
@@ -155,6 +156,11 @@ def create_app(settings: Settings) -> FastAPI:
         sound_path_resolver=resolve_sound_path,
         alerts_busy=alerts_busy,
     )
+    team_standings_scheduler = TeamStandingsScheduler(
+        store,
+        matrix_controller=matrix_controller,
+        alerts_busy=alerts_busy,
+    )
     roku_autocast = RokuAutocastWatcher(settings, store)
     broker.add_before_publish(
         lambda _alert: music_break_scheduler.interrupt()
@@ -197,6 +203,7 @@ def create_app(settings: Settings) -> FastAPI:
         )
         scheduler.start()
         results_scheduler.start()
+        team_standings_scheduler.start()
         music_break_scheduler.start()
         roku_autocast.start()
         asyncio.create_task(
@@ -212,6 +219,7 @@ def create_app(settings: Settings) -> FastAPI:
                 await hardware_task
             await roku_autocast.stop()
             await music_break_scheduler.stop()
+            await team_standings_scheduler.stop()
             await led_controller.shutdown()
             await matrix_controller.shutdown()
             await buzzer_controller.shutdown()
@@ -234,6 +242,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.buzzer_controller = buzzer_controller
     app.state.sound_controller = sound_controller
     app.state.music_break_scheduler = music_break_scheduler
+    app.state.team_standings_scheduler = team_standings_scheduler
     app.state.roku_autocast = roku_autocast
     web_dir = settings.web_dir
 

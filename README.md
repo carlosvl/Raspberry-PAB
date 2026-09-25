@@ -167,6 +167,8 @@ The admin **Race Results** panel syncs the [Precision Race MCA index](https://ww
 
 To score **team** places from an IYR series URL using 2026 MCA Chapter 11 + Appendix A (Roseville + full standings markdown), see [docs/mca-team-scoring.md](docs/mca-team-scoring.md). Example output: [docs/mca-team-results.md](docs/mca-team-results.md).
 
+**Live on the kiosk:** Admin → Race Results → **Live team standings** polls the same series on a timer, shows focus team + top 3 on a bottom ticker, and SCROLLONCE on the matrix every interval (default 5 minutes).
+
 ## Development commands
 
 | Command            | Description                         |

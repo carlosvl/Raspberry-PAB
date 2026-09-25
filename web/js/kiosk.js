@@ -297,6 +297,44 @@ function renderSchedule(items) {
   }
 }
 
+function renderTeamTicker(data) {
+  const ticker = document.getElementById("kioskTicker");
+  const track = document.getElementById("kioskTickerTrack");
+  const textEl = document.getElementById("kioskTickerText");
+  if (!ticker || !track || !textEl) return;
+  const text =
+    data && data.enabled && data.ticker_text ? String(data.ticker_text).trim() : "";
+  if (!text) {
+    ticker.hidden = true;
+    textEl.textContent = "";
+    track.innerHTML = "";
+    track.appendChild(textEl);
+    return;
+  }
+  textEl.textContent = text;
+  // Duplicate span so CSS -50% marquee loops seamlessly.
+  track.innerHTML = "";
+  const first = textEl.cloneNode(true);
+  const second = textEl.cloneNode(true);
+  first.id = "kioskTickerText";
+  second.removeAttribute("id");
+  second.setAttribute("aria-hidden", "true");
+  track.appendChild(first);
+  track.appendChild(second);
+  ticker.hidden = false;
+}
+
+async function loadTeamStandings() {
+  try {
+    const response = await fetch("/api/team-standings");
+    if (!response.ok) throw new Error("team standings request failed");
+    const data = await response.json();
+    renderTeamTicker(data);
+  } catch {
+    // Keep last ticker text on transient errors.
+  }
+}
+
 async function loadSchedule() {
   try {
     const response = await fetch(`/api/participants?date=${displayDate}`);
@@ -583,6 +621,7 @@ loadAppConfig().then(() => {
 });
 updateClock();
 loadNetworkInfo();
+loadTeamStandings();
 connectAlertStream();
 setInterval(async () => {
   await loadAppConfig();
@@ -591,3 +630,4 @@ setInterval(async () => {
 }, 1000);
 setInterval(loadNetworkInfo, 60000);
 setInterval(loadSchedule, 1000);
+setInterval(loadTeamStandings, 30000);

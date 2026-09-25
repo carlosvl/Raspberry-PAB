@@ -129,6 +129,51 @@ class RaceResultsSyncConfigUpdate(BaseModel):
     window_hours: int = Field(ge=1, le=24)
 
 
+class TeamStandingTopEntry(BaseModel):
+    place: int
+    team_name: str
+    score: int
+
+
+class TeamStandingBucketView(BaseModel):
+    race_date: date
+    bucket: str
+    division_label: str
+    focus_place: int | None = None
+    focus_score: int | None = None
+    focus_team: str
+    top3: list[TeamStandingTopEntry]
+
+
+class TeamStandingsSnapshot(BaseModel):
+    enabled: bool
+    series_url: str
+    focus_team: str
+    scraped_at: datetime | None = None
+    ticker_text: str = ""
+    matrix_messages: list[str] = Field(default_factory=list)
+    buckets: list[TeamStandingBucketView] = Field(default_factory=list)
+    results_status: str | None = None
+    error: str | None = None
+
+
+class TeamStandingsConfig(BaseModel):
+    enabled: bool
+    series_url: str
+    focus_team: str
+    interval_minutes: int
+    ticker_text: str = ""
+    scraped_at: datetime | None = None
+    error: str | None = None
+
+
+class TeamStandingsConfigUpdate(BaseModel):
+    enabled: bool
+    series_url: str = Field(min_length=1, max_length=500)
+    focus_team: str = Field(min_length=1, max_length=120)
+    interval_minutes: int = Field(ge=0, le=1440)
+
+
 class ManualRaceResultLink(BaseModel):
     participant_id: int
     iyr_session_id: int

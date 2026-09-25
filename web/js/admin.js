@@ -1089,6 +1089,7 @@ async function loadAll() {
       loadMusicBreaks(),
       loadRules(),
       loadRaceResults(),
+      loadTeamStandingsConfig(),
       loadKioskClockStatus(),
       loadScenarioList(),
       loadSyncInterval(),
@@ -2801,6 +2802,104 @@ document.getElementById("saveSyncConfig")?.addEventListener("click", async () =>
       interval > 0
         ? `Auto-sync every ${interval} min · ${windowHours}h after last start.`
         : "Auto-sync disabled.",
+    );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+function renderTeamStandingsStatus(data) {
+  const statusEl = document.getElementById("teamStandingsStatus");
+  if (!statusEl) return;
+  if (!data) {
+    statusEl.textContent = "";
+    return;
+  }
+  const parts = [];
+  parts.push(data.enabled ? "Live standings ON" : "Live standings OFF");
+  parts.push(`every ${data.interval_minutes} min`);
+  if (data.scraped_at) {
+    parts.push(`last scrape ${formatSyncClock(data.scraped_at)}`);
+  }
+  if (data.error) {
+    parts.push(`error: ${data.error}`);
+  } else if (data.ticker_text) {
+    parts.push(data.ticker_text.slice(0, 120) + (data.ticker_text.length > 120 ? "…" : ""));
+  }
+  statusEl.textContent = parts.join(" · ");
+}
+
+async function loadTeamStandingsConfig() {
+  const enabledEl = document.getElementById("teamStandingsEnabled");
+  const urlEl = document.getElementById("teamStandingsUrl");
+  const teamEl = document.getElementById("teamStandingsTeam");
+  const intervalEl = document.getElementById("teamStandingsInterval");
+  if (!enabledEl || !urlEl || !teamEl || !intervalEl) return;
+  try {
+    const data = await api("/api/admin/team-standings/config", {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    enabledEl.checked = Boolean(data.enabled);
+    urlEl.value = data.series_url || "";
+    teamEl.value = data.focus_team || "";
+    intervalEl.value = String(data.interval_minutes);
+    renderTeamStandingsStatus(data);
+  } catch {
+    // not available
+  }
+}
+
+document.getElementById("saveTeamStandings")?.addEventListener("click", async () => {
+  const enabled = document.getElementById("teamStandingsEnabled")?.checked ?? true;
+  const seriesUrl = document.getElementById("teamStandingsUrl")?.value?.trim() || "";
+  const focusTeam = document.getElementById("teamStandingsTeam")?.value?.trim() || "";
+  const interval = parseInt(
+    document.getElementById("teamStandingsInterval")?.value || "5",
+    10,
+  );
+  if (!seriesUrl || !focusTeam) {
+    setOutput("Series URL and focus team are required.");
+    return;
+  }
+  if (Number.isNaN(interval) || interval < 0) {
+    setOutput("Enter a valid live standings interval (0 = off).");
+    return;
+  }
+  try {
+    const data = await api("/api/admin/team-standings/config", {
+      method: "PUT",
+      body: JSON.stringify({
+        enabled,
+        series_url: seriesUrl,
+        focus_team: focusTeam,
+        interval_minutes: interval,
+      }),
+    });
+    renderTeamStandingsStatus(data);
+    setOutput(
+      enabled && interval > 0
+        ? `Live team standings every ${interval} min for ${focusTeam}.`
+        : "Live team standings disabled.",
+    );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("refreshTeamStandings")?.addEventListener("click", async () => {
+  setOutput("Refreshing live team standings…");
+  try {
+    const snapshot = await api("/api/admin/team-standings/refresh", {
+      method: "POST",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    await loadTeamStandingsConfig();
+    setOutput(
+      snapshot.error
+        ? `Refresh failed: ${snapshot.error}`
+        : `Refreshed · ${snapshot.buckets?.length || 0} buckets · ticker ${
+            snapshot.ticker_text ? "ready" : "empty"
+          }.`,
     );
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));

@@ -230,6 +230,43 @@ body.admin-page {
   color: var(--board-dim);
 }
 
+.kiosk__ticker {
+  flex-shrink: 0;
+  overflow: hidden;
+  margin: 0.35rem 0 0;
+  padding: 0.35rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--board-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--board-accent) 8%, transparent);
+}
+
+.kiosk__ticker[hidden] {
+  display: none;
+}
+
+.kiosk__ticker-track {
+  display: flex;
+  width: max-content;
+  animation: kiosk-ticker-scroll 40s linear infinite;
+}
+
+.kiosk__ticker-text {
+  padding-right: 4rem;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--board-accent);
+}
+
+@keyframes kiosk-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 .kiosk__status {
   margin: 0;
   flex-shrink: 0;
