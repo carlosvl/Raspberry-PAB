@@ -11,7 +11,7 @@ Fullscreen **offline schedule and reminder kiosk** for **Raspberry Pi OS**. A lo
 5. **Kiosk shell** — Chromium launches via desktop autostart with `--kiosk`
 6. **Boot** — systemd starts the server; autologin + autostart opens the browser
 
-See [docs/kiosk.md](docs/kiosk.md) for autologin, screen blanking, board colors, and troubleshooting. Bluetooth speakers: [docs/bluetooth-audio.md](docs/bluetooth-audio.md). Set the Pi clock over SSH with [docs/pi-set-time.md](docs/pi-set-time.md).
+See [docs/kiosk.md](docs/kiosk.md) for autologin, screen blanking, board colors, and troubleshooting. Bluetooth speakers: [docs/bluetooth-audio.md](docs/bluetooth-audio.md). Spotify: [docs/spotify.md](docs/spotify.md). Set the Pi clock over SSH with [docs/pi-set-time.md](docs/pi-set-time.md).
 
 ## Project structure
 
@@ -50,7 +50,8 @@ Raspberry-PAB/
 ├── docs/kiosk.md              # Full kiosk setup guide
 ├── docs/pi-wifi.md            # Admin Wi-Fi tab + fallback hotspot
 ├── docs/bluetooth-audio.md    # Bluetooth speaker pairing + sink routing
-└── docs/roku.md               # Roku sideload + HDMI-fallback auto-cast
+├── docs/roku.md               # Roku sideload + HDMI-fallback auto-cast
+└── docs/spotify.md            # Spotify Connect (go-librespot) setup
 ```
 
 ## Quick start (development)
