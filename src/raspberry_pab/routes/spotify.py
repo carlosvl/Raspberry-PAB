@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import Literal, cast
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.responses import HTMLResponse
 
+from raspberry_pab.config import Settings
 from raspberry_pab.models import (
     SpotifyConfigUpdate,
     SpotifyPlaylist,
@@ -13,6 +15,10 @@ from raspberry_pab.models import (
     SpotifyPlayRequest,
     SpotifyStatus,
     SpotifyVolume,
+    SpotifyWebComplete,
+    SpotifyWebItem,
+    SpotifyWebLogin,
+    SpotifyWebStatus,
 )
 from raspberry_pab.routes.schedule import get_store, require_admin_pin
 from raspberry_pab.spotify_controller import SpotifyController
@@ -25,6 +31,11 @@ from raspberry_pab.spotify_library import (
     save_max_volume,
     save_playlists,
     steps_to_percent,
+)
+from raspberry_pab.spotify_web import (
+    SpotifyNotConnectedError,
+    SpotifyWebClient,
+    SpotifyWebError,
 )
 
 router = APIRouter(prefix="/api", tags=["spotify"])
@@ -187,3 +198,133 @@ async def play_playlist(request: Request, index: int) -> SpotifyStatus:
     uri = playlists[index].uri
     _require_online(await get_spotify_controller(request).play(uri), "play")
     return await _status_response(request)
+
+
+def get_spotify_web(request: Request) -> SpotifyWebClient:
+    return cast(SpotifyWebClient, request.app.state.spotify_web)
+
+
+def _web_error(exc: SpotifyWebError) -> HTTPException:
+    code = (
+        status.HTTP_409_CONFLICT
+        if isinstance(exc, SpotifyNotConnectedError)
+        else status.HTTP_502_BAD_GATEWAY
+    )
+    return HTTPException(status_code=code, detail=str(exc))
+
+
+def _web_status(request: Request) -> SpotifyWebStatus:
+    web = get_spotify_web(request)
+    return SpotifyWebStatus(
+        configured=web.configured,
+        connected=web.connected,
+        redirect_uri=cast(Settings, request.app.state.settings).spotify_redirect_uri,
+    )
+
+
+@router.get(
+    "/admin/spotify/web",
+    response_model=SpotifyWebStatus,
+    dependencies=[Depends(require_admin_pin)],
+)
+def get_web_status(request: Request) -> SpotifyWebStatus:
+    return _web_status(request)
+
+
+@router.post(
+    "/admin/spotify/web/login",
+    response_model=SpotifyWebLogin,
+    dependencies=[Depends(require_admin_pin)],
+)
+def start_web_login(request: Request) -> SpotifyWebLogin:
+    try:
+        url = get_spotify_web(request).start_login()
+    except SpotifyWebError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+    return SpotifyWebLogin(authorize_url=url)
+
+
+@router.post(
+    "/admin/spotify/web/complete",
+    response_model=SpotifyWebStatus,
+    dependencies=[Depends(require_admin_pin)],
+)
+async def complete_web_login(
+    request: Request, body: SpotifyWebComplete
+) -> SpotifyWebStatus:
+    try:
+        await get_spotify_web(request).finish_login_from_url(body.redirect_url)
+    except SpotifyWebError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+    return _web_status(request)
+
+
+@router.get("/spotify/callback", response_class=HTMLResponse)
+async def web_login_callback(
+    request: Request,
+    code: str = "",
+    state: str = "",
+    error: str = "",
+) -> HTMLResponse:
+    """Spotify redirects here when the login is done on the Pi itself.
+
+    No admin PIN: the one-time state from the PIN-gated login start
+    protects it.
+    """
+    try:
+        await get_spotify_web(request).finish_login(code=code, state=state, error=error)
+    except SpotifyWebError as exc:
+        return HTMLResponse(_callback_page(f"Spotify not connected: {exc}"), 400)
+    return HTMLResponse(_callback_page("Spotify connected. You can close this tab."))
+
+
+def _callback_page(message: str) -> str:
+    safe = message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return (
+        "<!doctype html><meta charset=utf-8>"
+        '<meta name=viewport content="width=device-width,initial-scale=1">'
+        "<title>Spotify</title>"
+        '<body style="font-family:system-ui;padding:2rem;background:#0b1220;'
+        f'color:#e5e7eb"><h1>{safe}</h1><p><a style="color:#60a5fa" '
+        'href="/admin">Back to Admin</a></p></body>'
+    )
+
+
+@router.delete(
+    "/admin/spotify/web",
+    response_model=SpotifyWebStatus,
+    dependencies=[Depends(require_admin_pin)],
+)
+def disconnect_web(request: Request) -> SpotifyWebStatus:
+    get_spotify_web(request).disconnect()
+    return _web_status(request)
+
+
+@router.get(
+    "/admin/spotify/web/playlists",
+    response_model=list[SpotifyWebItem],
+    dependencies=[Depends(require_admin_pin)],
+)
+async def web_playlists(request: Request) -> list[SpotifyWebItem]:
+    try:
+        return await get_spotify_web(request).my_playlists()
+    except SpotifyWebError as exc:
+        raise _web_error(exc) from exc
+
+
+@router.get(
+    "/admin/spotify/web/search",
+    response_model=list[SpotifyWebItem],
+    dependencies=[Depends(require_admin_pin)],
+)
+async def web_search(
+    request: Request, q: str = Query(min_length=1, max_length=100)
+) -> list[SpotifyWebItem]:
+    try:
+        return await get_spotify_web(request).search(q)
+    except SpotifyWebError as exc:
+        raise _web_error(exc) from exc

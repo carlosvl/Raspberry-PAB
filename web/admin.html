@@ -357,6 +357,47 @@
             </div>
           </details>
           <details class="admin-section">
+            <summary>Browse Spotify</summary>
+            <div class="form">
+              <p class="branding__hint" id="spotifyWebStatus">Account: —</p>
+              <div id="spotifyWebConnect" hidden>
+                <p class="branding__hint">
+                  1. Tap <strong>Connect</strong> and approve in Spotify.
+                  On the Pi's own screen that's all. On a phone, Spotify then opens a page
+                  that won't load: copy its whole address and paste it below.
+                </p>
+                <div class="button-row">
+                  <button id="spotifyWebConnectBtn" type="button">Connect Spotify account</button>
+                </div>
+                <label>
+                  2. Paste the address from the page that didn't load
+                  <input
+                    id="spotifyWebRedirect"
+                    placeholder="http://127.0.0.1:8080/api/spotify/callback?code=…"
+                    type="text"
+                  />
+                </label>
+                <div class="button-row">
+                  <button id="spotifyWebFinish" type="button">Finish connecting</button>
+                </div>
+              </div>
+              <div id="spotifyWebBrowse" hidden>
+                <div class="button-row">
+                  <button id="spotifyWebMine" type="button">My playlists</button>
+                  <button id="spotifyWebDisconnect" type="button">Disconnect</button>
+                </div>
+                <label>
+                  Search
+                  <input id="spotifyWebQuery" maxlength="100" placeholder="Song, artist, album or playlist" type="search" />
+                </label>
+                <div class="button-row">
+                  <button id="spotifyWebSearch" type="button">Search</button>
+                </div>
+                <div class="admin__list" id="spotifyWebResults"></div>
+              </div>
+            </div>
+          </details>
+          <details class="admin-section">
             <summary>Settings</summary>
             <form class="form" id="spotifySettingsForm">
               <label class="checkbox-row">

@@ -340,6 +340,28 @@ class SpotifyStatus(BaseModel):
     matrix: SpotifyMatrixConfig = Field(default_factory=SpotifyMatrixConfig)
 
 
+class SpotifyWebStatus(BaseModel):
+    configured: bool
+    connected: bool
+    redirect_uri: str
+
+
+class SpotifyWebLogin(BaseModel):
+    authorize_url: str
+
+
+class SpotifyWebComplete(BaseModel):
+    redirect_url: str = Field(min_length=1, max_length=2000)
+
+
+class SpotifyWebItem(BaseModel):
+    kind: str
+    name: str
+    uri: str
+    subtitle: str = ""
+    image_url: str | None = None
+
+
 class BuzzerTest(BaseModel):
     buzzer_pitch_hz: int = Field(default=2500, ge=100, le=10000)
     buzzer_volume: int = Field(default=80, ge=0, le=100)

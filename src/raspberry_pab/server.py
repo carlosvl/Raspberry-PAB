@@ -63,6 +63,7 @@ from raspberry_pab.scheduler import (
 from raspberry_pab.sound_controller import SoundController, make_store_sink_resolver
 from raspberry_pab.spotify_controller import SpotifyController
 from raspberry_pab.spotify_matrix_ticker import NowPlayingMatrixTicker
+from raspberry_pab.spotify_web import SpotifyWebClient
 
 logger = logging.getLogger(__name__)
 
@@ -282,6 +283,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.music_break_scheduler = music_break_scheduler
     app.state.spotify_controller = spotify_controller
     app.state.now_playing_ticker = now_playing_ticker
+    app.state.spotify_web = SpotifyWebClient(settings, store)
     app.state.team_standings_scheduler = team_standings_scheduler
     app.state.roku_autocast = roku_autocast
     web_dir = settings.web_dir

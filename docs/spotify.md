@@ -59,6 +59,24 @@ Turn it on from **Admin → Spotify → Settings**, or with `PAB_SPOTIFY_ENABLED
 - **Music breaks** only play when Spotify is **offline**. While Spotify is online, each break slot is skipped (and never plays late).
 - **Speaker:** go-librespot plays to PipeWire's default output. While it plays, the server moves its stream to the same output alerts use (saved Bluetooth speaker, then HDMI), if that output exists.
 
+## Browse and search (Spotify Web API)
+
+**Admin → Spotify → Browse Spotify** lists your playlists and searches Spotify. Each result has **Play** (plays on the Pi through go-librespot) and **Save** (adds it to the saved playlists). Search returns up to 5 results each for playlists, albums, songs and artists; Spotify caps search at 10 per type.
+
+One-time setup:
+
+1. At developer.spotify.com, create an app: check **Web API**, and add the redirect URI `http://127.0.0.1:8080/api/spotify/callback` exactly (Spotify rejects `localhost`; port must match `PAB_PORT`). Leave it in Development mode.
+2. Copy the app's **Client ID** (not the secret; the login uses PKCE and needs no secret) into the Pi's `.env`:
+   ```bash
+   echo 'PAB_SPOTIFY_CLIENT_ID=your-client-id' >> ~/Raspberry-PAB/.env
+   ```
+   Restart `raspberry-pab`.
+3. In **Browse Spotify**, tap **Connect Spotify account** and approve.
+   - **On the Pi's own screen**, Spotify returns to the kiosk and you're done.
+   - **On a phone**, Spotify then opens `http://127.0.0.1:8080/...`, which can't load on the phone. Copy that page's full address, paste it into step 2 of the section, and tap **Finish connecting**. The code in it only works with a one-time secret the server created, and only for 10 minutes.
+
+The server keeps a refresh token in the `app_settings` table (`spotify_refresh_token`), so this is needed once. **Disconnect** deletes it. Browsing needs internet; playback of saved playlists doesn't need the Web API at all.
+
 ## Matrix "NOW PLAYING"
 
 While Spotify plays, the LED matrix loops `NOW PLAYING <song> - <artist>` (first artist only; extras like `(feat. …)`, `[Live]` and ` - Remastered 2011` are dropped, and accents become plain letters).

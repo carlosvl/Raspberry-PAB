@@ -60,10 +60,16 @@ class Settings:
     roku_scan_interval_seconds: float = 15.0
     spotify_enabled: bool = False
     spotify_api_url: str = "http://127.0.0.1:3678"
+    spotify_client_id: str = ""
 
     @property
     def kiosk_url(self) -> str:
         return f"http://{self.host}:{self.port}"
+
+    @property
+    def spotify_redirect_uri(self) -> str:
+        """Loopback redirect registered in the Spotify developer app."""
+        return f"http://127.0.0.1:{self.port}/api/spotify/callback"
 
     @property
     def db_path(self) -> Path:
@@ -105,9 +111,7 @@ class Settings:
             matrix_enabled=_env_bool("PAB_MATRIX_ENABLED", cls.matrix_enabled),
             matrix_port=os.getenv("PAB_MATRIX_PORT", cls.matrix_port),
             matrix_width=int(os.getenv("PAB_MATRIX_WIDTH", str(cls.matrix_width))),
-            matrix_height=int(
-                os.getenv("PAB_MATRIX_HEIGHT", str(cls.matrix_height))
-            ),
+            matrix_height=int(os.getenv("PAB_MATRIX_HEIGHT", str(cls.matrix_height))),
             matrix_brightness=int(
                 os.getenv("PAB_MATRIX_BRIGHTNESS", str(cls.matrix_brightness))
             ),
@@ -127,6 +131,9 @@ class Settings:
             ),
             spotify_enabled=_env_bool("PAB_SPOTIFY_ENABLED", cls.spotify_enabled),
             spotify_api_url=os.getenv("PAB_SPOTIFY_API_URL", cls.spotify_api_url),
+            spotify_client_id=os.getenv(
+                "PAB_SPOTIFY_CLIENT_ID", cls.spotify_client_id
+            ).strip(),
         )
 
 

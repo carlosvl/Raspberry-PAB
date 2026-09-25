@@ -1074,6 +1074,159 @@ function spotifyMatrixBody() {
   };
 }
 
+let spotifyWebResults = [];
+
+async function loadSpotifyWeb() {
+  const status = await api("/api/admin/spotify/web");
+  const statusEl = document.getElementById("spotifyWebStatus");
+  const connect = document.getElementById("spotifyWebConnect");
+  const browse = document.getElementById("spotifyWebBrowse");
+  if (statusEl) {
+    statusEl.textContent = !status.configured
+      ? "Account: add PAB_SPOTIFY_CLIENT_ID to the Pi's .env, then restart the server."
+      : status.connected
+        ? "Account: connected"
+        : `Account: not connected (redirect ${status.redirect_uri})`;
+  }
+  if (connect) connect.hidden = !status.configured || status.connected;
+  if (browse) browse.hidden = !status.connected;
+}
+
+const SPOTIFY_KIND_LABELS = { playlist: "Playlist", album: "Album", track: "Song", artist: "Artist" };
+
+function renderSpotifyWebResults(items, emptyText) {
+  spotifyWebResults = items;
+  const list = document.getElementById("spotifyWebResults");
+  if (!list) return;
+  if (!items.length) {
+    list.innerHTML = `<p class="branding__hint">${escapeHtml(emptyText)}</p>`;
+    return;
+  }
+  list.innerHTML = items
+    .map(
+      (item, index) => `
+        <div class="admin__item spotify-result">
+          ${item.image_url ? `<img alt="" loading="lazy" src="${escapeHtml(item.image_url)}" />` : ""}
+          <div class="admin__item-main">
+            <strong>${escapeHtml(item.name)}</strong>
+            <span class="branding__hint">${escapeHtml(
+              [SPOTIFY_KIND_LABELS[item.kind] || item.kind, item.subtitle].filter(Boolean).join(" · "),
+            )}</span>
+          </div>
+          <button data-spotify-web-play="${index}" type="button">Play</button>
+          <button data-spotify-web-save="${index}" type="button">Save</button>
+        </div>
+      `,
+    )
+    .join("");
+  list.querySelectorAll("[data-spotify-web-play]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const item = spotifyWebResults[Number(button.dataset.spotifyWebPlay)];
+      spotifyRequest(
+        "/api/admin/spotify/play",
+        { method: "POST", body: JSON.stringify({ uri: item.uri }) },
+        `Playing ${item.name}.`,
+      );
+    });
+  });
+  list.querySelectorAll("[data-spotify-web-save]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const item = spotifyWebResults[Number(button.dataset.spotifyWebSave)];
+      if (spotifyPlaylists.some((saved) => saved.uri === item.uri)) {
+        setOutput(`${item.name} is already saved.`);
+        return;
+      }
+      saveSpotifyPlaylists(
+        [...spotifyPlaylists, { name: item.name.slice(0, 80), uri: item.uri }],
+        `Saved ${item.name}.`,
+      );
+    });
+  });
+}
+
+async function spotifyWebAction(action) {
+  try {
+    await action();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+    // A revoked login shows up as "not connected"; refresh the section.
+    loadSpotifyWeb().catch(() => {});
+  }
+}
+
+function configureSpotifyWeb() {
+  document.getElementById("spotifyWebConnectBtn")?.addEventListener("click", () => {
+    // Open the tab now (inside the tap) so iOS doesn't block it as a popup.
+    const tab = window.open("", "_blank");
+    spotifyWebAction(async () => {
+      let url;
+      try {
+        ({ authorize_url: url } = await api("/api/admin/spotify/web/login", {
+          method: "POST",
+        }));
+      } catch (error) {
+        tab?.close();
+        throw error;
+      }
+      if (tab) {
+        tab.location.href = url;
+      } else {
+        window.location.href = url;
+      }
+      setOutput("Approve in Spotify. On a phone, paste the address of the page that doesn't load.");
+    });
+  });
+  document.getElementById("spotifyWebFinish")?.addEventListener("click", () =>
+    spotifyWebAction(async () => {
+      const input = document.getElementById("spotifyWebRedirect");
+      const redirectUrl = input?.value.trim() || "";
+      if (!redirectUrl) {
+        setOutput("Paste the address from the page that didn't load.");
+        return;
+      }
+      await api("/api/admin/spotify/web/complete", {
+        method: "POST",
+        body: JSON.stringify({ redirect_url: redirectUrl }),
+      });
+      if (input) input.value = "";
+      await loadSpotifyWeb();
+      setOutput("Spotify account connected.");
+    }),
+  );
+  document.getElementById("spotifyWebDisconnect")?.addEventListener("click", () =>
+    spotifyWebAction(async () => {
+      await api("/api/admin/spotify/web", { method: "DELETE" });
+      renderSpotifyWebResults([], "");
+      await loadSpotifyWeb();
+      setOutput("Spotify account disconnected.");
+    }),
+  );
+  document.getElementById("spotifyWebMine")?.addEventListener("click", () =>
+    spotifyWebAction(async () => {
+      setOutput("Loading your playlists…");
+      const items = await api("/api/admin/spotify/web/playlists");
+      renderSpotifyWebResults(items, "No playlists found.");
+      setOutput(`${items.length} playlists.`);
+    }),
+  );
+  const runSearch = () =>
+    spotifyWebAction(async () => {
+      const query = document.getElementById("spotifyWebQuery")?.value.trim() || "";
+      if (!query) return;
+      setOutput(`Searching for ${query}…`);
+      const items = await api(`/api/admin/spotify/web/search?q=${encodeURIComponent(query)}`);
+      renderSpotifyWebResults(items, "No results.");
+      setOutput(`${items.length} results.`);
+    });
+  document.getElementById("spotifyWebSearch")?.addEventListener("click", runSearch);
+  document.getElementById("spotifyWebQuery")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      runSearch();
+    }
+  });
+}
+
 function configureSpotify() {
   document.querySelectorAll("[data-spotify-action]").forEach((button) => {
     button.addEventListener("click", () =>
@@ -1290,6 +1443,7 @@ async function loadAll() {
       loadBluetoothPanel(),
       loadMusicBreaks(),
       loadSpotify(),
+      loadSpotifyWeb(),
       loadRules(),
       loadRaceResults(),
       loadTeamStandingsConfig(),
@@ -2238,6 +2392,7 @@ if (gamepadSensitivity && gamepadSensitivityRange) {
 initTouchSteppers();
 configureMusicBreaks();
 configureSpotify();
+configureSpotifyWeb();
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("uploadSound")?.addEventListener("click", uploadSoundFile);
 
