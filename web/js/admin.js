@@ -880,6 +880,7 @@ function formatMusicBreakStatus(status) {
   const parts = [];
   parts.push(status.enabled ? "ON" : "OFF");
   if (status.playing) parts.push("playing now");
+  if (status.enabled && status.spotify_online) parts.push("skipped while Spotify is online");
   if (status.next_at) {
     const when = new Date(status.next_at);
     parts.push(
@@ -935,6 +936,184 @@ async function saveMusicBreaks() {
   if (statusEl) statusEl.textContent = formatMusicBreakStatus(status);
   renderMusicBreakPlaylist();
   setOutput("Music breaks saved.");
+}
+
+let spotifyPlaylists = [];
+let spotifyPlaying = false;
+
+function renderSpotify(status) {
+  spotifyPlaylists = Array.isArray(status.playlists) ? status.playlists : [];
+  spotifyPlaying = Boolean(status.playing);
+  const parts = [status.enabled ? "ON" : "OFF"];
+  if (status.enabled) parts.push(status.online ? "online" : "offline");
+  if (status.online) parts.push(status.playing ? "playing" : status.paused ? "paused" : "stopped");
+  const statusEl = document.getElementById("spotifyStatus");
+  if (statusEl) statusEl.textContent = `Status: ${parts.join(" · ")}`;
+
+  const track = document.getElementById("spotifyTrack");
+  const artist = document.getElementById("spotifyArtist");
+  const context = document.getElementById("spotifyContext");
+  const cover = document.getElementById("spotifyCover");
+  if (track) track.textContent = status.track_name || "Nothing playing";
+  if (artist) artist.textContent = (status.artist_names || []).join(", ");
+  if (context) context.textContent = status.context_name ? `From: ${status.context_name}` : "";
+  if (cover) {
+    if (status.album_cover_url) {
+      cover.src = status.album_cover_url;
+      cover.hidden = false;
+    } else {
+      cover.hidden = true;
+      cover.removeAttribute("src");
+    }
+  }
+  const playPause = document.getElementById("spotifyPlayPause");
+  if (playPause) playPause.textContent = spotifyPlaying ? "Pause" : "Play";
+
+  const volume = document.getElementById("spotifyVolume");
+  const volumeValue = document.getElementById("spotifyVolumeValue");
+  if (volume && document.activeElement !== volume) {
+    volume.max = String(status.max_volume ?? 100);
+    volume.value = String(status.volume ?? 0);
+  }
+  if (volumeValue) volumeValue.textContent = status.online ? `${status.volume}%` : "—";
+
+  const enabled = document.getElementById("spotifyEnabled");
+  const maxVolume = document.getElementById("spotifyMaxVolume");
+  if (enabled) enabled.checked = Boolean(status.enabled);
+  if (maxVolume && document.activeElement !== maxVolume) {
+    maxVolume.value = String(status.max_volume ?? 80);
+  }
+  renderSpotifyPlaylists();
+}
+
+function renderSpotifyPlaylists() {
+  const list = document.getElementById("spotifyPlaylists");
+  if (!list) return;
+  if (!spotifyPlaylists.length) {
+    list.innerHTML = `<p class="branding__hint">No playlists yet. Paste a Spotify link below.</p>`;
+    return;
+  }
+  list.innerHTML = spotifyPlaylists
+    .map(
+      (item, index) => `
+        <div class="admin__item">
+          <div class="admin__item-main">
+            <strong>${escapeHtml(item.name)}</strong>
+            <span class="branding__hint">${escapeHtml(item.uri)}</span>
+          </div>
+          <button data-spotify-play="${index}" type="button">Play</button>
+          <button data-spotify-remove="${index}" type="button">Remove</button>
+        </div>
+      `,
+    )
+    .join("");
+  list.querySelectorAll("[data-spotify-play]").forEach((button) => {
+    button.addEventListener("click", () =>
+      spotifyRequest(`/api/admin/spotify/playlists/${button.dataset.spotifyPlay}/play`, {
+        method: "POST",
+      }, "Playing playlist."),
+    );
+  });
+  list.querySelectorAll("[data-spotify-remove]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const next = spotifyPlaylists.filter(
+        (_item, index) => index !== Number(button.dataset.spotifyRemove),
+      );
+      await saveSpotifyPlaylists(next, "Playlist removed.");
+    });
+  });
+}
+
+async function loadSpotify() {
+  renderSpotify(await api("/api/admin/spotify"));
+}
+
+async function spotifyRequest(path, options, message) {
+  try {
+    renderSpotify(await api(path, options));
+    if (message) setOutput(message);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function saveSpotifyPlaylists(playlists, message) {
+  try {
+    spotifyPlaylists = await api("/api/admin/spotify/playlists", {
+      method: "PUT",
+      body: JSON.stringify({ playlists }),
+    });
+    renderSpotifyPlaylists();
+    setOutput(message);
+    return true;
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+    return false;
+  }
+}
+
+function configureSpotify() {
+  document.querySelectorAll("[data-spotify-action]").forEach((button) => {
+    button.addEventListener("click", () =>
+      spotifyRequest(`/api/admin/spotify/player/${button.dataset.spotifyAction}`, {
+        method: "POST",
+      }),
+    );
+  });
+  document.getElementById("spotifyPlayPause")?.addEventListener("click", () =>
+    spotifyRequest(`/api/admin/spotify/player/${spotifyPlaying ? "pause" : "resume"}`, {
+      method: "POST",
+    }),
+  );
+  document.getElementById("spotifyRefresh")?.addEventListener("click", () =>
+    spotifyRequest("/api/admin/spotify", {}, "Spotify status refreshed."),
+  );
+  const volume = document.getElementById("spotifyVolume");
+  volume?.addEventListener("input", () => {
+    const volumeValue = document.getElementById("spotifyVolumeValue");
+    if (volumeValue) volumeValue.textContent = `${volume.value}%`;
+  });
+  volume?.addEventListener("change", () =>
+    spotifyRequest("/api/admin/spotify/volume", {
+      method: "PUT",
+      body: JSON.stringify({ volume: Number(volume.value) }),
+    }),
+  );
+  document.getElementById("spotifyPlaylistAdd")?.addEventListener("click", async () => {
+    const nameInput = document.getElementById("spotifyPlaylistName");
+    const uriInput = document.getElementById("spotifyPlaylistUri");
+    const name = nameInput?.value.trim() || "";
+    const uri = uriInput?.value.trim() || "";
+    if (!name || !uri) {
+      setOutput("Enter a name and a Spotify link.");
+      return;
+    }
+    if (await saveSpotifyPlaylists([...spotifyPlaylists, { name, uri }], "Playlist added.")) {
+      if (nameInput) nameInput.value = "";
+      if (uriInput) uriInput.value = "";
+    }
+  });
+  document.getElementById("spotifySettingsForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    spotifyRequest(
+      "/api/admin/spotify",
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          enabled: Boolean(document.getElementById("spotifyEnabled")?.checked),
+          max_volume: Number(document.getElementById("spotifyMaxVolume")?.value || 80),
+        }),
+      },
+      "Spotify settings saved.",
+    );
+  });
+  // Keep "Now playing" fresh while the Spotify tab is open.
+  setInterval(() => {
+    const panel = document.getElementById("spotifyPanel");
+    if (panel && !panel.hidden && !adminPanels?.hidden) {
+      loadSpotify().catch(() => {});
+    }
+  }, 10000);
 }
 
 function configureMusicBreaks() {
@@ -1087,6 +1266,7 @@ async function loadAll() {
       loadSounds(),
       loadBluetoothPanel(),
       loadMusicBreaks(),
+      loadSpotify(),
       loadRules(),
       loadRaceResults(),
       loadTeamStandingsConfig(),
@@ -2034,6 +2214,7 @@ if (gamepadSensitivity && gamepadSensitivityRange) {
 
 initTouchSteppers();
 configureMusicBreaks();
+configureSpotify();
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("uploadSound")?.addEventListener("click", uploadSoundFile);
 

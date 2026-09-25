@@ -1497,3 +1497,17 @@ body.admin-page {
     padding: 0 0.75rem 0.75rem;
   }
 }
+
+.spotify-now {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.spotify-now img {
+  width: 96px;
+  height: 96px;
+  flex: none;
+  border-radius: 8px;
+  object-fit: cover;
+}

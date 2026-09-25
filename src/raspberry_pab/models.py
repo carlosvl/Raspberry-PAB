@@ -291,6 +291,43 @@ class MusicBreakStatus(BaseModel):
     kiosk_now: datetime
 
 
+class SpotifyPlaylist(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    uri: str = Field(min_length=1, max_length=200)
+
+
+class SpotifyPlaylistsUpdate(BaseModel):
+    playlists: list[SpotifyPlaylist] = Field(default_factory=list, max_length=50)
+
+
+class SpotifyConfigUpdate(BaseModel):
+    enabled: bool | None = None
+    max_volume: int | None = Field(default=None, ge=0, le=100)
+
+
+class SpotifyVolume(BaseModel):
+    volume: int = Field(ge=0, le=100)
+
+
+class SpotifyPlayRequest(BaseModel):
+    uri: str = Field(min_length=1, max_length=200)
+
+
+class SpotifyStatus(BaseModel):
+    enabled: bool
+    online: bool
+    playing: bool = False
+    paused: bool = False
+    stopped: bool = True
+    volume: int = 0
+    max_volume: int = 80
+    track_name: str | None = None
+    artist_names: list[str] = Field(default_factory=list)
+    album_cover_url: str | None = None
+    context_name: str | None = None
+    playlists: list[SpotifyPlaylist] = Field(default_factory=list)
+
+
 class BuzzerTest(BaseModel):
     buzzer_pitch_hz: int = Field(default=2500, ge=100, le=10000)
     buzzer_volume: int = Field(default=80, ge=0, le=100)

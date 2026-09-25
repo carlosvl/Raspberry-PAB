@@ -34,6 +34,9 @@
         <button data-tab-panel="musicBreaksPanel" type="button">
           Music breaks
         </button>
+        <button data-tab-panel="spotifyPanel" type="button">
+          Spotify
+        </button>
         <button data-tab-panel="touchPanel" type="button">
           Touch
         </button>
@@ -297,6 +300,80 @@
               </div>
               <div class="admin__list" id="musicBreakPlaylist"></div>
             </div>
+          </details>
+        </article>
+
+        <article class="panel" id="spotifyPanel">
+          <h2>Spotify</h2>
+          <p class="branding__hint">
+            Plays Spotify through the Pi (speaker name <strong>PAB Board</strong>) on the
+            same output as alerts. Needs internet and Spotify Premium. Alerts pause the
+            music and resume it afterward. Music breaks only play while Spotify is offline.
+          </p>
+          <p class="branding__hint" id="spotifyStatus">Status: —</p>
+          <details class="admin-section" open>
+            <summary>Now playing</summary>
+            <div class="form">
+              <div class="spotify-now">
+                <img alt="" hidden id="spotifyCover" />
+                <div>
+                  <strong id="spotifyTrack">Nothing playing</strong>
+                  <p class="branding__hint" id="spotifyArtist"></p>
+                  <p class="branding__hint" id="spotifyContext"></p>
+                </div>
+              </div>
+              <div class="button-row">
+                <button data-spotify-action="prev" type="button">Previous</button>
+                <button id="spotifyPlayPause" type="button">Pause</button>
+                <button data-spotify-action="next" type="button">Next</button>
+                <button id="spotifyRefresh" type="button">Refresh</button>
+              </div>
+              <label>
+                Volume <span id="spotifyVolumeValue">—</span>
+                <input id="spotifyVolume" max="100" min="0" step="5" type="range" value="60" />
+              </label>
+            </div>
+          </details>
+          <details class="admin-section" open>
+            <summary>Playlists</summary>
+            <div class="form">
+              <div class="admin__list" id="spotifyPlaylists"></div>
+              <label>
+                Name
+                <input id="spotifyPlaylistName" maxlength="80" placeholder="Warm-up" type="text" />
+              </label>
+              <label>
+                Spotify link
+                <input
+                  id="spotifyPlaylistUri"
+                  placeholder="https://open.spotify.com/playlist/…"
+                  type="text"
+                />
+                <span class="branding__hint">In the Spotify app: Share → Copy link.</span>
+              </label>
+              <div class="button-row">
+                <button id="spotifyPlaylistAdd" type="button">Add playlist</button>
+              </div>
+            </div>
+          </details>
+          <details class="admin-section">
+            <summary>Settings</summary>
+            <form class="form" id="spotifySettingsForm">
+              <label class="checkbox-row">
+                <input id="spotifyEnabled" type="checkbox" />
+                Enable Spotify
+              </label>
+              <label>
+                Maximum volume (%)
+                <input id="spotifyMaxVolume" max="100" min="0" required type="number" value="80" />
+                <span class="branding__hint">
+                  The Pi turns Spotify down to this level, even if a phone or Alexa sets it higher.
+                </span>
+              </label>
+              <div class="button-row">
+                <button type="submit">Save Spotify settings</button>
+              </div>
+            </form>
           </details>
         </article>
 

@@ -18,6 +18,7 @@ import httpx
 from raspberry_pab.audio_sink import _runtime_env, list_sink_names
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
+from raspberry_pab.spotify_library import load_max_volume, percent_to_steps
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +167,7 @@ class SpotifyController:
         self._online = False
         self._online_checked_at: float | None = None
         self._paused_by_alert = False
+        self._volume_steps = 100
         self._watch_task: asyncio.Task[None] | None = None
 
     def start(self) -> None:
@@ -208,6 +210,8 @@ class SpotifyController:
                     data = None
                 if isinstance(data, dict):
                     playback = parse_status(data)
+        if playback is not None:
+            self._volume_steps = playback.volume_steps
         self._online = playback is not None
         self._online_checked_at = self._clock()
         return playback
@@ -220,7 +224,22 @@ class SpotifyController:
         playback = await self.status()
         if playback is not None and playback.playing:
             await self.follow_sink()
+            await self.enforce_max_volume(playback)
         return self._online
+
+    async def enforce_max_volume(self, playback: SpotifyPlayback) -> bool:
+        """Turn Spotify down if something (phone, Alexa) set it above the limit."""
+        limit = percent_to_steps(load_max_volume(self._store), playback.volume_steps)
+        if playback.volume <= limit:
+            return False
+        logger.info("Spotify volume %d above limit %d", playback.volume, limit)
+        return await self.set_volume(limit)
+
+    async def set_volume_percent(self, percent: int) -> bool:
+        """Set volume 0-100, capped at the admin max volume."""
+        capped = min(percent, load_max_volume(self._store))
+        steps = self._volume_steps
+        return await self.set_volume(percent_to_steps(capped, steps))
 
     async def follow_sink(self) -> bool:
         """Move the Spotify stream to the same sink alerts use."""

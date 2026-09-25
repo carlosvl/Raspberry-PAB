@@ -49,6 +49,7 @@ from raspberry_pab.routes.race_results import router as race_results_router
 from raspberry_pab.routes.roku import router as roku_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.routes.sounds import router as sounds_router
+from raspberry_pab.routes.spotify import router as spotify_router
 from raspberry_pab.routes.system_clock import router as system_clock_router
 from raspberry_pab.routes.test_scenarios import router as test_scenarios_router
 from raspberry_pab.routes.touch import router as touch_router
@@ -331,6 +332,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(matrix_router)
     app.include_router(sounds_router)
     app.include_router(music_breaks_router)
+    app.include_router(spotify_router)
     app.include_router(system_clock_router)
     app.include_router(race_results_router)
     app.include_router(test_scenarios_router)

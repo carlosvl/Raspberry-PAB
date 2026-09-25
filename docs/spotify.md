@@ -44,9 +44,15 @@ curl -s 127.0.0.1:3678/status
 
 `/status` returns **204 No Content** until the login is done, and JSON with `username` and the current `track` after that.
 
+## Admin → Spotify
+
+- **Now playing:** track, artist, cover art and playlist, with Previous / Play-Pause / Next and a volume slider. It refreshes every 10 seconds while the tab is open.
+- **Playlists:** paste a Spotify link (Share → Copy link) with a name, then tap **Play**. Playlist, album, track and artist links all work, including Spotify's own playlists.
+- **Settings:** **Enable Spotify**, and **Maximum volume** (default 80%). The Pi turns Spotify back down to this level if a phone or Alexa sets it higher.
+
 ## How the kiosk uses Spotify
 
-Turn it on with `PAB_SPOTIFY_ENABLED=1` in `.env` (or from the Admin page once it has a Spotify section), then restart `raspberry-pab`. The server talks to go-librespot at `PAB_SPOTIFY_API_URL` (default `http://127.0.0.1:3678`).
+Turn it on from **Admin → Spotify → Settings**, or with `PAB_SPOTIFY_ENABLED=1` in `.env` (the Admin setting wins once saved). The server talks to go-librespot at `PAB_SPOTIFY_API_URL` (default `http://127.0.0.1:3678`).
 
 - **Online** means Spotify is enabled, go-librespot answers, and it is logged in. The status is re-checked about every 10 seconds.
 - **Alerts:** if Spotify is playing when a reminder fires, it pauses, the alert plays, and Spotify resumes afterward. If it was already paused, it stays paused.
