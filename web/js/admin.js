@@ -983,6 +983,17 @@ function renderSpotify(status) {
   if (maxVolume && document.activeElement !== maxVolume) {
     maxVolume.value = String(status.max_volume ?? 80);
   }
+  const matrix = status.matrix || {};
+  const matrixEnabled = document.getElementById("spotifyMatrixEnabled");
+  const matrixEffect = document.getElementById("spotifyMatrixEffect");
+  const matrixColor = document.getElementById("spotifyMatrixColor");
+  if (matrixEnabled) matrixEnabled.checked = matrix.enabled !== false;
+  if (matrixEffect && document.activeElement !== matrixEffect) {
+    matrixEffect.value = matrix.effect || "solid";
+  }
+  if (matrixColor && document.activeElement !== matrixColor) {
+    matrixColor.value = rgbToHex(matrix.red ?? 30, matrix.green ?? 215, matrix.blue ?? 96);
+  }
   renderSpotifyPlaylists();
 }
 
@@ -1052,6 +1063,17 @@ async function saveSpotifyPlaylists(playlists, message) {
   }
 }
 
+function spotifyMatrixBody() {
+  const color = parseHexColor(document.getElementById("spotifyMatrixColor")?.value || "#1ed760");
+  return {
+    enabled: Boolean(document.getElementById("spotifyMatrixEnabled")?.checked),
+    effect: document.getElementById("spotifyMatrixEffect")?.value || "solid",
+    red: color.led_red,
+    green: color.led_green,
+    blue: color.led_blue,
+  };
+}
+
 function configureSpotify() {
   document.querySelectorAll("[data-spotify-action]").forEach((button) => {
     button.addEventListener("click", () =>
@@ -1102,6 +1124,7 @@ function configureSpotify() {
         body: JSON.stringify({
           enabled: Boolean(document.getElementById("spotifyEnabled")?.checked),
           max_volume: Number(document.getElementById("spotifyMaxVolume")?.value || 80),
+          matrix: spotifyMatrixBody(),
         }),
       },
       "Spotify settings saved.",

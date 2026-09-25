@@ -6,10 +6,11 @@ import json
 import re
 
 from raspberry_pab.db import ScheduleStore
-from raspberry_pab.models import SpotifyPlaylist
+from raspberry_pab.models import SpotifyMatrixConfig, SpotifyPlaylist
 
 SPOTIFY_PLAYLISTS_KEY = "spotify_playlists"
 SPOTIFY_MAX_VOLUME_KEY = "spotify_max_volume"
+SPOTIFY_MATRIX_KEY = "spotify_matrix"
 DEFAULT_MAX_VOLUME = 80
 
 _KINDS = ("playlist", "album", "track", "artist", "show", "episode")
@@ -68,3 +69,17 @@ def steps_to_percent(steps: int, volume_steps: int) -> int:
     if volume_steps <= 0:
         return 0
     return round(steps * 100 / volume_steps)
+
+
+def load_matrix_config(store: ScheduleStore) -> SpotifyMatrixConfig:
+    raw = store.get_setting(SPOTIFY_MATRIX_KEY)
+    if not raw:
+        return SpotifyMatrixConfig()
+    try:
+        return SpotifyMatrixConfig.model_validate_json(raw)
+    except ValueError:
+        return SpotifyMatrixConfig()
+
+
+def save_matrix_config(store: ScheduleStore, config: SpotifyMatrixConfig) -> None:
+    store.set_setting(SPOTIFY_MATRIX_KEY, config.model_dump_json())

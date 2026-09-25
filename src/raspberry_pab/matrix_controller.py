@@ -120,6 +120,18 @@ class MatrixController:
         self._show_task: asyncio.Task[None] | None = None
         self._session_port: object | None = None
 
+    @property
+    def is_available(self) -> bool:
+        """True when the matrix is enabled and has a serial port."""
+        return bool(
+            self._settings.matrix_enabled and effective_matrix_port(self._settings)
+        )
+
+    @property
+    def is_busy(self) -> bool:
+        """True while a show, scroll, or animation is running."""
+        return self._show_task is not None and not self._show_task.done()
+
     async def show(self, rule: ReminderRule, message: str) -> None:
         if not self._should_show(rule):
             return

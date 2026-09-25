@@ -300,9 +300,20 @@ class SpotifyPlaylistsUpdate(BaseModel):
     playlists: list[SpotifyPlaylist] = Field(default_factory=list, max_length=50)
 
 
+class SpotifyMatrixConfig(BaseModel):
+    """Matrix "NOW PLAYING" loop settings."""
+
+    enabled: bool = True
+    effect: MatrixEffect = "solid"
+    red: int = Field(default=30, ge=0, le=255)
+    green: int = Field(default=215, ge=0, le=255)
+    blue: int = Field(default=96, ge=0, le=255)
+
+
 class SpotifyConfigUpdate(BaseModel):
     enabled: bool | None = None
     max_volume: int | None = Field(default=None, ge=0, le=100)
+    matrix: SpotifyMatrixConfig | None = None
 
 
 class SpotifyVolume(BaseModel):
@@ -326,6 +337,7 @@ class SpotifyStatus(BaseModel):
     album_cover_url: str | None = None
     context_name: str | None = None
     playlists: list[SpotifyPlaylist] = Field(default_factory=list)
+    matrix: SpotifyMatrixConfig = Field(default_factory=SpotifyMatrixConfig)
 
 
 class BuzzerTest(BaseModel):

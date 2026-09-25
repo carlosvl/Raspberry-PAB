@@ -17,9 +17,11 @@ from raspberry_pab.models import (
 from raspberry_pab.routes.schedule import get_store, require_admin_pin
 from raspberry_pab.spotify_controller import SpotifyController
 from raspberry_pab.spotify_library import (
+    load_matrix_config,
     load_max_volume,
     load_playlists,
     normalize_spotify_uri,
+    save_matrix_config,
     save_max_volume,
     save_playlists,
     steps_to_percent,
@@ -43,6 +45,7 @@ async def _status_response(request: Request) -> SpotifyStatus:
         online=playback is not None,
         max_volume=load_max_volume(store),
         playlists=load_playlists(store),
+        matrix=load_matrix_config(store),
     )
     if playback is None:
         return result
@@ -86,6 +89,8 @@ async def put_spotify(request: Request, body: SpotifyConfigUpdate) -> SpotifySta
     controller = get_spotify_controller(request)
     if body.enabled is not None:
         controller.set_enabled(body.enabled)
+    if body.matrix is not None:
+        save_matrix_config(get_store(request), body.matrix)
     if body.max_volume is not None:
         save_max_volume(get_store(request), body.max_volume)
         playback = await controller.status()

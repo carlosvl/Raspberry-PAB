@@ -62,6 +62,7 @@ from raspberry_pab.scheduler import (
 )
 from raspberry_pab.sound_controller import SoundController, make_store_sink_resolver
 from raspberry_pab.spotify_controller import SpotifyController
+from raspberry_pab.spotify_matrix_ticker import NowPlayingMatrixTicker
 
 logger = logging.getLogger(__name__)
 
@@ -77,8 +78,11 @@ async def play_alert_groups(
     music_break_scheduler: MusicBreakScheduler | None = None,
     alerts_busy: asyncio.Event | None = None,
     spotify_controller: SpotifyController | None = None,
+    now_playing_ticker: NowPlayingMatrixTicker | None = None,
 ) -> None:
     """Play each same-slot group: effects once, matrix messages in order."""
+    if now_playing_ticker is not None:
+        await now_playing_ticker.pause()
     if music_break_scheduler is not None:
         await music_break_scheduler.interrupt()
     if alerts_busy is not None:
@@ -130,6 +134,8 @@ async def play_alert_groups(
                 await spotify_controller.resume_after_alert()
             except Exception:
                 logger.exception("Spotify resume after alert failed")
+        if now_playing_ticker is not None:
+            now_playing_ticker.resume()
 
 
 def create_app(settings: Settings) -> FastAPI:
@@ -176,6 +182,12 @@ def create_app(settings: Settings) -> FastAPI:
         alerts_busy=alerts_busy,
         skip_when=spotify_controller.is_online,
     )
+    now_playing_ticker = NowPlayingMatrixTicker(
+        store,
+        matrix_controller=matrix_controller,
+        spotify_controller=spotify_controller,
+        alerts_busy=alerts_busy,
+    )
     team_standings_scheduler = TeamStandingsScheduler(
         store,
         matrix_controller=matrix_controller,
@@ -217,6 +229,7 @@ def create_app(settings: Settings) -> FastAPI:
                         music_break_scheduler=music_break_scheduler,
                         alerts_busy=alerts_busy,
                         spotify_controller=spotify_controller,
+                        now_playing_ticker=now_playing_ticker,
                     )
 
         hardware_task = asyncio.create_task(
@@ -227,6 +240,7 @@ def create_app(settings: Settings) -> FastAPI:
         team_standings_scheduler.start()
         music_break_scheduler.start()
         spotify_controller.start()
+        now_playing_ticker.start()
         roku_autocast.start()
         asyncio.create_task(
             try_reconnect_saved_speaker(store),
@@ -241,6 +255,7 @@ def create_app(settings: Settings) -> FastAPI:
                 await hardware_task
             await roku_autocast.stop()
             await music_break_scheduler.stop()
+            await now_playing_ticker.stop()
             await spotify_controller.shutdown()
             await team_standings_scheduler.stop()
             await led_controller.shutdown()
@@ -266,6 +281,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.sound_controller = sound_controller
     app.state.music_break_scheduler = music_break_scheduler
     app.state.spotify_controller = spotify_controller
+    app.state.now_playing_ticker = now_playing_ticker
     app.state.team_standings_scheduler = team_standings_scheduler
     app.state.roku_autocast = roku_autocast
     web_dir = settings.web_dir

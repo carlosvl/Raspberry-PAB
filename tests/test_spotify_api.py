@@ -149,3 +149,32 @@ def test_playlists_save_convert_and_play(tmp_path: Path) -> None:
         "/player/play",
         {"uri": "spotify:playlist:37i9dQZF1DWUqIzZNMSCv3"},
     ) in api.requests
+
+
+def test_matrix_settings_round_trip(tmp_path: Path) -> None:
+    with _client(tmp_path, FakeApi(PLAYING_STATUS)) as client:
+        default = client.get("/api/admin/spotify", headers=HEADERS).json()["matrix"]
+        assert default == {
+            "enabled": True,
+            "effect": "solid",
+            "red": 30,
+            "green": 215,
+            "blue": 96,
+        }
+        matrix = {
+            "enabled": False,
+            "effect": "rainbow",
+            "red": 1,
+            "green": 2,
+            "blue": 3,
+        }
+        body = client.put(
+            "/api/admin/spotify", headers=HEADERS, json={"matrix": matrix}
+        ).json()
+        assert body["matrix"] == matrix
+        bad = client.put(
+            "/api/admin/spotify",
+            headers=HEADERS,
+            json={"matrix": {**matrix, "effect": "sparkle"}},
+        )
+        assert bad.status_code == 422

@@ -59,6 +59,16 @@ Turn it on from **Admin → Spotify → Settings**, or with `PAB_SPOTIFY_ENABLED
 - **Music breaks** only play when Spotify is **offline**. While Spotify is online, each break slot is skipped (and never plays late).
 - **Speaker:** go-librespot plays to PipeWire's default output. While it plays, the server moves its stream to the same output alerts use (saved Bluetooth speaker, then HDMI), if that output exists.
 
+## Matrix "NOW PLAYING"
+
+While Spotify plays, the LED matrix loops `NOW PLAYING <song> - <artist>` (first artist only; extras like `(feat. …)`, `[Live]` and ` - Remastered 2011` are dropped, and accents become plain letters).
+
+- The matrix firmware accepts at most 36 characters per scroll, so longer text is split at word boundaries into up to 4 passes shown back to back.
+- **Alerts** stop it immediately and take the matrix. When the alert group finishes, the loop resumes with whatever song is playing then.
+- **Team standings** scrolls also take priority; now playing waits until the matrix is free.
+- It stops when Spotify is paused, stopped, or offline.
+- Configure it in **Admin → Spotify → Settings**: on/off, effect (solid, rainbow, pulse), and color (default Spotify green).
+
 ## Troubleshooting
 
 - **No sound:** confirm `pactl list short sinks` shows the Bluetooth or HDMI sink, and that alert sounds play there. go-librespot uses the default Pulse sink.

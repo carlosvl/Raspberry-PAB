@@ -370,6 +370,26 @@
                   The Pi turns Spotify down to this level, even if a phone or Alexa sets it higher.
                 </span>
               </label>
+              <label class="checkbox-row">
+                <input id="spotifyMatrixEnabled" type="checkbox" />
+                Show "NOW PLAYING song - artist" on the matrix
+              </label>
+              <label>
+                Matrix effect
+                <select id="spotifyMatrixEffect">
+                  <option value="solid">Solid</option>
+                  <option value="rainbow">Rainbow</option>
+                  <option value="pulse">Pulse</option>
+                </select>
+              </label>
+              <label>
+                Matrix color
+                <input id="spotifyMatrixColor" type="color" value="#1ed760" />
+                <span class="branding__hint">
+                  Loops while Spotify plays. Alerts and team standings take over the
+                  matrix, then now playing comes back with the current song.
+                </span>
+              </label>
               <div class="button-row">
                 <button type="submit">Save Spotify settings</button>
               </div>
