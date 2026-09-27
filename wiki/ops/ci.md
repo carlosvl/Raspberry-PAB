@@ -45,10 +45,12 @@ must pass:
 - **Serial ports are typed as the `SerialPort` protocol**
   (`arduino_serial.py`). pyserial is untyped, so assign `serial.Serial(...)`
   to an annotated variable before returning it.
-- **Known race in `MatrixController.stop()`, still open as of 2026-09-27.**
-  If `stop()` cancels the music-break task while its `finally` is closing the
-  port in a worker thread, the cancellation cuts the wait short. `stop()` then
-  returns, and the lock is released, before `close()` runs.
-  `test_rainbow_pulse_cycles_until_stop` now waits up to 2 s for the close. It
-  flaked on CI Python 3.12. The controller itself has not been changed pending
-  user approval.
+- **Matrix port close must survive cancellation.** ~~Known race, still open;
+  the test waits 2 s for the close~~ Fixed on 2026-09-27. If `stop()` cancels
+  a music-break or scroll-once task while its `finally` closes the port, and
+  the `asyncio.to_thread` close is still queued in the executor, cancelling
+  drops the close entirely, so the serial port is leaked. It showed up as
+  `test_rainbow_pulse_cycles_until_stop` failing on CI 3.11 and 3.12.
+  `MatrixController._close_session_port` shields the close and waits for it
+  before re-raising. Apply the same pattern to any `finally: await
+  asyncio.to_thread(close)`.

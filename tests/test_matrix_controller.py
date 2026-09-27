@@ -247,11 +247,6 @@ def test_rainbow_pulse_cycles_until_stop() -> None:
             )
 
         await controller.stop()
-        # stop() can cancel the task while its finally is still closing the
-        # port in a worker thread; give that thread a moment on slow runners.
-        close_deadline = asyncio.get_running_loop().time() + 2.0
-        while not serial.closed and asyncio.get_running_loop().time() < close_deadline:
-            await asyncio.sleep(0.01)
         scroll_count = sum(
             1 for write in serial.writes if write.startswith(b"SCROLLONCE")
         )

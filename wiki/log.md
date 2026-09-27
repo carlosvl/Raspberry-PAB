@@ -23,3 +23,7 @@ Append-only. Newest entries at the bottom. Heading format:
 ## [2026-09-27] ingest | Flaky matrix music-break test on CI
 - `test_rainbow_pulse_cycles_until_stop` failed on CI 3.12: stop() cancels while the port is still closing in a thread. Made the test wait for the close; the controller race is logged as open.
 - Pages: [ops/ci](ops/ci.md).
+
+## [2026-09-27] ingest | Matrix port leak on cancel (CI flake root cause)
+- Root cause: a queued `to_thread` close cancelled by `stop()` never runs. Added `_close_session_port` (shield + wait) in matrix_controller and reverted the test workaround.
+- Pages: [ops/ci](ops/ci.md).

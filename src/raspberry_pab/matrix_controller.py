@@ -322,9 +322,7 @@ class MatrixController:
                 finally:
                     self._session_port = None
                     with contextlib.suppress(Exception):
-                        await asyncio.to_thread(
-                            self._close_music_break_port, port
-                        )
+                        await self._close_session_port(port)
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -446,9 +444,7 @@ class MatrixController:
                 finally:
                     self._session_port = None
                     with contextlib.suppress(Exception):
-                        await asyncio.to_thread(
-                            self._close_music_break_port, port
-                        )
+                        await self._close_session_port(port)
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -507,6 +503,21 @@ class MatrixController:
         with contextlib.suppress(Exception):
             port.write(build_clear_command().encode("ascii"))
             port.flush()
+
+    async def _close_session_port(self, port: SerialPort) -> None:
+        """Close the port even if the task is cancelled mid-close.
+
+        A cancelled ``to_thread`` that is still queued in the executor never
+        runs, which would leave the serial port open.
+        """
+        close = asyncio.ensure_future(
+            asyncio.to_thread(self._close_music_break_port, port)
+        )
+        try:
+            await asyncio.shield(close)
+        except asyncio.CancelledError:
+            await close
+            raise
 
     def _close_music_break_port(self, port: SerialPort) -> None:
         self._best_effort_stop_clear(port)
