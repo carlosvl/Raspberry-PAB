@@ -6,6 +6,8 @@ sources:
   - pyproject.toml
   - src/raspberry_pab/db.py
   - tests/test_db.py
+  - tests/test_matrix_controller.py
+  - src/raspberry_pab/matrix_controller.py
 updated: 2026-09-27
 ---
 
@@ -43,3 +45,10 @@ must pass:
 - **Serial ports are typed as the `SerialPort` protocol**
   (`arduino_serial.py`). pyserial is untyped, so assign `serial.Serial(...)`
   to an annotated variable before returning it.
+- **Known race in `MatrixController.stop()`, still open as of 2026-09-27.**
+  If `stop()` cancels the music-break task while its `finally` is closing the
+  port in a worker thread, the cancellation cuts the wait short. `stop()` then
+  returns, and the lock is released, before `close()` runs.
+  `test_rainbow_pulse_cycles_until_stop` now waits up to 2 s for the close. It
+  flaked on CI Python 3.12. The controller itself has not been changed pending
+  user approval.
