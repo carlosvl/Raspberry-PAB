@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import sqlite3
 from collections.abc import Iterable, Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from datetime import date, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from raspberry_pab.models import (
     Alert,
@@ -26,6 +27,10 @@ from raspberry_pab.models import (
     ScheduleParticipantImport,
     SoundFile,
 )
+
+if TYPE_CHECKING:
+    from raspberry_pab.models import MatrixEffect
+    from raspberry_pab.race_results.precision_race import ParsedRaceEvent
 
 
 def _normalize_optional_text(value: str | None) -> str | None:
@@ -178,8 +183,7 @@ class ScheduleStore:
 
     def list_participants(self, event_date: date | None = None) -> list[Participant]:
         query = (
-            "SELECT id, name, event_date, start_time, race, call_up "
-            "FROM participants"
+            "SELECT id, name, event_date, start_time, race, call_up FROM participants"
         )
         params: tuple[str, ...] = ()
         if event_date is not None:
@@ -628,9 +632,8 @@ class ScheduleStore:
             conn.commit()
             return cursor.rowcount
 
-    def upsert_race_events(self, events: Iterable[object]) -> list[RaceEvent]:
+    def upsert_race_events(self, events: Iterable[ParsedRaceEvent]) -> list[RaceEvent]:
         now = datetime.now().isoformat()
-        stored: list[RaceEvent] = []
         with self._connect() as conn:
             for event in events:
                 conn.execute(
@@ -664,14 +667,16 @@ class ScheduleStore:
                 )
             conn.commit()
             rows = conn.execute(
-                "SELECT * FROM race_events ORDER BY season_year DESC, date_saturday DESC"
+                "SELECT * FROM race_events "
+                "ORDER BY season_year DESC, date_saturday DESC"
             ).fetchall()
         return [self._race_event_from_row(row) for row in rows]
 
     def list_race_events(self) -> list[RaceEvent]:
         with self._connect() as conn:
             rows = conn.execute(
-                "SELECT * FROM race_events ORDER BY season_year DESC, date_saturday DESC"
+                "SELECT * FROM race_events "
+                "ORDER BY season_year DESC, date_saturday DESC"
             ).fetchall()
         return [self._race_event_from_row(row) for row in rows]
 
@@ -865,16 +870,15 @@ class ScheduleStore:
             ).fetchall()
         results: list[ParticipantResultMatchRecord] = []
         for row in rows:
-            if row["place"] is None:
-                state = "unmatched"
-            else:
-                state = "matched"
+            state = "unmatched" if row["place"] is None else "matched"
             results.append(
                 ParticipantResultMatchRecord(
                     participant_id=int(row["participant_id"]),
                     participant_name=str(row["participant_name"]),
                     event_date=date.fromisoformat(str(row["event_date"])),
-                    start_time=datetime.strptime(str(row["start_time"]), "%H:%M").time(),
+                    start_time=datetime.strptime(
+                        str(row["start_time"]), "%H:%M"
+                    ).time(),
                     place=int(row["place"]) if row["place"] is not None else None,
                     total_time=row["total_time"],
                     team_name=row["team_name"],
@@ -944,13 +948,11 @@ class ScheduleStore:
 
     @staticmethod
     def _migrate_rule_matrix_columns(conn: sqlite3.Connection) -> None:
-        try:
+        with suppress(sqlite3.OperationalError):
             conn.execute(
                 "ALTER TABLE reminder_rules ADD COLUMN matrix_effect "
                 "TEXT NOT NULL DEFAULT 'solid'"
             )
-        except sqlite3.OperationalError:
-            pass
 
     @staticmethod
     def _migrate_rule_sound_columns(conn: sqlite3.Connection) -> None:
@@ -1067,7 +1069,8 @@ class ScheduleStore:
                      buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
                      buzzer_count, buzzer_beep_ms, buzzer_gap_ms,
                      sound_enabled, sound_id, sound_volume)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     rule.offset_minutes,
@@ -1139,12 +1142,15 @@ class ScheduleStore:
         repeat = row["repeat_every_minutes"]
         raw_effect = (
             str(row["matrix_effect"])
-            if "matrix_effect" in row.keys() and row["matrix_effect"]
+            if "matrix_effect" in row.keys()  # noqa: SIM118 (sqlite3.Row `in` checks values)
+            and row["matrix_effect"]
             else "solid"
         )
-        matrix_effect = (
-            raw_effect if raw_effect in ("solid", "rainbow", "pulse") else "solid"
-        )
+        matrix_effect: MatrixEffect = "solid"
+        if raw_effect == "rainbow":
+            matrix_effect = "rainbow"
+        elif raw_effect == "pulse":
+            matrix_effect = "pulse"
         keys = row.keys()
         sound_id_raw = row["sound_id"] if "sound_id" in keys else None
         return ReminderRule(
@@ -1172,9 +1178,7 @@ class ScheduleStore:
                 bool(row["sound_enabled"]) if "sound_enabled" in keys else False
             ),
             sound_id=int(sound_id_raw) if sound_id_raw is not None else None,
-            sound_volume=(
-                int(row["sound_volume"]) if "sound_volume" in keys else 80
-            ),
+            sound_volume=(int(row["sound_volume"]) if "sound_volume" in keys else 80),
         )
 
     @staticmethod

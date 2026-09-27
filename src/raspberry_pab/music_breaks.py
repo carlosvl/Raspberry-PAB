@@ -147,7 +147,9 @@ def was_slot_fired(store: ScheduleStore, day: date, slot_index: int) -> bool:
     return slot_index in fired.get(day.isoformat(), [])
 
 
-def hsv_to_rgb(hue: float, saturation: float = 1.0, value: float = 1.0) -> tuple[int, int, int]:
+def hsv_to_rgb(
+    hue: float, saturation: float = 1.0, value: float = 1.0
+) -> tuple[int, int, int]:
     """Convert HSV (hue 0-360) to 8-bit RGB."""
     hue = hue % 360.0
     chroma = value * saturation

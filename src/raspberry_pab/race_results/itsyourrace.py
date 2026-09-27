@@ -90,7 +90,8 @@ def parse_category_options(html: str) -> list[IyrCategoryOption]:
         return []
     options: list[IyrCategoryOption] = []
     for option in select.find_all("option"):
-        value = (option.get("value") or "").strip()
+        raw_value = option.get("value")
+        value = raw_value.strip() if isinstance(raw_value, str) else ""
         label = option.get_text(" ", strip=True)
         if value and label and label.lower() != "select race":
             options.append(IyrCategoryOption(eid=value, label=label))

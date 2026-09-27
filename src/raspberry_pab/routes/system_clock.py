@@ -53,7 +53,8 @@ def _run_script(args: list[str], *, use_sudo: bool = True) -> dict[str, object]:
             detail=detail,
         ) from exc
     try:
-        return json.loads(completed.stdout)
+        state: dict[str, object] = json.loads(completed.stdout)
+        return state
     except json.JSONDecodeError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -77,14 +78,18 @@ def _to_state(payload: dict[str, object], *, simulated: bool) -> SystemClockStat
     )
 
 
-@router.get("", response_model=SystemClockState, dependencies=[Depends(require_admin_pin)])
+@router.get(
+    "", response_model=SystemClockState, dependencies=[Depends(require_admin_pin)]
+)
 def get_system_clock(request: Request) -> SystemClockState:
     store = get_store(request)
     payload = _run_script(["status", "--json"], use_sudo=False)
     return _to_state(payload, simulated=is_simulated(store))
 
 
-@router.put("", response_model=SystemClockState, dependencies=[Depends(require_admin_pin)])
+@router.put(
+    "", response_model=SystemClockState, dependencies=[Depends(require_admin_pin)]
+)
 def set_system_clock(request: Request, body: SystemClockUpdate) -> SystemClockState:
     store = get_store(request)
     try:

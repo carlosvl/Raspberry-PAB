@@ -101,7 +101,7 @@ def parse_schedule_csv(
             if field and field not in field_index:
                 field_index[field] = index
         data_rows = rows[1:]
-        columns = sorted(field_index)
+        sorted(field_index)
     else:
         # Legacy: name,start_time[,race][,call_up]
         if len(first) < 2:
@@ -112,7 +112,7 @@ def parse_schedule_csv(
         if len(first) >= 4:
             field_index["call_up"] = 3
         data_rows = rows
-        columns = sorted(field_index)
+        sorted(field_index)
 
     if "name" not in field_index or "start_time" not in field_index:
         raise ValueError("CSV must include name and start_time columns")
@@ -124,7 +124,7 @@ def parse_schedule_csv(
         if not any(cell.strip() for cell in row):
             continue
 
-        def cell(field: str) -> str:
+        def cell(field: str, row: list[str] = row) -> str:
             index = field_index.get(field)
             if index is None or index >= len(row):
                 return ""

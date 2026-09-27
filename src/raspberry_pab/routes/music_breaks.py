@@ -6,7 +6,11 @@ from typing import cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from raspberry_pab.models import MusicBreakConfig, MusicBreakConfigUpdate, MusicBreakStatus
+from raspberry_pab.models import (
+    MusicBreakConfig,
+    MusicBreakConfigUpdate,
+    MusicBreakStatus,
+)
 from raspberry_pab.music_break_scheduler import MusicBreakScheduler
 from raspberry_pab.music_breaks import parse_start_time, save_config
 from raspberry_pab.routes.schedule import get_store, require_admin_pin

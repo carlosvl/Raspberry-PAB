@@ -57,7 +57,9 @@ def load_touch_config(path: Path | None = None) -> dict[str, str]:
     return values
 
 
-def save_touch_config(updates: dict[str, str], path: Path | None = None) -> dict[str, str]:
+def save_touch_config(
+    updates: dict[str, str], path: Path | None = None
+) -> dict[str, str]:
     config_path = path or touch_config_path()
     current = load_touch_config(config_path)
     current.update(updates)
@@ -86,14 +88,17 @@ def save_touch_config(updates: dict[str, str], path: Path | None = None) -> dict
         f"PAB_GAMEPAD_BTN_RIGHT={current.get('PAB_GAMEPAD_BTN_RIGHT', '2')}",
         f"PAB_GAMEPAD_EDGE_MARGIN={current.get('PAB_GAMEPAD_EDGE_MARGIN', '16')}",
         f"PAB_GAMEPAD_SCROLL_SENS={current.get('PAB_GAMEPAD_SCROLL_SENS', '0.35')}",
-        f"PAB_GAMEPAD_SCROLL_DELAY_MS={current.get('PAB_GAMEPAD_SCROLL_DELAY_MS', '10')}",
+        "PAB_GAMEPAD_SCROLL_DELAY_MS="
+        f"{current.get('PAB_GAMEPAD_SCROLL_DELAY_MS', '10')}",
         "",
     ]
     config_path.write_text("\n".join(lines), encoding="utf-8")
     return current
 
 
-def touch_response(path: Path | None = None) -> dict[str, str | float | int | bool | None]:
+def touch_response(
+    path: Path | None = None,
+) -> dict[str, str | float | int | bool | None]:
     values = load_touch_config(path)
     detected = find_gamepad_js_device()
     return {
@@ -107,6 +112,8 @@ def touch_response(path: Path | None = None) -> dict[str, str | float | int | bo
         "gamepad_sensitivity": float(values.get("PAB_GAMEPAD_SENS", "8")),
         "gamepad_deadzone": float(values.get("PAB_GAMEPAD_DEADZONE", "0.15")),
         "gamepad_edge_margin": int(values.get("PAB_GAMEPAD_EDGE_MARGIN", "16")),
-        "gamepad_scroll_sensitivity": float(values.get("PAB_GAMEPAD_SCROLL_SENS", "0.35")),
+        "gamepad_scroll_sensitivity": float(
+            values.get("PAB_GAMEPAD_SCROLL_SENS", "0.35")
+        ),
         "gamepad_device": detected,
     }

@@ -118,7 +118,9 @@ def parse_race_heading_text(
     )
 
 
-def parse_precision_race_mca_html(html: str, *, source_url: str) -> list[ParsedRaceEvent]:
+def parse_precision_race_mca_html(
+    html: str, *, source_url: str
+) -> list[ParsedRaceEvent]:
     soup = BeautifulSoup(html, "html.parser")
     events: list[ParsedRaceEvent] = []
     season_year: int | None = None
@@ -133,7 +135,8 @@ def parse_precision_race_mca_html(html: str, *, source_url: str) -> list[ParsedR
             continue
         anchor = element.find("a", href=True)
         heading_text = element.get_text(" ", strip=True)
-        iyr_url = anchor["href"] if anchor is not None else None
+        href = anchor.get("href") if anchor is not None else None
+        iyr_url = href if isinstance(href, str) else None
         parsed = parse_race_heading_text(
             heading_text,
             season_year=season_year,

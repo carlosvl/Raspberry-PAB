@@ -7,9 +7,9 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from raspberry_pab import touch_config
 from raspberry_pab.config import Settings
 from raspberry_pab.server import create_app
-from raspberry_pab import touch_config
 
 
 @pytest.fixture
@@ -61,7 +61,9 @@ def test_update_touch_config_writes_file_and_restarts(
     apply_script = tmp_path / "apply-input-config.sh"
     apply_script.write_text("#!/bin/bash\n", encoding="utf-8")
     apply_script.chmod(0o755)
-    monkeypatch.setattr("raspberry_pab.routes.touch._apply_script", lambda: apply_script)
+    monkeypatch.setattr(
+        "raspberry_pab.routes.touch._apply_script", lambda: apply_script
+    )
     monkeypatch.setattr("raspberry_pab.routes.touch.subprocess.Popen", fake_popen)
 
     response = client.put(
@@ -102,7 +104,9 @@ def test_update_touch_config_works_from_remote_client(
     apply_script = tmp_path / "apply-input-config.sh"
     apply_script.write_text("#!/bin/bash\n", encoding="utf-8")
     apply_script.chmod(0o755)
-    monkeypatch.setattr("raspberry_pab.routes.touch._apply_script", lambda: apply_script)
+    monkeypatch.setattr(
+        "raspberry_pab.routes.touch._apply_script", lambda: apply_script
+    )
     monkeypatch.setattr(touch_config, "touch_config_path", lambda: config_path)
 
     response = client.put(

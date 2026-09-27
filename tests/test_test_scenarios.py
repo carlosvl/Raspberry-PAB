@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import json
 from datetime import date, time
 from pathlib import Path
-
 from unittest.mock import MagicMock
+
+from tests.race_results_helpers import make_austin_fetch_text
 
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.kiosk_clock import effective_now, is_simulated
@@ -19,7 +19,6 @@ from raspberry_pab.test_scenarios import (
     save_scenario,
     seed_scenario_participants,
 )
-from tests.race_results_helpers import make_austin_fetch_text
 
 
 def test_list_scenarios_includes_austin() -> None:
@@ -75,7 +74,9 @@ def test_run_austin_with_fixtures_matches_ryan(tmp_path: Path) -> None:
     store.initialize()
     from raspberry_pab.race_results.sync import RaceResultsSync
 
-    runner = TestScenarioRunner(store, sync=RaceResultsSync(store, fetch_text=make_austin_fetch_text()))
+    runner = TestScenarioRunner(
+        store, sync=RaceResultsSync(store, fetch_text=make_austin_fetch_text())
+    )
     try:
         result = runner.run("austin-2025-roseville")
         assert result.participants_seeded == 19

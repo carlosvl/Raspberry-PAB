@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from raspberry_pab.db import ScheduleStore
 
@@ -87,7 +87,5 @@ def get_clock_state(store: ScheduleStore) -> dict[str, str | bool | None]:
     }
 
 
-def _seconds_to_timedelta(seconds: float):
-    from datetime import timedelta
-
+def _seconds_to_timedelta(seconds: float) -> timedelta:
     return timedelta(seconds=seconds)

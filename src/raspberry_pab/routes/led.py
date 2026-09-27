@@ -44,9 +44,7 @@ def _effective_led_config(settings: Settings, store: ScheduleStore) -> LedConfig
     )
 
 
-def _apply_led_config_to_settings(
-    request: Request, config: LedConfig
-) -> None:
+def _apply_led_config_to_settings(request: Request, config: LedConfig) -> None:
     """Update the in-memory Settings + LED controller with new LED values.
 
     Settings is a frozen dataclass, so we replace it on app.state.
@@ -125,20 +123,20 @@ def save_led_config(request: Request, body: LedConfig) -> dict[str, object]:
 async def scan_ble_devices() -> list[dict[str, str]]:
     """Discover nearby BLE devices (10s scan). Returns name + address."""
     try:
-        from bleak import BleakScanner  # type: ignore[import-untyped]
-    except ImportError:
+        from bleak import BleakScanner
+    except ImportError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="BLE scanning not available — bleak not installed",
-        )
+        ) from exc
     try:
         async with asyncio.timeout(20):
             devices = await BleakScanner.discover(timeout=10)
-    except TimeoutError:
+    except TimeoutError as exc:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             detail="BLE scan timed out",
-        )
+        ) from exc
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -171,7 +169,9 @@ async def test_led_strip(request: Request, body: LedStripTest) -> dict[str, obje
             ),
         )
     controller = get_led_controller(request)
-    total_seconds = body.led_flash_duration_seconds + (body.led_chase_duration_seconds or 0)
+    total_seconds = body.led_flash_duration_seconds + (
+        body.led_chase_duration_seconds or 0
+    )
     timeout = max(total_seconds + 15, 30)  # BLE connect + flash + buffer
     try:
         async with asyncio.timeout(timeout):
@@ -183,11 +183,14 @@ async def test_led_strip(request: Request, body: LedStripTest) -> dict[str, obje
                 led_flash_duration_seconds=body.led_flash_duration_seconds,
                 led_chase_duration_seconds=body.led_chase_duration_seconds,
             )
-    except TimeoutError:
+    except TimeoutError as exc:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail=f"LED test timed out after {timeout}s — BLE device may be unreachable",
-        )
+            detail=(
+                f"LED test timed out after {timeout}s — "
+                "BLE device may be unreachable"
+            ),
+        ) from exc
     except Exception as exc:
         logger.exception("LED test failed")
         raise HTTPException(

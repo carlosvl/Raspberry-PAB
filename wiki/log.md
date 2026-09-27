@@ -15,3 +15,7 @@ Append-only. Newest entries at the bottom. Heading format:
 ## [2026-09-27] decision | Collapse spotify branch into main
 - Squash-merged `spotify` into main as ef62215; deleted the branch locally and on origin. This repo "collapses" branches by squashing each into one commit on main.
 - CI (ruff + mypy) was already red on main before the merge; pytest passes (205). Run tests with `python -m pytest` (bare `pytest` fails to import `tests`).
+
+## [2026-09-27] ingest | Fix CI (ruff, mypy, pytest)
+- CI had been red on main since at least 2026-08-23. Fixed 57 ruff errors, 55 mypy errors and the pytest `tests` import path. Added a regression test for the matrix_effect round trip after catching a bad ruff SIM118 autofix on `sqlite3.Row`.
+- Pages: [ops/ci](ops/ci.md).

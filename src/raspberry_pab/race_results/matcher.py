@@ -63,7 +63,9 @@ def find_race_events_for_date(
     scored = [
         RaceEventCandidate(
             event=event,
-            venue_score=venue_similarity(venue_hint or event.venue_label, event.venue_label),
+            venue_score=venue_similarity(
+                venue_hint or event.venue_label, event.venue_label
+            ),
         )
         for event in candidates
     ]

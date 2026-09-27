@@ -35,7 +35,7 @@ class MusicBreakScheduler:
         sound_controller: SoundController,
         led_controller: LedController,
         matrix_controller: MatrixController,
-        sound_path_resolver,
+        sound_path_resolver: Callable[[int], Path | None],
         alerts_busy: asyncio.Event | None = None,
         skip_when: Callable[[], Awaitable[bool]] | None = None,
     ) -> None:
@@ -156,6 +156,7 @@ class MusicBreakScheduler:
             ),
             name="music-break-test",
         )
+
     async def _run_session(
         self,
         *,
@@ -199,13 +200,11 @@ class MusicBreakScheduler:
                     with contextlib.suppress(Exception):
                         task.result()
             elif max_seconds is not None:
-                try:
+                with contextlib.suppress(TimeoutError):
                     await asyncio.wait_for(
                         self._session_stop.wait(),
                         timeout=max_seconds,
                     )
-                except TimeoutError:
-                    pass
             else:
                 await self._session_stop.wait()
         except asyncio.CancelledError:

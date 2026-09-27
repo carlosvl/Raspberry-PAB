@@ -3,10 +3,11 @@ from __future__ import annotations
 from datetime import date, time
 from pathlib import Path
 
+from tests.race_results_helpers import make_fetch_text
+
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.models import ParticipantCreate
 from raspberry_pab.race_results.sync import RaceResultsSync
-from tests.race_results_helpers import load_fixture, make_fetch_text
 
 
 def test_sync_index_and_match_carlos(tmp_path: Path) -> None:

@@ -28,7 +28,9 @@ class RaceResultsClient:
     ) -> None:
         from curl_cffi import requests as curl_requests
 
-        self._session = curl_requests.Session(impersonate=impersonate)
+        self._session: curl_requests.Session[curl_requests.Response] = (
+            curl_requests.Session(impersonate=impersonate)
+        )
         self._user_agent = user_agent
         self._timeout = timeout
         self._min_interval = min_interval

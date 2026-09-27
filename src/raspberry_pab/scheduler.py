@@ -6,7 +6,7 @@ import asyncio
 import contextlib
 import json
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from datetime import datetime
 
 from pydantic import TypeAdapter
@@ -32,9 +32,9 @@ class AlertBroker:
     def __init__(self) -> None:
         self._subscribers: set[asyncio.Queue[Alert]] = set()
         self.active_alert: Alert | None = None
-        self._before_publish: list = []
+        self._before_publish: list[Callable[[Alert], object]] = []
 
-    def add_before_publish(self, callback) -> None:
+    def add_before_publish(self, callback: Callable[[Alert], object]) -> None:
         """Register an async callback invoked before each alert is broadcast."""
         self._before_publish.append(callback)
 
@@ -145,18 +145,14 @@ class RaceResultsSyncScheduler:
         while not self._stop_event.is_set():
             interval = self.interval_minutes
             if interval <= 0:
-                try:
+                with contextlib.suppress(TimeoutError):
                     await asyncio.wait_for(self._stop_event.wait(), timeout=60)
-                except TimeoutError:
-                    pass
                 continue
-            try:
+            with contextlib.suppress(TimeoutError):
                 await asyncio.wait_for(
                     self._stop_event.wait(),
                     timeout=interval * 60,
                 )
-            except TimeoutError:
-                pass
             if self._stop_event.is_set():
                 break
             try:

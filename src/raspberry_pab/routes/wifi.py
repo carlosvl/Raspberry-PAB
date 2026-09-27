@@ -68,7 +68,9 @@ def _run_manage(
         ) from exc
 
     if completed.returncode != 0:
-        detail = (completed.stderr or completed.stdout or "Wi-Fi command failed").strip()
+        detail = (
+            completed.stderr or completed.stdout or "Wi-Fi command failed"
+        ).strip()
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=detail[:500],

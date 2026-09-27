@@ -37,7 +37,7 @@ def _apply_touch_config() -> None:
     dependencies=[Depends(require_admin_pin)],
 )
 def get_touch_config() -> TouchConfigResponse:
-    return TouchConfigResponse(**touch_response())
+    return TouchConfigResponse.model_validate(touch_response())
 
 
 @router.put(
@@ -65,4 +65,4 @@ def update_touch_config(update: TouchConfigUpdate) -> TouchConfigResponse:
         }
     )
     _apply_touch_config()
-    return TouchConfigResponse(**touch_response())
+    return TouchConfigResponse.model_validate(touch_response())

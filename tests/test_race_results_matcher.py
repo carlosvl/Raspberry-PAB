@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import date, time
 
+from tests.race_results_helpers import load_fixture
+
 from raspberry_pab.models import Participant
 from raspberry_pab.race_results.itsyourrace import parse_results_page_html
 from raspberry_pab.race_results.matcher import (
@@ -10,7 +12,6 @@ from raspberry_pab.race_results.matcher import (
     names_match,
 )
 from raspberry_pab.race_results.precision_race import parse_precision_race_mca_html
-from tests.race_results_helpers import load_fixture
 
 
 def test_names_match_handles_middle_name() -> None:

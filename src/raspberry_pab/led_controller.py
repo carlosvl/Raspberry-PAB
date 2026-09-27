@@ -51,7 +51,9 @@ async def _default_lamp_factory(settings: Settings) -> _LampProtocol:
 
 
 def _chase_modes() -> tuple[int, int]:
-    from lotus_lamp.modes import get_mode_by_category_index  # type: ignore[import-untyped]
+    from lotus_lamp.modes import (  # type: ignore[import-untyped]
+        get_mode_by_category_index,
+    )
 
     return (
         get_mode_by_category_index("run", 1),

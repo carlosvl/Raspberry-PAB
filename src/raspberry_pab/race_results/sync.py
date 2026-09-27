@@ -44,6 +44,8 @@ class RaceResultsSync:
     ) -> None:
         self._store = store
         self._index_url = index_url
+        self._fetch_text: FetchText
+        self._owned_client: RaceResultsClient | None
         if fetch_text is None:
             client = RaceResultsClient()
             self._fetch_text = client.fetch_text
@@ -91,9 +93,13 @@ class RaceResultsSync:
                 sessions_synced=0,
             )
         parsed_event = candidates[0].event
-        stored_event = self._store.get_race_event_by_series_id(parsed_event.iyr_series_id)
+        stored_event = self._store.get_race_event_by_series_id(
+            parsed_event.iyr_series_id
+        )
         if stored_event is None:
-            raise RuntimeError(f"Race event {parsed_event.iyr_series_id} missing from store")
+            raise RuntimeError(
+                f"Race event {parsed_event.iyr_series_id} missing from store"
+            )
         sessions, sessions_synced = self._fetch_sessions_for_date(
             stored_event,
             parsed_event,
@@ -104,7 +110,9 @@ class RaceResultsSync:
         unmatched = 0
         day_sessions = sessions_for_date(sessions, event_date)
         for participant in participants:
-            matches = match_participant_in_sessions(participant, parsed_event, day_sessions)
+            matches = match_participant_in_sessions(
+                participant, parsed_event, day_sessions
+            )
             best = choose_best_match(matches)
             if best is None:
                 if matches:

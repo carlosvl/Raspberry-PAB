@@ -15,7 +15,7 @@ from raspberry_pab.models import ReminderRule
 
 logger = logging.getLogger(__name__)
 
-SerialFactory = Callable[[Settings], object]
+SerialFactory = Callable[[Settings], "_SerialPort"]
 
 
 class _SerialPort(Protocol):
@@ -31,7 +31,7 @@ class _SerialPort(Protocol):
 def _default_serial_factory(settings: Settings) -> _SerialPort:
     import serial  # type: ignore[import-untyped]
 
-    return serial.Serial(
+    opened: _SerialPort = serial.Serial(
         port=settings.buzzer_port,
         baudrate=settings.buzzer_baud,
         timeout=1.0,
@@ -39,6 +39,7 @@ def _default_serial_factory(settings: Settings) -> _SerialPort:
         dsrdtr=False,
         rtscts=False,
     )
+    return opened
 
 
 def build_mode_command(mode: str) -> str:

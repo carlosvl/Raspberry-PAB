@@ -10,6 +10,7 @@ from collections.abc import Callable
 
 from raspberry_pab.arduino_serial import (
     HARDWARE_SERIAL_LOCK,
+    SerialPort,
     effective_matrix_port,
     handshake,
     open_serial_port,
@@ -21,7 +22,7 @@ from raspberry_pab.models import MATRIX_EFFECT_MODE, MatrixEffect, ReminderRule
 
 logger = logging.getLogger(__name__)
 
-SerialFactory = Callable[[Settings, str], object]
+SerialFactory = Callable[[Settings, str], SerialPort]
 
 # Keep SCROLL under Nano's 64-byte RX:
 # "SCROLL 255 255 255 20000 1 " is 26 chars → leave ~36 for text.
@@ -29,7 +30,7 @@ MAX_MATRIX_MESSAGE_CHARS = 36
 _ALLOWED_MESSAGE_CHARS = re.compile(r"[^A-Za-z0-9 .,:!?\-_'#/@&()+%=]+")
 
 
-def _default_serial_factory(settings: Settings, port: str) -> object:
+def _default_serial_factory(settings: Settings, port: str) -> SerialPort:
     return open_serial_port(settings, port=port)
 
 
@@ -43,7 +44,7 @@ def sanitize_matrix_message(message: str) -> str:
 
 
 def matrix_effect_mode(effect: MatrixEffect | str) -> int:
-    return MATRIX_EFFECT_MODE.get(effect, 0)  # type: ignore[arg-type]
+    return MATRIX_EFFECT_MODE.get(effect, 0)
 
 
 def build_bright_command(brightness: int) -> str:
@@ -118,7 +119,7 @@ class MatrixController:
         self._hardware_lock = hardware_lock or HARDWARE_SERIAL_LOCK
         self._lock = asyncio.Lock()
         self._show_task: asyncio.Task[None] | None = None
-        self._session_port: object | None = None
+        self._session_port: SerialPort | None = None
 
     @property
     def is_available(self) -> bool:
@@ -308,8 +309,8 @@ class MatrixController:
                         message=display_message,
                         effect=effect,
                     )
-                    port.write(scroll_cmd.encode("ascii"))  # type: ignore[attr-defined]
-                    port.flush()  # type: ignore[attr-defined]
+                    port.write(scroll_cmd.encode("ascii"))
+                    port.flush()
                     timeout = max(pass_ms / 1000.0 * 2.0 + 5.0, 20.0)
                     ok = await asyncio.to_thread(
                         wait_for_ok, port, timeout=timeout
@@ -453,7 +454,7 @@ class MatrixController:
         except Exception:
             logger.exception("Matrix rainbow scroll failed")
 
-    def _prepare_music_break_port(self, port: object) -> None:
+    def _prepare_music_break_port(self, port: SerialPort) -> None:
         handshake(port)
         bright_cmd = build_bright_command(self._settings.matrix_brightness)
         if transact_line(port, bright_cmd, {"OK"}, attempts=3) != "OK":
@@ -461,7 +462,7 @@ class MatrixController:
 
     def _scroll_once_on_port(
         self,
-        port: object,
+        port: SerialPort,
         message: str,
         effect: MatrixEffect | str,
     ) -> None:
@@ -483,34 +484,34 @@ class MatrixController:
             message=display_message,
             effect=effect,
         )
-        port.write(scroll_cmd.encode("ascii"))  # type: ignore[attr-defined]
-        port.flush()  # type: ignore[attr-defined]
+        port.write(scroll_cmd.encode("ascii"))
+        port.flush()
         timeout = max(pass_ms / 1000.0 * 2.0 + 5.0, 20.0)
-        if not wait_for_ok(port, timeout=timeout):  # type: ignore[arg-type]
+        if not wait_for_ok(port, timeout=timeout):
             raise RuntimeError("Arduino did not finish SCROLLONCE command")
 
-    def _rainbow_fill_on_port(self, port: object, duration_ms: int) -> None:
+    def _rainbow_fill_on_port(self, port: SerialPort, duration_ms: int) -> None:
         logger.info("Matrix rainbow fill (%d ms)", duration_ms)
         cmd = build_rainbow_command(duration_ms=duration_ms)
-        port.write(cmd.encode("ascii"))  # type: ignore[attr-defined]
-        port.flush()  # type: ignore[attr-defined]
+        port.write(cmd.encode("ascii"))
+        port.flush()
         timeout = max(duration_ms / 1000.0 * 2.0 + 5.0, 10.0)
-        if not wait_for_ok(port, timeout=timeout):  # type: ignore[arg-type]
+        if not wait_for_ok(port, timeout=timeout):
             raise RuntimeError("Arduino did not finish RAINBOW command")
 
     @staticmethod
-    def _best_effort_stop_clear(port: object) -> None:
+    def _best_effort_stop_clear(port: SerialPort) -> None:
         with contextlib.suppress(Exception):
-            port.write(b"STOP\n")  # type: ignore[attr-defined]
-            port.flush()  # type: ignore[attr-defined]
+            port.write(b"STOP\n")
+            port.flush()
         with contextlib.suppress(Exception):
-            port.write(build_clear_command().encode("ascii"))  # type: ignore[attr-defined]
-            port.flush()  # type: ignore[attr-defined]
+            port.write(build_clear_command().encode("ascii"))
+            port.flush()
 
-    def _close_music_break_port(self, port: object) -> None:
+    def _close_music_break_port(self, port: SerialPort) -> None:
         self._best_effort_stop_clear(port)
         with contextlib.suppress(Exception):
-            port.close()  # type: ignore[attr-defined]
+            port.close()
 
     def _execute_show_sequence(self, rule: ReminderRule, message: str) -> None:
         duration_ms = matrix_display_duration_ms(rule)

@@ -29,7 +29,7 @@ def effective_matrix_port(settings: Settings) -> str:
 def open_serial_port(settings: Settings, *, port: str) -> SerialPort:
     import serial  # type: ignore[import-untyped]
 
-    return serial.Serial(
+    opened: SerialPort = serial.Serial(
         port=port,
         baudrate=settings.matrix_baud,
         timeout=1.0,
@@ -37,6 +37,7 @@ def open_serial_port(settings: Settings, *, port: str) -> SerialPort:
         dsrdtr=False,
         rtscts=False,
     )
+    return opened
 
 
 def _is_ready_line(line: str) -> bool:

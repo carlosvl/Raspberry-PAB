@@ -12,10 +12,11 @@ def load_fixture(name: str) -> str:
 
 
 def fixture_fetcher() -> dict[str, str]:
+    pine_valley = "iyr_pine_valley_default.html"
     return {
         "https://www.precisionrace.com/mca": "precision_race_mca.html",
-        "https://www.itsyourrace.com/Results.aspx?id=16915": "iyr_pine_valley_default.html",
-        "https://www.itsyourrace.com/results.aspx?id=16915": "iyr_pine_valley_default.html",
+        "https://www.itsyourrace.com/Results.aspx?id=16915": pine_valley,
+        "https://www.itsyourrace.com/results.aspx?id=16915": pine_valley,
     }
 
 

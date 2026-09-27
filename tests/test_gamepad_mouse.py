@@ -73,7 +73,10 @@ def test_no_edge_scroll_when_cursor_not_at_edge() -> None:
 
 
 def test_parse_mouse_location() -> None:
-    assert gamepad_mouse.parse_mouse_location("x:353 y:80 screen:0 window:123") == (353, 80)
+    assert gamepad_mouse.parse_mouse_location("x:353 y:80 screen:0 window:123") == (
+        353,
+        80,
+    )
 
 
 def test_configure_from_touch_map_reads_saved_speed(tmp_path) -> None:

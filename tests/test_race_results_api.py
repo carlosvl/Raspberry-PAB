@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from datetime import date, time
 from pathlib import Path
-from fastapi.testclient import TestClient
 
-from raspberry_pab.server import create_app
+from fastapi.testclient import TestClient
+from tests.race_results_helpers import make_fetch_text
+
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.models import ParticipantCreate
 from raspberry_pab.race_results.sync import RaceResultsSync
-from tests.race_results_helpers import make_fetch_text
+from raspberry_pab.server import create_app
 
 
 def test_race_results_api(tmp_path: Path) -> None:

@@ -121,7 +121,9 @@ def test_rainbow_pulse_noop_when_led_disabled() -> None:
 
         led = LedController(Settings(led_enabled=False, led_address=""))
         stop = asyncio.Event()
-        await asyncio.wait_for(led.rainbow_pulse(pulse_ms=300, stop_event=stop), timeout=0.5)
+        await asyncio.wait_for(
+            led.rainbow_pulse(pulse_ms=300, stop_event=stop), timeout=0.5
+        )
 
     asyncio.run(run())
 

@@ -137,3 +137,20 @@ def test_rule_sound_fields_persist(tmp_path: Path) -> None:
     assert loaded.sound_id == sound.id
     assert loaded.sound_volume == 65
     assert store.count_rules_using_sound(sound.id) == 1
+
+
+def test_rule_matrix_effect_round_trip(tmp_path: Path) -> None:
+    store = ScheduleStore(tmp_path / "schedule.db")
+    store.initialize()
+    rule = store.create_rule(
+        ReminderRuleCreate(
+            offset_minutes=5,
+            message_template="Rainbow {name}",
+            matrix_effect="rainbow",
+        )
+    )
+
+    assert rule.matrix_effect == "rainbow"
+    fetched = store.get_rule(rule.id)
+    assert fetched is not None
+    assert fetched.matrix_effect == "rainbow"

@@ -11,7 +11,6 @@ from raspberry_pab.db import ScheduleStore
 from raspberry_pab.kiosk_clock import set_simulated_now
 from raspberry_pab.models import (
     ParticipantCreate,
-    RaceResultsSyncSummary,
     TestScenarioDefinition,
     TestScenarioRunResult,
     TestScenarioSummary,

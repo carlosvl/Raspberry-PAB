@@ -24,16 +24,23 @@ def names_match(participant_name: str, result_name: str) -> bool:
         return False
     if left == right:
         return True
-    if len(left) >= 2 and len(right) >= 2:
-        if left[0] == right[0] and left[-1] == right[-1]:
-            left_middle = set(left[1:-1])
-            right_middle = set(right[1:-1])
-            if not left_middle or not right_middle or left_middle <= right_middle or right_middle <= left_middle:
-                return True
+    if (
+        len(left) >= 2
+        and len(right) >= 2
+        and left[0] == right[0]
+        and left[-1] == right[-1]
+    ):
+        left_middle = set(left[1:-1])
+        right_middle = set(right[1:-1])
+        if (
+            not left_middle
+            or not right_middle
+            or left_middle <= right_middle
+            or right_middle <= left_middle
+        ):
+            return True
     left_set = set(left)
     right_set = set(right)
     if len(left_set) >= 2 and left_set <= right_set:
         return True
-    if len(right_set) >= 2 and right_set <= left_set:
-        return True
-    return False
+    return bool(len(right_set) >= 2 and right_set <= left_set)
