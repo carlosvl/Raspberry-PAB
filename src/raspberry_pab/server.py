@@ -32,6 +32,7 @@ from raspberry_pab.matrix_controller import MatrixController
 from raspberry_pab.models import Alert
 from raspberry_pab.music_break_scheduler import MusicBreakScheduler
 from raspberry_pab.network_info import HOTSPOT_IPV4, lan_base_urls
+from raspberry_pab.race_results.team_standings_scheduler import TeamStandingsScheduler
 from raspberry_pab.roku_autocast import RokuAutocastWatcher
 from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.bluetooth import router as bluetooth_router
@@ -48,6 +49,7 @@ from raspberry_pab.routes.race_results import router as race_results_router
 from raspberry_pab.routes.roku import router as roku_router
 from raspberry_pab.routes.schedule import router as schedule_router
 from raspberry_pab.routes.sounds import router as sounds_router
+from raspberry_pab.routes.spotify import router as spotify_router
 from raspberry_pab.routes.system_clock import router as system_clock_router
 from raspberry_pab.routes.test_scenarios import router as test_scenarios_router
 from raspberry_pab.routes.touch import router as touch_router
@@ -59,6 +61,9 @@ from raspberry_pab.scheduler import (
     ReminderScheduler,
 )
 from raspberry_pab.sound_controller import SoundController, make_store_sink_resolver
+from raspberry_pab.spotify_controller import SpotifyController
+from raspberry_pab.spotify_matrix_ticker import NowPlayingMatrixTicker
+from raspberry_pab.spotify_web import SpotifyWebClient
 
 logger = logging.getLogger(__name__)
 
@@ -73,13 +78,22 @@ async def play_alert_groups(
     sound_controller: SoundController,
     music_break_scheduler: MusicBreakScheduler | None = None,
     alerts_busy: asyncio.Event | None = None,
+    spotify_controller: SpotifyController | None = None,
+    now_playing_ticker: NowPlayingMatrixTicker | None = None,
 ) -> None:
     """Play each same-slot group: effects once, matrix messages in order."""
+    if now_playing_ticker is not None:
+        await now_playing_ticker.pause()
     if music_break_scheduler is not None:
         await music_break_scheduler.interrupt()
     if alerts_busy is not None:
         alerts_busy.set()
     try:
+        if spotify_controller is not None:
+            try:
+                await spotify_controller.pause_for_alert()
+            except Exception:
+                logger.exception("Spotify pause before alert failed")
         for group in groups:
             if not group:
                 continue
@@ -116,6 +130,13 @@ async def play_alert_groups(
     finally:
         if alerts_busy is not None:
             alerts_busy.clear()
+        if spotify_controller is not None:
+            try:
+                await spotify_controller.resume_after_alert()
+            except Exception:
+                logger.exception("Spotify resume after alert failed")
+        if now_playing_ticker is not None:
+            now_playing_ticker.resume()
 
 
 def create_app(settings: Settings) -> FastAPI:
@@ -147,12 +168,30 @@ def create_app(settings: Settings) -> FastAPI:
         path_resolver=resolve_sound_path,
         sink_resolver=make_store_sink_resolver(store),
     )
+    store_sink_resolver = make_store_sink_resolver(store)
+    spotify_controller = SpotifyController(
+        settings,
+        store,
+        sink_resolver=lambda: store_sink_resolver(settings),
+    )
     music_break_scheduler = MusicBreakScheduler(
         store,
         sound_controller=sound_controller,
         led_controller=led_controller,
         matrix_controller=matrix_controller,
         sound_path_resolver=resolve_sound_path,
+        alerts_busy=alerts_busy,
+        skip_when=spotify_controller.is_online,
+    )
+    now_playing_ticker = NowPlayingMatrixTicker(
+        store,
+        matrix_controller=matrix_controller,
+        spotify_controller=spotify_controller,
+        alerts_busy=alerts_busy,
+    )
+    team_standings_scheduler = TeamStandingsScheduler(
+        store,
+        matrix_controller=matrix_controller,
         alerts_busy=alerts_busy,
     )
     roku_autocast = RokuAutocastWatcher(settings, store)
@@ -190,6 +229,8 @@ def create_app(settings: Settings) -> FastAPI:
                         sound_controller=sound_controller,
                         music_break_scheduler=music_break_scheduler,
                         alerts_busy=alerts_busy,
+                        spotify_controller=spotify_controller,
+                        now_playing_ticker=now_playing_ticker,
                     )
 
         hardware_task = asyncio.create_task(
@@ -197,7 +238,10 @@ def create_app(settings: Settings) -> FastAPI:
         )
         scheduler.start()
         results_scheduler.start()
+        team_standings_scheduler.start()
         music_break_scheduler.start()
+        spotify_controller.start()
+        now_playing_ticker.start()
         roku_autocast.start()
         asyncio.create_task(
             try_reconnect_saved_speaker(store),
@@ -212,6 +256,9 @@ def create_app(settings: Settings) -> FastAPI:
                 await hardware_task
             await roku_autocast.stop()
             await music_break_scheduler.stop()
+            await now_playing_ticker.stop()
+            await spotify_controller.shutdown()
+            await team_standings_scheduler.stop()
             await led_controller.shutdown()
             await matrix_controller.shutdown()
             await buzzer_controller.shutdown()
@@ -234,6 +281,10 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.buzzer_controller = buzzer_controller
     app.state.sound_controller = sound_controller
     app.state.music_break_scheduler = music_break_scheduler
+    app.state.spotify_controller = spotify_controller
+    app.state.now_playing_ticker = now_playing_ticker
+    app.state.spotify_web = SpotifyWebClient(settings, store)
+    app.state.team_standings_scheduler = team_standings_scheduler
     app.state.roku_autocast = roku_autocast
     web_dir = settings.web_dir
 
@@ -299,6 +350,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(matrix_router)
     app.include_router(sounds_router)
     app.include_router(music_breaks_router)
+    app.include_router(spotify_router)
     app.include_router(system_clock_router)
     app.include_router(race_results_router)
     app.include_router(test_scenarios_router)

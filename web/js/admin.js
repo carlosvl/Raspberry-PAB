@@ -880,6 +880,7 @@ function formatMusicBreakStatus(status) {
   const parts = [];
   parts.push(status.enabled ? "ON" : "OFF");
   if (status.playing) parts.push("playing now");
+  if (status.enabled && status.spotify_online) parts.push("skipped while Spotify is online");
   if (status.next_at) {
     const when = new Date(status.next_at);
     parts.push(
@@ -935,6 +936,360 @@ async function saveMusicBreaks() {
   if (statusEl) statusEl.textContent = formatMusicBreakStatus(status);
   renderMusicBreakPlaylist();
   setOutput("Music breaks saved.");
+}
+
+let spotifyPlaylists = [];
+let spotifyPlaying = false;
+
+function renderSpotify(status) {
+  spotifyPlaylists = Array.isArray(status.playlists) ? status.playlists : [];
+  spotifyPlaying = Boolean(status.playing);
+  const parts = [status.enabled ? "ON" : "OFF"];
+  if (status.enabled) parts.push(status.online ? "online" : "offline");
+  if (status.online) parts.push(status.playing ? "playing" : status.paused ? "paused" : "stopped");
+  const statusEl = document.getElementById("spotifyStatus");
+  if (statusEl) statusEl.textContent = `Status: ${parts.join(" · ")}`;
+
+  const track = document.getElementById("spotifyTrack");
+  const artist = document.getElementById("spotifyArtist");
+  const context = document.getElementById("spotifyContext");
+  const cover = document.getElementById("spotifyCover");
+  if (track) track.textContent = status.track_name || "Nothing playing";
+  if (artist) artist.textContent = (status.artist_names || []).join(", ");
+  if (context) context.textContent = status.context_name ? `From: ${status.context_name}` : "";
+  if (cover) {
+    if (status.album_cover_url) {
+      cover.src = status.album_cover_url;
+      cover.hidden = false;
+    } else {
+      cover.hidden = true;
+      cover.removeAttribute("src");
+    }
+  }
+  const playPause = document.getElementById("spotifyPlayPause");
+  if (playPause) playPause.textContent = spotifyPlaying ? "Pause" : "Play";
+
+  const volume = document.getElementById("spotifyVolume");
+  const volumeValue = document.getElementById("spotifyVolumeValue");
+  if (volume && document.activeElement !== volume) {
+    volume.max = String(status.max_volume ?? 100);
+    volume.value = String(status.volume ?? 0);
+  }
+  if (volumeValue) volumeValue.textContent = status.online ? `${status.volume}%` : "—";
+
+  const enabled = document.getElementById("spotifyEnabled");
+  const maxVolume = document.getElementById("spotifyMaxVolume");
+  if (enabled) enabled.checked = Boolean(status.enabled);
+  if (maxVolume && document.activeElement !== maxVolume) {
+    maxVolume.value = String(status.max_volume ?? 80);
+  }
+  const matrix = status.matrix || {};
+  const matrixEnabled = document.getElementById("spotifyMatrixEnabled");
+  const matrixEffect = document.getElementById("spotifyMatrixEffect");
+  const matrixColor = document.getElementById("spotifyMatrixColor");
+  if (matrixEnabled) matrixEnabled.checked = matrix.enabled !== false;
+  if (matrixEffect && document.activeElement !== matrixEffect) {
+    matrixEffect.value = matrix.effect || "solid";
+  }
+  if (matrixColor && document.activeElement !== matrixColor) {
+    matrixColor.value = rgbToHex(matrix.red ?? 30, matrix.green ?? 215, matrix.blue ?? 96);
+  }
+  renderSpotifyPlaylists();
+}
+
+function renderSpotifyPlaylists() {
+  const list = document.getElementById("spotifyPlaylists");
+  if (!list) return;
+  if (!spotifyPlaylists.length) {
+    list.innerHTML = `<p class="branding__hint">No playlists yet. Paste a Spotify link below.</p>`;
+    return;
+  }
+  list.innerHTML = spotifyPlaylists
+    .map(
+      (item, index) => `
+        <div class="admin__item">
+          <div class="admin__item-main">
+            <strong>${escapeHtml(item.name)}</strong>
+            <span class="branding__hint">${escapeHtml(item.uri)}</span>
+          </div>
+          <button data-spotify-play="${index}" type="button">Play</button>
+          <button data-spotify-remove="${index}" type="button">Remove</button>
+        </div>
+      `,
+    )
+    .join("");
+  list.querySelectorAll("[data-spotify-play]").forEach((button) => {
+    button.addEventListener("click", () =>
+      spotifyRequest(`/api/admin/spotify/playlists/${button.dataset.spotifyPlay}/play`, {
+        method: "POST",
+      }, "Playing playlist."),
+    );
+  });
+  list.querySelectorAll("[data-spotify-remove]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const next = spotifyPlaylists.filter(
+        (_item, index) => index !== Number(button.dataset.spotifyRemove),
+      );
+      await saveSpotifyPlaylists(next, "Playlist removed.");
+    });
+  });
+}
+
+async function loadSpotify() {
+  renderSpotify(await api("/api/admin/spotify"));
+}
+
+async function spotifyRequest(path, options, message) {
+  try {
+    renderSpotify(await api(path, options));
+    if (message) setOutput(message);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function saveSpotifyPlaylists(playlists, message) {
+  try {
+    spotifyPlaylists = await api("/api/admin/spotify/playlists", {
+      method: "PUT",
+      body: JSON.stringify({ playlists }),
+    });
+    renderSpotifyPlaylists();
+    setOutput(message);
+    return true;
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+    return false;
+  }
+}
+
+function spotifyMatrixBody() {
+  const color = parseHexColor(document.getElementById("spotifyMatrixColor")?.value || "#1ed760");
+  return {
+    enabled: Boolean(document.getElementById("spotifyMatrixEnabled")?.checked),
+    effect: document.getElementById("spotifyMatrixEffect")?.value || "solid",
+    red: color.led_red,
+    green: color.led_green,
+    blue: color.led_blue,
+  };
+}
+
+let spotifyWebResults = [];
+
+async function loadSpotifyWeb() {
+  const status = await api("/api/admin/spotify/web");
+  const statusEl = document.getElementById("spotifyWebStatus");
+  const connect = document.getElementById("spotifyWebConnect");
+  const browse = document.getElementById("spotifyWebBrowse");
+  if (statusEl) {
+    statusEl.textContent = !status.configured
+      ? "Account: add PAB_SPOTIFY_CLIENT_ID to the Pi's .env, then restart the server."
+      : status.connected
+        ? "Account: connected"
+        : `Account: not connected (redirect ${status.redirect_uri})`;
+  }
+  if (connect) connect.hidden = !status.configured || status.connected;
+  if (browse) browse.hidden = !status.connected;
+}
+
+const SPOTIFY_KIND_LABELS = { playlist: "Playlist", album: "Album", track: "Song", artist: "Artist" };
+
+function renderSpotifyWebResults(items, emptyText) {
+  spotifyWebResults = items;
+  const list = document.getElementById("spotifyWebResults");
+  if (!list) return;
+  if (!items.length) {
+    list.innerHTML = `<p class="branding__hint">${escapeHtml(emptyText)}</p>`;
+    return;
+  }
+  list.innerHTML = items
+    .map(
+      (item, index) => `
+        <div class="admin__item spotify-result">
+          ${item.image_url ? `<img alt="" loading="lazy" src="${escapeHtml(item.image_url)}" />` : ""}
+          <div class="admin__item-main">
+            <strong>${escapeHtml(item.name)}</strong>
+            <span class="branding__hint">${escapeHtml(
+              [SPOTIFY_KIND_LABELS[item.kind] || item.kind, item.subtitle].filter(Boolean).join(" · "),
+            )}</span>
+          </div>
+          <button data-spotify-web-play="${index}" type="button">Play</button>
+          <button data-spotify-web-save="${index}" type="button">Save</button>
+        </div>
+      `,
+    )
+    .join("");
+  list.querySelectorAll("[data-spotify-web-play]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const item = spotifyWebResults[Number(button.dataset.spotifyWebPlay)];
+      spotifyRequest(
+        "/api/admin/spotify/play",
+        { method: "POST", body: JSON.stringify({ uri: item.uri }) },
+        `Playing ${item.name}.`,
+      );
+    });
+  });
+  list.querySelectorAll("[data-spotify-web-save]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const item = spotifyWebResults[Number(button.dataset.spotifyWebSave)];
+      if (spotifyPlaylists.some((saved) => saved.uri === item.uri)) {
+        setOutput(`${item.name} is already saved.`);
+        return;
+      }
+      saveSpotifyPlaylists(
+        [...spotifyPlaylists, { name: item.name.slice(0, 80), uri: item.uri }],
+        `Saved ${item.name}.`,
+      );
+    });
+  });
+}
+
+async function spotifyWebAction(action) {
+  try {
+    await action();
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+    // A revoked login shows up as "not connected"; refresh the section.
+    loadSpotifyWeb().catch(() => {});
+  }
+}
+
+function configureSpotifyWeb() {
+  document.getElementById("spotifyWebConnectBtn")?.addEventListener("click", () => {
+    // Open the tab now (inside the tap) so iOS doesn't block it as a popup.
+    const tab = window.open("", "_blank");
+    spotifyWebAction(async () => {
+      let url;
+      try {
+        ({ authorize_url: url } = await api("/api/admin/spotify/web/login", {
+          method: "POST",
+        }));
+      } catch (error) {
+        tab?.close();
+        throw error;
+      }
+      if (tab) {
+        tab.location.href = url;
+      } else {
+        window.location.href = url;
+      }
+      setOutput("Approve in Spotify. On a phone, paste the address of the page that doesn't load.");
+    });
+  });
+  document.getElementById("spotifyWebFinish")?.addEventListener("click", () =>
+    spotifyWebAction(async () => {
+      const input = document.getElementById("spotifyWebRedirect");
+      const redirectUrl = input?.value.trim() || "";
+      if (!redirectUrl) {
+        setOutput("Paste the address from the page that didn't load.");
+        return;
+      }
+      await api("/api/admin/spotify/web/complete", {
+        method: "POST",
+        body: JSON.stringify({ redirect_url: redirectUrl }),
+      });
+      if (input) input.value = "";
+      await loadSpotifyWeb();
+      setOutput("Spotify account connected.");
+    }),
+  );
+  document.getElementById("spotifyWebDisconnect")?.addEventListener("click", () =>
+    spotifyWebAction(async () => {
+      await api("/api/admin/spotify/web", { method: "DELETE" });
+      renderSpotifyWebResults([], "");
+      await loadSpotifyWeb();
+      setOutput("Spotify account disconnected.");
+    }),
+  );
+  document.getElementById("spotifyWebMine")?.addEventListener("click", () =>
+    spotifyWebAction(async () => {
+      setOutput("Loading your playlists…");
+      const items = await api("/api/admin/spotify/web/playlists");
+      renderSpotifyWebResults(items, "No playlists found.");
+      setOutput(`${items.length} playlists.`);
+    }),
+  );
+  const runSearch = () =>
+    spotifyWebAction(async () => {
+      const query = document.getElementById("spotifyWebQuery")?.value.trim() || "";
+      if (!query) return;
+      setOutput(`Searching for ${query}…`);
+      const items = await api(`/api/admin/spotify/web/search?q=${encodeURIComponent(query)}`);
+      renderSpotifyWebResults(items, "No results.");
+      setOutput(`${items.length} results.`);
+    });
+  document.getElementById("spotifyWebSearch")?.addEventListener("click", runSearch);
+  document.getElementById("spotifyWebQuery")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      runSearch();
+    }
+  });
+}
+
+function configureSpotify() {
+  document.querySelectorAll("[data-spotify-action]").forEach((button) => {
+    button.addEventListener("click", () =>
+      spotifyRequest(`/api/admin/spotify/player/${button.dataset.spotifyAction}`, {
+        method: "POST",
+      }),
+    );
+  });
+  document.getElementById("spotifyPlayPause")?.addEventListener("click", () =>
+    spotifyRequest(`/api/admin/spotify/player/${spotifyPlaying ? "pause" : "resume"}`, {
+      method: "POST",
+    }),
+  );
+  document.getElementById("spotifyRefresh")?.addEventListener("click", () =>
+    spotifyRequest("/api/admin/spotify", {}, "Spotify status refreshed."),
+  );
+  const volume = document.getElementById("spotifyVolume");
+  volume?.addEventListener("input", () => {
+    const volumeValue = document.getElementById("spotifyVolumeValue");
+    if (volumeValue) volumeValue.textContent = `${volume.value}%`;
+  });
+  volume?.addEventListener("change", () =>
+    spotifyRequest("/api/admin/spotify/volume", {
+      method: "PUT",
+      body: JSON.stringify({ volume: Number(volume.value) }),
+    }),
+  );
+  document.getElementById("spotifyPlaylistAdd")?.addEventListener("click", async () => {
+    const nameInput = document.getElementById("spotifyPlaylistName");
+    const uriInput = document.getElementById("spotifyPlaylistUri");
+    const name = nameInput?.value.trim() || "";
+    const uri = uriInput?.value.trim() || "";
+    if (!name || !uri) {
+      setOutput("Enter a name and a Spotify link.");
+      return;
+    }
+    if (await saveSpotifyPlaylists([...spotifyPlaylists, { name, uri }], "Playlist added.")) {
+      if (nameInput) nameInput.value = "";
+      if (uriInput) uriInput.value = "";
+    }
+  });
+  document.getElementById("spotifySettingsForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    spotifyRequest(
+      "/api/admin/spotify",
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          enabled: Boolean(document.getElementById("spotifyEnabled")?.checked),
+          max_volume: Number(document.getElementById("spotifyMaxVolume")?.value || 80),
+          matrix: spotifyMatrixBody(),
+        }),
+      },
+      "Spotify settings saved.",
+    );
+  });
+  // Keep "Now playing" fresh while the Spotify tab is open.
+  setInterval(() => {
+    const panel = document.getElementById("spotifyPanel");
+    if (panel && !panel.hidden && !adminPanels?.hidden) {
+      loadSpotify().catch(() => {});
+    }
+  }, 10000);
 }
 
 function configureMusicBreaks() {
@@ -1087,8 +1442,11 @@ async function loadAll() {
       loadSounds(),
       loadBluetoothPanel(),
       loadMusicBreaks(),
+      loadSpotify(),
+      loadSpotifyWeb(),
       loadRules(),
       loadRaceResults(),
+      loadTeamStandingsConfig(),
       loadKioskClockStatus(),
       loadScenarioList(),
       loadSyncInterval(),
@@ -2033,6 +2391,8 @@ if (gamepadSensitivity && gamepadSensitivityRange) {
 
 initTouchSteppers();
 configureMusicBreaks();
+configureSpotify();
+configureSpotifyWeb();
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("uploadSound")?.addEventListener("click", uploadSoundFile);
 
@@ -2801,6 +3161,104 @@ document.getElementById("saveSyncConfig")?.addEventListener("click", async () =>
       interval > 0
         ? `Auto-sync every ${interval} min · ${windowHours}h after last start.`
         : "Auto-sync disabled.",
+    );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+function renderTeamStandingsStatus(data) {
+  const statusEl = document.getElementById("teamStandingsStatus");
+  if (!statusEl) return;
+  if (!data) {
+    statusEl.textContent = "";
+    return;
+  }
+  const parts = [];
+  parts.push(data.enabled ? "Live standings ON" : "Live standings OFF");
+  parts.push(`every ${data.interval_minutes} min`);
+  if (data.scraped_at) {
+    parts.push(`last scrape ${formatSyncClock(data.scraped_at)}`);
+  }
+  if (data.error) {
+    parts.push(`error: ${data.error}`);
+  } else if (data.ticker_text) {
+    parts.push(data.ticker_text.slice(0, 120) + (data.ticker_text.length > 120 ? "…" : ""));
+  }
+  statusEl.textContent = parts.join(" · ");
+}
+
+async function loadTeamStandingsConfig() {
+  const enabledEl = document.getElementById("teamStandingsEnabled");
+  const urlEl = document.getElementById("teamStandingsUrl");
+  const teamEl = document.getElementById("teamStandingsTeam");
+  const intervalEl = document.getElementById("teamStandingsInterval");
+  if (!enabledEl || !urlEl || !teamEl || !intervalEl) return;
+  try {
+    const data = await api("/api/admin/team-standings/config", {
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    enabledEl.checked = Boolean(data.enabled);
+    urlEl.value = data.series_url || "";
+    teamEl.value = data.focus_team || "";
+    intervalEl.value = String(data.interval_minutes);
+    renderTeamStandingsStatus(data);
+  } catch {
+    // not available
+  }
+}
+
+document.getElementById("saveTeamStandings")?.addEventListener("click", async () => {
+  const enabled = document.getElementById("teamStandingsEnabled")?.checked ?? true;
+  const seriesUrl = document.getElementById("teamStandingsUrl")?.value?.trim() || "";
+  const focusTeam = document.getElementById("teamStandingsTeam")?.value?.trim() || "";
+  const interval = parseInt(
+    document.getElementById("teamStandingsInterval")?.value || "5",
+    10,
+  );
+  if (!seriesUrl || !focusTeam) {
+    setOutput("Series URL and focus team are required.");
+    return;
+  }
+  if (Number.isNaN(interval) || interval < 0) {
+    setOutput("Enter a valid live standings interval (0 = off).");
+    return;
+  }
+  try {
+    const data = await api("/api/admin/team-standings/config", {
+      method: "PUT",
+      body: JSON.stringify({
+        enabled,
+        series_url: seriesUrl,
+        focus_team: focusTeam,
+        interval_minutes: interval,
+      }),
+    });
+    renderTeamStandingsStatus(data);
+    setOutput(
+      enabled && interval > 0
+        ? `Live team standings every ${interval} min for ${focusTeam}.`
+        : "Live team standings disabled.",
+    );
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+});
+
+document.getElementById("refreshTeamStandings")?.addEventListener("click", async () => {
+  setOutput("Refreshing live team standings…");
+  try {
+    const snapshot = await api("/api/admin/team-standings/refresh", {
+      method: "POST",
+      headers: { "X-Admin-Pin": adminPin() },
+    });
+    await loadTeamStandingsConfig();
+    setOutput(
+      snapshot.error
+        ? `Refresh failed: ${snapshot.error}`
+        : `Refreshed · ${snapshot.buckets?.length || 0} buckets · ticker ${
+            snapshot.ticker_text ? "ready" : "empty"
+          }.`,
     );
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));

@@ -1,0 +1,14 @@
+[Unit]
+Description=Raspberry-PAB Spotify Connect receiver (go-librespot)
+After=pipewire-pulse.service network-online.target
+Wants=pipewire-pulse.service
+
+[Service]
+Type=simple
+# Reads the default config dir, ~/.config/go-librespot.
+ExecStart=/usr/local/bin/go-librespot
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -129,6 +129,51 @@ class RaceResultsSyncConfigUpdate(BaseModel):
     window_hours: int = Field(ge=1, le=24)
 
 
+class TeamStandingTopEntry(BaseModel):
+    place: int
+    team_name: str
+    score: int
+
+
+class TeamStandingBucketView(BaseModel):
+    race_date: date
+    bucket: str
+    division_label: str
+    focus_place: int | None = None
+    focus_score: int | None = None
+    focus_team: str
+    top3: list[TeamStandingTopEntry]
+
+
+class TeamStandingsSnapshot(BaseModel):
+    enabled: bool
+    series_url: str
+    focus_team: str
+    scraped_at: datetime | None = None
+    ticker_text: str = ""
+    matrix_messages: list[str] = Field(default_factory=list)
+    buckets: list[TeamStandingBucketView] = Field(default_factory=list)
+    results_status: str | None = None
+    error: str | None = None
+
+
+class TeamStandingsConfig(BaseModel):
+    enabled: bool
+    series_url: str
+    focus_team: str
+    interval_minutes: int
+    ticker_text: str = ""
+    scraped_at: datetime | None = None
+    error: str | None = None
+
+
+class TeamStandingsConfigUpdate(BaseModel):
+    enabled: bool
+    series_url: str = Field(min_length=1, max_length=500)
+    focus_team: str = Field(min_length=1, max_length=120)
+    interval_minutes: int = Field(ge=0, le=1440)
+
+
 class ManualRaceResultLink(BaseModel):
     participant_id: int
     iyr_session_id: int
@@ -242,7 +287,79 @@ class MusicBreakStatus(BaseModel):
     next_sound_id: int | None = None
     next_slot: int | None = None
     playing: bool = False
+    spotify_online: bool = False
     kiosk_now: datetime
+
+
+class SpotifyPlaylist(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    uri: str = Field(min_length=1, max_length=200)
+
+
+class SpotifyPlaylistsUpdate(BaseModel):
+    playlists: list[SpotifyPlaylist] = Field(default_factory=list, max_length=50)
+
+
+class SpotifyMatrixConfig(BaseModel):
+    """Matrix "NOW PLAYING" loop settings."""
+
+    enabled: bool = True
+    effect: MatrixEffect = "solid"
+    red: int = Field(default=30, ge=0, le=255)
+    green: int = Field(default=215, ge=0, le=255)
+    blue: int = Field(default=96, ge=0, le=255)
+
+
+class SpotifyConfigUpdate(BaseModel):
+    enabled: bool | None = None
+    max_volume: int | None = Field(default=None, ge=0, le=100)
+    matrix: SpotifyMatrixConfig | None = None
+
+
+class SpotifyVolume(BaseModel):
+    volume: int = Field(ge=0, le=100)
+
+
+class SpotifyPlayRequest(BaseModel):
+    uri: str = Field(min_length=1, max_length=200)
+
+
+class SpotifyStatus(BaseModel):
+    enabled: bool
+    online: bool
+    playing: bool = False
+    paused: bool = False
+    stopped: bool = True
+    volume: int = 0
+    max_volume: int = 80
+    track_name: str | None = None
+    artist_names: list[str] = Field(default_factory=list)
+    album_cover_url: str | None = None
+    context_name: str | None = None
+    playlists: list[SpotifyPlaylist] = Field(default_factory=list)
+    matrix: SpotifyMatrixConfig = Field(default_factory=SpotifyMatrixConfig)
+
+
+class SpotifyWebStatus(BaseModel):
+    configured: bool
+    connected: bool
+    redirect_uri: str
+
+
+class SpotifyWebLogin(BaseModel):
+    authorize_url: str
+
+
+class SpotifyWebComplete(BaseModel):
+    redirect_url: str = Field(min_length=1, max_length=2000)
+
+
+class SpotifyWebItem(BaseModel):
+    kind: str
+    name: str
+    uri: str
+    subtitle: str = ""
+    image_url: str | None = None
 
 
 class BuzzerTest(BaseModel):

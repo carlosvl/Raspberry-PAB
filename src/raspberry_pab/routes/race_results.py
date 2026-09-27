@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Annotated
+from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, Field
@@ -17,8 +17,30 @@ from raspberry_pab.models import (
     RaceResultsSyncConfig,
     RaceResultsSyncConfigUpdate,
     RaceResultsSyncSummary,
+    TeamStandingBucketView,
+    TeamStandingsConfig,
+    TeamStandingsConfigUpdate,
+    TeamStandingsSnapshot,
+    TeamStandingTopEntry,
 )
 from raspberry_pab.race_results.sync import RaceResultsSync
+from raspberry_pab.race_results.team_standings_live import (
+    DEFAULT_INTERVAL_MINUTES,
+    DEFAULT_SERIES_URL,
+    DEFAULT_TEAM,
+    SETTING_ENABLED,
+    SETTING_INTERVAL,
+    SETTING_SERIES_URL,
+    SETTING_TEAM,
+    LiveStandingsSnapshot,
+    read_enabled,
+    read_series_url,
+    read_team,
+)
+from raspberry_pab.race_results.team_standings_live import (
+    read_interval_minutes as read_team_interval,
+)
+from raspberry_pab.race_results.team_standings_scheduler import TeamStandingsScheduler
 from raspberry_pab.race_results.window import (
     DEFAULT_RESULTS_SYNC_MINUTES,
     DEFAULT_RESULTS_SYNC_WINDOW_HOURS,
@@ -39,6 +61,69 @@ class SyncIntervalUpdate(BaseModel):
 
 def get_sync(request: Request) -> RaceResultsSync:
     return RaceResultsSync(get_store(request))
+
+
+def get_team_standings_scheduler(request: Request) -> TeamStandingsScheduler:
+    return cast(TeamStandingsScheduler, request.app.state.team_standings_scheduler)
+
+
+def _live_to_api(
+    snapshot: LiveStandingsSnapshot | None,
+    *,
+    enabled: bool,
+    series_url: str,
+    focus_team: str,
+) -> TeamStandingsSnapshot:
+    if snapshot is None:
+        return TeamStandingsSnapshot(
+            enabled=enabled,
+            series_url=series_url,
+            focus_team=focus_team,
+        )
+    return TeamStandingsSnapshot(
+        enabled=enabled,
+        series_url=snapshot.series_url,
+        focus_team=snapshot.focus_team,
+        scraped_at=snapshot.scraped_at,
+        ticker_text=snapshot.ticker_text,
+        matrix_messages=list(snapshot.matrix_messages),
+        buckets=[
+            TeamStandingBucketView(
+                race_date=bucket.race_date,
+                bucket=bucket.bucket.value,
+                division_label=bucket.division_label,
+                focus_place=bucket.focus_place,
+                focus_score=bucket.focus_score,
+                focus_team=bucket.focus_team,
+                top3=[
+                    TeamStandingTopEntry(
+                        place=entry.place,
+                        team_name=entry.team_name,
+                        score=entry.score,
+                    )
+                    for entry in bucket.top3
+                ],
+            )
+            for bucket in snapshot.buckets
+        ],
+        results_status=snapshot.results_status,
+        error=snapshot.error,
+    )
+
+
+def _team_config_response(request: Request) -> TeamStandingsConfig:
+    store = get_store(request)
+    scheduler = get_team_standings_scheduler(request)
+    snapshot = scheduler.snapshot
+    return TeamStandingsConfig(
+        enabled=read_enabled(store),
+        series_url=read_series_url(store),
+        focus_team=read_team(store),
+        interval_minutes=read_team_interval(store),
+        ticker_text=snapshot.ticker_text if snapshot else "",
+        scraped_at=snapshot.scraped_at if snapshot else None,
+        error=snapshot.error if snapshot else None,
+    )
 
 
 def _sync_config_response(request: Request) -> RaceResultsSyncConfig:
@@ -65,6 +150,18 @@ def list_race_results(
 ) -> list[ParticipantResultMatchRecord]:
     event_date = date_filter or date.today()
     return get_store(request).list_participant_result_matches(event_date)
+
+
+@router.get("/team-standings", response_model=TeamStandingsSnapshot)
+def get_team_standings(request: Request) -> TeamStandingsSnapshot:
+    store = get_store(request)
+    scheduler = get_team_standings_scheduler(request)
+    return _live_to_api(
+        scheduler.snapshot,
+        enabled=read_enabled(store),
+        series_url=read_series_url(store),
+        focus_team=read_team(store),
+    )
 
 
 @router.get(
@@ -185,3 +282,55 @@ def set_sync_interval(
     else:
         store.set_setting(RESULTS_SYNC_INTERVAL_KEY, str(body.interval_minutes))
     return {"interval_minutes": read_interval_minutes(store)}
+
+
+@router.get(
+    "/admin/team-standings/config",
+    response_model=TeamStandingsConfig,
+    dependencies=[Depends(require_admin_pin)],
+)
+def get_team_standings_config(request: Request) -> TeamStandingsConfig:
+    return _team_config_response(request)
+
+
+@router.put(
+    "/admin/team-standings/config",
+    response_model=TeamStandingsConfig,
+    dependencies=[Depends(require_admin_pin)],
+)
+def set_team_standings_config(
+    request: Request,
+    body: TeamStandingsConfigUpdate,
+) -> TeamStandingsConfig:
+    store = get_store(request)
+    store.set_setting(SETTING_ENABLED, "true" if body.enabled else "false")
+    if body.series_url.strip() == DEFAULT_SERIES_URL:
+        store.delete_setting(SETTING_SERIES_URL)
+    else:
+        store.set_setting(SETTING_SERIES_URL, body.series_url.strip())
+    if body.focus_team.strip() == DEFAULT_TEAM:
+        store.delete_setting(SETTING_TEAM)
+    else:
+        store.set_setting(SETTING_TEAM, body.focus_team.strip())
+    if body.interval_minutes == DEFAULT_INTERVAL_MINUTES:
+        store.delete_setting(SETTING_INTERVAL)
+    else:
+        store.set_setting(SETTING_INTERVAL, str(body.interval_minutes))
+    return _team_config_response(request)
+
+
+@router.post(
+    "/admin/team-standings/refresh",
+    response_model=TeamStandingsSnapshot,
+    dependencies=[Depends(require_admin_pin)],
+)
+async def refresh_team_standings(request: Request) -> TeamStandingsSnapshot:
+    store = get_store(request)
+    scheduler = get_team_standings_scheduler(request)
+    snapshot = await scheduler.refresh_now()
+    return _live_to_api(
+        snapshot,
+        enabled=read_enabled(store),
+        series_url=read_series_url(store),
+        focus_team=read_team(store),
+    )

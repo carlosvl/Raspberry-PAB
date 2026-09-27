@@ -21,6 +21,8 @@ def get_music_break_scheduler(request: Request) -> MusicBreakScheduler:
 def _status_response(request: Request) -> MusicBreakStatus:
     scheduler = get_music_break_scheduler(request)
     fields = scheduler.status_fields()
+    spotify = getattr(request.app.state, "spotify_controller", None)
+    fields["spotify_online"] = bool(spotify is not None and spotify.online_cached)
     return MusicBreakStatus.model_validate(fields)
 
 

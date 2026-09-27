@@ -34,6 +34,9 @@
         <button data-tab-panel="musicBreaksPanel" type="button">
           Music breaks
         </button>
+        <button data-tab-panel="spotifyPanel" type="button">
+          Spotify
+        </button>
         <button data-tab-panel="touchPanel" type="button">
           Touch
         </button>
@@ -297,6 +300,141 @@
               </div>
               <div class="admin__list" id="musicBreakPlaylist"></div>
             </div>
+          </details>
+        </article>
+
+        <article class="panel" id="spotifyPanel">
+          <h2>Spotify</h2>
+          <p class="branding__hint">
+            Plays Spotify through the Pi (speaker name <strong>PAB Board</strong>) on the
+            same output as alerts. Needs internet and Spotify Premium. Alerts pause the
+            music and resume it afterward. Music breaks only play while Spotify is offline.
+          </p>
+          <p class="branding__hint" id="spotifyStatus">Status: —</p>
+          <details class="admin-section" open>
+            <summary>Now playing</summary>
+            <div class="form">
+              <div class="spotify-now">
+                <img alt="" hidden id="spotifyCover" />
+                <div>
+                  <strong id="spotifyTrack">Nothing playing</strong>
+                  <p class="branding__hint" id="spotifyArtist"></p>
+                  <p class="branding__hint" id="spotifyContext"></p>
+                </div>
+              </div>
+              <div class="button-row">
+                <button data-spotify-action="prev" type="button">Previous</button>
+                <button id="spotifyPlayPause" type="button">Pause</button>
+                <button data-spotify-action="next" type="button">Next</button>
+                <button id="spotifyRefresh" type="button">Refresh</button>
+              </div>
+              <label>
+                Volume <span id="spotifyVolumeValue">—</span>
+                <input id="spotifyVolume" max="100" min="0" step="5" type="range" value="60" />
+              </label>
+            </div>
+          </details>
+          <details class="admin-section" open>
+            <summary>Playlists</summary>
+            <div class="form">
+              <div class="admin__list" id="spotifyPlaylists"></div>
+              <label>
+                Name
+                <input id="spotifyPlaylistName" maxlength="80" placeholder="Warm-up" type="text" />
+              </label>
+              <label>
+                Spotify link
+                <input
+                  id="spotifyPlaylistUri"
+                  placeholder="https://open.spotify.com/playlist/…"
+                  type="text"
+                />
+                <span class="branding__hint">In the Spotify app: Share → Copy link.</span>
+              </label>
+              <div class="button-row">
+                <button id="spotifyPlaylistAdd" type="button">Add playlist</button>
+              </div>
+            </div>
+          </details>
+          <details class="admin-section">
+            <summary>Browse Spotify</summary>
+            <div class="form">
+              <p class="branding__hint" id="spotifyWebStatus">Account: —</p>
+              <div id="spotifyWebConnect" hidden>
+                <p class="branding__hint">
+                  1. Tap <strong>Connect</strong> and approve in Spotify.
+                  On the Pi's own screen that's all. On a phone, Spotify then opens a page
+                  that won't load: copy its whole address and paste it below.
+                </p>
+                <div class="button-row">
+                  <button id="spotifyWebConnectBtn" type="button">Connect Spotify account</button>
+                </div>
+                <label>
+                  2. Paste the address from the page that didn't load
+                  <input
+                    id="spotifyWebRedirect"
+                    placeholder="http://127.0.0.1:8080/api/spotify/callback?code=…"
+                    type="text"
+                  />
+                </label>
+                <div class="button-row">
+                  <button id="spotifyWebFinish" type="button">Finish connecting</button>
+                </div>
+              </div>
+              <div id="spotifyWebBrowse" hidden>
+                <div class="button-row">
+                  <button id="spotifyWebMine" type="button">My playlists</button>
+                  <button id="spotifyWebDisconnect" type="button">Disconnect</button>
+                </div>
+                <label>
+                  Search
+                  <input id="spotifyWebQuery" maxlength="100" placeholder="Song, artist, album or playlist" type="search" />
+                </label>
+                <div class="button-row">
+                  <button id="spotifyWebSearch" type="button">Search</button>
+                </div>
+                <div class="admin__list" id="spotifyWebResults"></div>
+              </div>
+            </div>
+          </details>
+          <details class="admin-section">
+            <summary>Settings</summary>
+            <form class="form" id="spotifySettingsForm">
+              <label class="checkbox-row">
+                <input id="spotifyEnabled" type="checkbox" />
+                Enable Spotify
+              </label>
+              <label>
+                Maximum volume (%)
+                <input id="spotifyMaxVolume" max="100" min="0" required type="number" value="80" />
+                <span class="branding__hint">
+                  The Pi turns Spotify down to this level, even if a phone or Alexa sets it higher.
+                </span>
+              </label>
+              <label class="checkbox-row">
+                <input id="spotifyMatrixEnabled" type="checkbox" />
+                Show "NOW PLAYING song - artist" on the matrix
+              </label>
+              <label>
+                Matrix effect
+                <select id="spotifyMatrixEffect">
+                  <option value="solid">Solid</option>
+                  <option value="rainbow">Rainbow</option>
+                  <option value="pulse">Pulse</option>
+                </select>
+              </label>
+              <label>
+                Matrix color
+                <input id="spotifyMatrixColor" type="color" value="#1ed760" />
+                <span class="branding__hint">
+                  Loops while Spotify plays. Alerts and team standings take over the
+                  matrix, then now playing comes back with the current song.
+                </span>
+              </label>
+              <div class="button-row">
+                <button type="submit">Save Spotify settings</button>
+              </div>
+            </form>
           </details>
         </article>
 
@@ -756,6 +894,36 @@
                 <button id="saveSyncConfig" type="button">Save auto-sync settings</button>
               </div>
               <p class="branding__hint" id="syncIntervalStatus"></p>
+            </div>
+          </details>
+          <details class="admin-section" open>
+            <summary>Live team standings</summary>
+            <p class="branding__hint">
+              Polls ITS YOUR RACE for MCA team scores (focus team + top 3). Shows on the
+              kiosk ticker and scrolls the matrix every interval.
+            </p>
+            <div class="form">
+              <label class="checkbox-row">
+                <input id="teamStandingsEnabled" type="checkbox" />
+                Enabled
+              </label>
+              <label>
+                Series URL
+                <input id="teamStandingsUrl" type="url" />
+              </label>
+              <label>
+                Focus team
+                <input id="teamStandingsTeam" type="text" />
+              </label>
+              <label>
+                Interval (minutes, 0 = off)
+                <input id="teamStandingsInterval" max="1440" min="0" step="1" type="number" />
+              </label>
+              <div class="button-row">
+                <button id="saveTeamStandings" type="button">Save live standings</button>
+                <button id="refreshTeamStandings" type="button">Refresh now</button>
+              </div>
+              <p class="branding__hint" id="teamStandingsStatus"></p>
             </div>
           </details>
           <details class="admin-section" open>
