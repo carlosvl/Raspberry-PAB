@@ -11,3 +11,7 @@ Append-only. Newest entries at the bottom. Heading format:
 - Created the `/mca-team-standings` skill and scored IYR 17319, 17320 and 17333; wrote per-event and season reports in `docs/`.
 - User: the HS race on 2026-09-27 (event 17333) was canceled.
 - Pages: [features/team-standings](features/team-standings.md), [races/mca-2026-season](races/mca-2026-season.md).
+
+## [2026-09-27] decision | Collapse spotify branch into main
+- Squash-merged `spotify` into main as ef62215; deleted the branch locally and on origin. This repo "collapses" branches by squashing each into one commit on main.
+- CI (ruff + mypy) was already red on main before the merge; pytest passes (205). Run tests with `python -m pytest` (bare `pytest` fails to import `tests`).
