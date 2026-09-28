@@ -3,7 +3,7 @@
 - **Series URL:** https://www.itsyourrace.com/results.aspx?id=17319
 - **Series id:** `17319`
 - **Season year:** 2026
-- **Scraped at:** 2026-09-27T17:58:33.383837-05:00
+- **Scraped at:** 2026-09-27T19:20:44.679454-05:00
 - **Categories synced:** 10
 - **Results status:** Results are: Unofficial
 - **Scoring:** 2026 MCA Chapter 11 team scoring + Appendix A point grid
@@ -35,8 +35,8 @@ Skipped categories (no posted date/results yet):
 | 3 | Minneapolis Roosevelt HS | 3738 | BBBBBGGG | 8 |
 | 4 | Wayzata Mountain Bike | 3716 | BBBBBBGG | 8 |
 | 5 | Stillwater Mountain Bike | 3673 | BBBBBBGG | 8 |
-| 6 | Shakopee HS | 3430 | BBBBBBGG | 8 |
-| 7 | St Paul Central | 3407 | BBBGGGGG | 8 |
+| 6 | St Paul Central | 3407 | BBBGGGGG | 8 |
+| 7 | Shakopee HS | 3328 | BBBBBBGG | 8 |
 | 8 | New Prague MS and HS | 3233 | BBBBBGGG | 8 |
 | 9 | Mounds View HS | 3150 | BBBBBGGG | 8 |
 

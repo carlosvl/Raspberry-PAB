@@ -20,6 +20,7 @@ from raspberry_pab.race_results.mca_scoring import (
     build_all_standings,
     gender_mix_string,
     infer_team_division,
+    is_dnf,
     parse_category_label,
     points_for_place,
     riders_from_sessions,
@@ -261,3 +262,44 @@ def test_standings_bucket_roseville_highlighted_path() -> None:
     hs = sun.buckets[StandingsBucket.HS_D2]
     assert [t.team_name for t in hs] == ["Roseville", "Edina Cycling"]
     assert hs[0].total_points == 500
+
+
+def _row(place: int, laps: int | None, time: str | None) -> ParsedResultRow:
+    return ParsedResultRow(
+        place=place,
+        raw_name=f"Rider {place}",
+        bib=str(place),
+        team_name="Roseville",
+        laps=laps,
+        total_time=time,
+        total_distance=None,
+    )
+
+
+def test_is_dnf_rules_from_official_race_2() -> None:
+    assert not is_dnf(_row(1, 3, "00:40:36.6"), max_laps=3)
+    assert is_dnf(_row(99, 2, "00:33:55.020"), max_laps=3)  # lap short
+    assert is_dnf(_row(100, 1, "02:00:00.000"), max_laps=3)  # placeholder
+    assert is_dnf(_row(60, 0, None), max_laps=1)
+    assert is_dnf(_row(14, 4, "25:17:49.520"), max_laps=4)  # absurd time
+    assert not is_dnf(_row(5, None, "01:05:00"), max_laps=None)
+
+
+def test_riders_from_sessions_drops_dnf_rows() -> None:
+    session = ParsedIyrSession(
+        series_id="17319",
+        season_year=2026,
+        eid="1",
+        category_label="JV3 Boys",
+        race_date=date(2026, 8, 30),
+        results_status="Official",
+        results_url="https://example.test/jv3",
+        rows=[
+            _row(1, 3, "00:40:36.6"),
+            _row(99, 2, "00:33:55.020"),
+            _row(100, 1, "02:00:00.000"),
+        ],
+        page_count=1,
+    )
+    riders = riders_from_sessions([session])
+    assert [r.place for r in riders] == [1]

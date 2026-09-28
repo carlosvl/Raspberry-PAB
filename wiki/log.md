@@ -27,3 +27,18 @@ Append-only. Newest entries at the bottom. Heading format:
 ## [2026-09-27] ingest | Matrix port leak on cancel (CI flake root cause)
 - Root cause: a queued `to_thread` close cancelled by `stop()` never runs. Added `_close_session_port` (shield + wait) in matrix_controller and reverted the test workaround.
 - Pages: [ops/ci](ops/ci.md).
+
+## [2026-09-27] ingest | 2026 Sporting Regulations + State qualification skill
+- Ingested `docs/reference/2026-MCA-Sporting-Regulations.pdf` into a concepts page, flagging the rainout contradiction between p. 19 and p. 21.
+- Built `/mca-state-qualification` from MCA's official "through Race 4" standings plus preliminary Gamehaven/Theodore results. Ranks match MCA for all 2,276 riders, and Race 2 MS D2 team scores match the official sheet.
+- User: Redhead (IYR 17339) is the State Championship; Roseville has 1 regular-season race left (Cuyuna). Fixed ~~17319 = Race 1~~ → MCA Race 2.
+- Pages: [concepts/mca-regulations](concepts/mca-regulations.md), [features/state-qualification](features/state-qualification.md), [races/mca-2026-season](races/mca-2026-season.md), [features/team-standings](features/team-standings.md).
+
+## [2026-09-27] ingest | DNF scoring fix + 4-race cap
+- Team scoring now drops IYR DNF rows (`is_dnf`). Race 2 HS D1 now matches the official sheet: Shakopee ~~3430, 6th~~ → 3328, 7th.
+- User: each team/racer does at most 4 regular-season races. Races left are now computed per team (Roseville: 1), and every team is projected with its own count.
+- Pages: [features/team-standings](features/team-standings.md), [features/state-qualification](features/state-qualification.md), [concepts/mca-regulations](concepts/mca-regulations.md), [races/mca-2026-season](races/mca-2026-season.md).
+
+## [2026-09-27] decision | Confirmed Roseville schedule and cancellation math
+- User confirmed Roseville's 4 races: Xcel, Lake Rebecca, Theodore Wirth (HS canceled), Cuyuna. Added `--canceled IYR:LEVEL` to separate confirmed cancellations from results not posted yet, and a "How canceled races count" section to the report.
+- Pages: [races/mca-2026-season](races/mca-2026-season.md), [concepts/mca-regulations](concepts/mca-regulations.md).

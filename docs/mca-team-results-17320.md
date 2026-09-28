@@ -3,7 +3,7 @@
 - **Series URL:** https://www.itsyourrace.com/results.aspx?id=17320
 - **Series id:** `17320`
 - **Season year:** 2026
-- **Scraped at:** 2026-09-27T17:59:27.565851-05:00
+- **Scraped at:** 2026-09-27T19:21:39.331137-05:00
 - **Categories synced:** 19
 - **Results status:** Results are: Unofficial
 - **Scoring:** 2026 MCA Chapter 11 team scoring + Appendix A point grid

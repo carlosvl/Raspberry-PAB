@@ -305,11 +305,42 @@ def score_rider(
     )
 
 
+_PLACEHOLDER_TIME = re.compile(r"^0?2:00:00(?:\.0+)?$")
+_MAX_PLAUSIBLE_HOURS = 10
+
+
+def is_dnf(row: ParsedResultRow, *, max_laps: int | None) -> bool:
+    """IYR lists DNFs with a place; detect them so they earn no points (Ch. 11).
+
+    DNF when: 0 laps, the ``02:00:00`` placeholder time, an absurd time
+    (10h+), or fewer laps than the category winner. Checked against the
+    official Race 2 results (2026): every short-lap IYR row was an official DNF.
+    """
+    if row.laps == 0:
+        return True
+    time = (row.total_time or "").strip()
+    if _PLACEHOLDER_TIME.match(time):
+        return True
+    hours = time.split(":", 1)[0]
+    if hours.isdigit() and ":" in time and int(hours) >= _MAX_PLAUSIBLE_HOURS:
+        return True
+    return bool(max_laps and row.laps is not None and row.laps < max_laps)
+
+
+def session_max_laps(session: ParsedIyrSession) -> int | None:
+    laps = [row.laps for row in session.rows if row.laps]
+    return max(laps) if laps else None
+
+
 def riders_from_sessions(sessions: list[ParsedIyrSession]) -> list[ScoredRider]:
+    """Score finishers; DNF rows are dropped (they earn no points)."""
     riders: list[ScoredRider] = []
     for session in sessions:
         category = parse_category_label(session.category_label)
+        max_laps = session_max_laps(session)
         for row in session.rows:
+            if is_dnf(row, max_laps=max_laps):
+                continue
             scored = score_rider(
                 row,
                 category=category,

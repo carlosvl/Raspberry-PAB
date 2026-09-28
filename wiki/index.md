@@ -6,11 +6,16 @@ commands, see `CLAUDE.md`. For step-by-step setup, see `docs/`.
 
 ## Features
 
+- [State Championship qualification](features/state-qualification.md) — top-100 check from MCA official standings + newer races, merge rules, projection
 - [MCA team standings](features/team-standings.md) — scoring engine, skill/CLI vs. kiosk live mode, tie and † quirks, where reports go
+
+## Concepts
+
+- [MCA 2026 Sporting Regulations](concepts/mca-regulations.md) — points grid, season average, State qualification, team scoring, call-ups; rainout conflict flagged
 
 ## Races
 
-- [MCA 2026 season](races/mca-2026-season.md) — IYR event ids, canceled races, Roseville places and scorers per race
+- [MCA 2026 season](races/mca-2026-season.md) — MCA↔Precision↔IYR race map, Roseville schedule, team results, State qualification snapshot
 
 ## Ops
 
