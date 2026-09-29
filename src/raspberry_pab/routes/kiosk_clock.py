@@ -11,7 +11,9 @@ from raspberry_pab.kiosk_clock import (
     set_simulated_now,
 )
 from raspberry_pab.models import KioskClockAdvance, KioskClockState, KioskClockUpdate
+from raspberry_pab.race_results.sync import RaceResultsSync
 from raspberry_pab.routes.schedule import get_store, require_admin_pin
+from raspberry_pab.test_scenarios import prepare_day_data
 
 router = APIRouter(prefix="/api", tags=["kiosk-clock"])
 
@@ -33,7 +35,14 @@ def read_kiosk_clock(request: Request) -> KioskClockState:
 def update_kiosk_clock(request: Request, body: KioskClockUpdate) -> KioskClockState:
     store = get_store(request)
     set_simulated_now(store, when=body.simulated_now, running=body.running)
-    return KioskClockState.model_validate(get_clock_state(store))
+    sync = RaceResultsSync(store)
+    try:
+        day_data = prepare_day_data(store, body.simulated_now.date(), sync=sync)
+    finally:
+        sync.close()
+    state = KioskClockState.model_validate(get_clock_state(store))
+    state.day_data = day_data
+    return state
 
 
 @router.delete(

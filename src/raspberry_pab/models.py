@@ -566,12 +566,26 @@ class KioskClockAdvance(BaseModel):
     minutes: int = 1
 
 
+class KioskDayData(BaseModel):
+    """What the simulated-clock PUT found or loaded for the kiosk's day."""
+
+    event_date: date
+    riders_before: int
+    riders_after: int
+    seeded_scenario_id: str | None = None
+    seeded_scenario_label: str | None = None
+    results_present: bool = False
+    results_sync: RaceResultsSyncSummary | None = None
+    results_error: str | None = None
+
+
 class KioskClockState(BaseModel):
     simulated: bool
     running: bool
     anchor: str | None = None
     kiosk_now: str
     display_date: str
+    day_data: KioskDayData | None = None
 
 
 class SystemClockState(BaseModel):
