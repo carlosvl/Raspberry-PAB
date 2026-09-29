@@ -59,3 +59,6 @@ Append-only. Newest entries at the bottom. Heading format:
 ## [2026-09-29] ingest | Simulated clock loads that day's data
 - On branch `feature/sim-clock-day-data`, `PUT /api/admin/kiosk-clock` now seeds riders from a matching test scenario (that date only) and syncs results when they are missing, then reports it as `day_data`. Verified in the browser: Austin 2025-08-23 seeded 8 riders and matched 6/8 results, a repeat Apply loaded nothing, and 2031-01-01 reported nothing to load.
 - Pages: [features/test-lab-clock](features/test-lab-clock.md) (new).
+
+## [2026-09-29] ingest | Deployed sim-clock day data to kiosk Pi
+- Committed `fa5f2e0` on `feature/sim-clock-day-data` (not pushed to GitHub), then rsynced it to the Pi, restarted `raspberry-pab` and reloaded the display. Board and admin return 200, and the API lists `KioskDayData`. Backup: `~/Raspberry-PAB-backup-20260929-094912.tgz`. Pages: [features/test-lab-clock](features/test-lab-clock.md).
