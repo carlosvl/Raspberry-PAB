@@ -49,3 +49,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-09-29] ingest | Deployed board auto-scroll fix to kiosk Pi
 - Copied only `web/js/kiosk.js` and `web/sw.js` to the Pi, so the sim-clock branch it runs stays intact. Reloaded the display twice, and both loads fetched `kiosk.js` fresh (200). Backup: `~/Raspberry-PAB-web-backup-20260929-103956.tgz`. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-29] ingest | Remote browsers kept the old kiosk.js
+- The user reloaded `http://192.168.4.64:8080/` twice and still had no scroll. The page ran the old `kiosk.js` from the HTTP cache, and no service worker runs on a plain-http LAN origin. `server.py` now sends `Cache-Control: no-cache` for UI files. Pages: [features/kiosk-board](features/kiosk-board.md).
