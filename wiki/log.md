@@ -55,3 +55,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-09-29] ingest | Deployed no-cache headers to kiosk Pi
 - Copied only `server.py` (it matches the sim-clock branch the Pi runs) and restarted. `/js/kiosk.js` now returns `cache-control: no-cache`. After one cache-bypassing load, reloads revalidate (about 300 B transferred) and run the new `kiosk.js`. Backup: `~/Raspberry-PAB-server-backup-20260929-120859.tgz`.
+
+## [2026-09-29] ingest | User confirmed the board scrolls
+- After one hard refresh, the user saw the rider list scrolling on `http://192.168.4.64:8080/`. Pages: [features/kiosk-board](features/kiosk-board.md).
