@@ -42,3 +42,23 @@ Append-only. Newest entries at the bottom. Heading format:
 ## [2026-09-27] decision | Confirmed Roseville schedule and cancellation math
 - User confirmed Roseville's 4 races: Xcel, Lake Rebecca, Theodore Wirth (HS canceled), Cuyuna. Added `--canceled IYR:LEVEL` to separate confirmed cancellations from results not posted yet, and a "How canceled races count" section to the report.
 - Pages: [races/mca-2026-season](races/mca-2026-season.md), [concepts/mca-regulations](concepts/mca-regulations.md).
+
+## [2026-09-28] query | Gamehaven looked counted in the qualification report
+- User thought Gamehaven was counted for Roseville. It wasn't: every Roseville cell there was a bye, left out of the averages. Only the display was misleading.
+- The report now hides bye cells and marks each merged race as raced or bye for the team. Pages: [features/state-qualification](features/state-qualification.md).
+
+## [2026-09-29] ingest | Deployed latest code to kiosk Pi
+
+- Pi (now 192.168.4.64) was on the 2026-09-25 build; rsynced 98 tracked files (HEAD 05258c7 + uncommitted state-qualification edits), restarted `raspberry-pab`, reloaded the display. Backup: `~/Raspberry-PAB-backup-20260929-081023.tgz`.
+- The service imports from `src/` via `PYTHONPATH` (the venv install is not editable), so rsync plus a restart is enough. `pypdf` is dev-only and not needed on the Pi.
+- The Pi repo root still has stale Sep 11 copies of `web/` and `roku/` files (`admin.html`, `js/`, `pab-channel/`, …). They are left in place until the user decides.
+
+## [2026-09-29] ingest | Removed stale root copies on kiosk Pi
+- User deleted the Sep 11 root-level copies (`admin.html`, `index.html`, `sw.js`, `manifest.webmanifest`, `kiosk.md`, `roku.md`, `css/`, `js/`, `assets/`, `pab-channel/`) from `~/Raspberry-PAB` on the Pi. The board and admin still serve from `web/` (all 200). The files are kept in `~/Raspberry-PAB-backup-20260929-081023.tgz`.
+
+## [2026-09-29] ingest | Simulated clock loads that day's data
+- On branch `feature/sim-clock-day-data`, `PUT /api/admin/kiosk-clock` now seeds riders from a matching test scenario (that date only) and syncs results when they are missing, then reports it as `day_data`. Verified in the browser: Austin 2025-08-23 seeded 8 riders and matched 6/8 results, a repeat Apply loaded nothing, and 2031-01-01 reported nothing to load.
+- Pages: [features/test-lab-clock](features/test-lab-clock.md) (new).
+
+## [2026-09-29] ingest | Deployed sim-clock day data to kiosk Pi
+- Committed `fa5f2e0` on `feature/sim-clock-day-data` (not pushed to GitHub), then rsynced it to the Pi, restarted `raspberry-pab` and reloaded the display. Board and admin return 200, and the API lists `KioskDayData`. Backup: `~/Raspberry-PAB-backup-20260929-094912.tgz`. Pages: [features/test-lab-clock](features/test-lab-clock.md).
