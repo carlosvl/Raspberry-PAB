@@ -9,11 +9,12 @@ import socket
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
 
 from raspberry_pab.alert_batch import drain_alert_queue, group_alerts_by_slot
 from raspberry_pab.arduino_serial import HARDWARE_SERIAL_LOCK
@@ -66,6 +67,20 @@ from raspberry_pab.spotify_matrix_ticker import NowPlayingMatrixTicker
 from raspberry_pab.spotify_web import SpotifyWebClient
 
 logger = logging.getLogger(__name__)
+
+# Browsers must revalidate UI files (a cheap 304 via ETag) so a deploy reaches
+# every screen. Without it they reuse old JS for hours, and plain-http LAN
+# origins get no service worker to refresh it.
+_REVALIDATE_HEADERS = {"Cache-Control": "no-cache"}
+
+
+class RevalidatingStaticFiles(StaticFiles):
+    """StaticFiles that tells browsers to revalidate before reusing a file."""
+
+    def file_response(self, *args: Any, **kwargs: Any) -> Response:
+        response = super().file_response(*args, **kwargs)
+        response.headers.update(_REVALIDATE_HEADERS)
+        return response
 
 
 async def play_alert_groups(
@@ -310,11 +325,11 @@ def create_app(settings: Settings) -> FastAPI:
 
     @app.get("/")
     def index() -> FileResponse:
-        return FileResponse(web_dir / "index.html")
+        return FileResponse(web_dir / "index.html", headers=_REVALIDATE_HEADERS)
 
     @app.get("/admin")
     def admin() -> FileResponse:
-        return FileResponse(web_dir / "admin.html")
+        return FileResponse(web_dir / "admin.html", headers=_REVALIDATE_HEADERS)
 
     @app.get("/manifest.webmanifest")
     def manifest() -> FileResponse:
@@ -325,7 +340,11 @@ def create_app(settings: Settings) -> FastAPI:
 
     @app.get("/sw.js")
     def service_worker() -> FileResponse:
-        return FileResponse(web_dir / "sw.js", media_type="text/javascript")
+        return FileResponse(
+            web_dir / "sw.js",
+            media_type="text/javascript",
+            headers=_REVALIDATE_HEADERS,
+        )
 
     @app.get("/api/network")
     def network_info() -> dict[str, object]:
@@ -362,6 +381,10 @@ def create_app(settings: Settings) -> FastAPI:
         for subdir in ("css", "js", "assets"):
             path = web_dir / subdir
             if path.is_dir():
-                app.mount(f"/{subdir}", StaticFiles(directory=path), name=subdir)
+                app.mount(
+                    f"/{subdir}",
+                    RevalidatingStaticFiles(directory=path),
+                    name=subdir,
+                )
 
     return app

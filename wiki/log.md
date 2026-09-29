@@ -62,3 +62,19 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-09-29] ingest | Deployed sim-clock day data to kiosk Pi
 - Committed `fa5f2e0` on `feature/sim-clock-day-data` (not pushed to GitHub), then rsynced it to the Pi, restarted `raspberry-pab` and reloaded the display. Board and admin return 200, and the API lists `KioskDayData`. Backup: `~/Raspberry-PAB-backup-20260929-094912.tgz`. Pages: [features/test-lab-clock](features/test-lab-clock.md).
+
+## [2026-09-29] ingest | Board auto-scroll froze on 1x screens
+- The user reported the rider list never scrolls. Cause: a 0.47 px step per frame read back from `scrollTop` rounds to 0 on 1x displays. It now uses a time-based float position written as whole pixels. Also found that `sw.js` network-first fetches could return an old `kiosk.js` from the HTTP cache, so it now uses `cache: "no-cache"` (v67).
+- Pages: [features/kiosk-board](features/kiosk-board.md) (new).
+
+## [2026-09-29] ingest | Deployed board auto-scroll fix to kiosk Pi
+- Copied only `web/js/kiosk.js` and `web/sw.js` to the Pi, so the sim-clock branch it runs stays intact. Reloaded the display twice, and both loads fetched `kiosk.js` fresh (200). Backup: `~/Raspberry-PAB-web-backup-20260929-103956.tgz`. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-29] ingest | Remote browsers kept the old kiosk.js
+- The user reloaded `http://192.168.4.64:8080/` twice and still had no scroll. The page ran the old `kiosk.js` from the HTTP cache, and no service worker runs on a plain-http LAN origin. `server.py` now sends `Cache-Control: no-cache` for UI files. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-29] ingest | Deployed no-cache headers to kiosk Pi
+- Copied only `server.py` (it matches the sim-clock branch the Pi runs) and restarted. `/js/kiosk.js` now returns `cache-control: no-cache`. After one cache-bypassing load, reloads revalidate (about 300 B transferred) and run the new `kiosk.js`. Backup: `~/Raspberry-PAB-server-backup-20260929-120859.tgz`.
+
+## [2026-09-29] ingest | User confirmed the board scrolls
+- After one hard refresh, the user saw the rider list scrolling on `http://192.168.4.64:8080/`. Pages: [features/kiosk-board](features/kiosk-board.md).
