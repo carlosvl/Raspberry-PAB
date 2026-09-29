@@ -46,3 +46,6 @@ Append-only. Newest entries at the bottom. Heading format:
 ## [2026-09-29] ingest | Board auto-scroll froze on 1x screens
 - The user reported the rider list never scrolls. Cause: a 0.47 px step per frame read back from `scrollTop` rounds to 0 on 1x displays. It now uses a time-based float position written as whole pixels. Also found that `sw.js` network-first fetches could return an old `kiosk.js` from the HTTP cache, so it now uses `cache: "no-cache"` (v67).
 - Pages: [features/kiosk-board](features/kiosk-board.md) (new).
+
+## [2026-09-29] ingest | Deployed board auto-scroll fix to kiosk Pi
+- Copied only `web/js/kiosk.js` and `web/sw.js` to the Pi, so the sim-clock branch it runs stays intact. Reloaded the display twice, and both loads fetched `kiosk.js` fresh (200). Backup: `~/Raspberry-PAB-web-backup-20260929-103956.tgz`. Pages: [features/kiosk-board](features/kiosk-board.md).
