@@ -1,4 +1,4 @@
-const CACHE_NAME = "raspberry-pab-shell-v66";
+const CACHE_NAME = "raspberry-pab-shell-v67";
 const APP_SHELL = [
   "/",
   "/admin",
@@ -36,7 +36,8 @@ self.addEventListener("fetch", (event) => {
 
   if (NETWORK_FIRST_PATHS.has(url.pathname)) {
     event.respondWith(
-      fetch(event.request)
+      // Revalidate with the server so the HTTP cache can't serve old JS after a deploy.
+      fetch(event.request, { cache: "no-cache" })
         .then((response) => {
           const copy = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));

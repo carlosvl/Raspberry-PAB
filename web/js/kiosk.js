@@ -197,11 +197,17 @@ function formatResultCol(item) {
 const SCROLL_PX_PER_SEC = 28;
 const SCROLL_PAUSE_MS = 2200;
 const SCROLL_RESUME_IDLE_MS = 8000;
+// Max frame gap counted as scrolling time, so a stalled tab doesn't jump.
+const SCROLL_MAX_DT_MS = 100;
 let scrollRaf = null;
 let scrollPauseUntil = 0;
 let scrollDirection = 1;
 let scrollUserIdleTimer = null;
 let scrollUserPaused = false;
+// Sub-pixel position we own. Reading scrollTop back loses fractions on 1x
+// screens (the Pi TV), where a 0.47px step rounds to 0 and never moves.
+let scrollPos = 0;
+let scrollLastTick = null;
 
 function scheduleNeedsScroll() {
   if (!scheduleScroll) return false;
@@ -213,35 +219,38 @@ function pauseAutoScrollForUser() {
   clearTimeout(scrollUserIdleTimer);
   scrollUserIdleTimer = setTimeout(() => {
     scrollUserPaused = false;
+    // Continue from wherever the user left the list.
+    scrollPos = scheduleScroll ? scheduleScroll.scrollTop : 0;
+    scrollLastTick = null;
     scrollPauseUntil = performance.now() + SCROLL_PAUSE_MS;
   }, SCROLL_RESUME_IDLE_MS);
 }
 
 function tickAutoScroll(now) {
   scrollRaf = requestAnimationFrame(tickAutoScroll);
+  const lastTick = scrollLastTick;
+  scrollLastTick = now;
   if (!scheduleScroll || scrollUserPaused || !scheduleNeedsScroll()) return;
-  if (now < scrollPauseUntil) return;
+  if (now < scrollPauseUntil || lastTick == null) return;
 
   const maxScroll = scheduleScroll.scrollHeight - scheduleScroll.clientHeight;
   if (maxScroll <= 0) return;
 
-  // ~60fps step from px/sec
-  const step = (SCROLL_PX_PER_SEC / 60) * scrollDirection;
-  let next = scheduleScroll.scrollTop + step;
+  const dt = Math.min(now - lastTick, SCROLL_MAX_DT_MS);
+  const next = scrollPos + ((SCROLL_PX_PER_SEC * dt) / 1000) * scrollDirection;
 
   if (next >= maxScroll) {
-    scheduleScroll.scrollTop = maxScroll;
+    scrollPos = maxScroll;
     scrollDirection = -1;
     scrollPauseUntil = now + SCROLL_PAUSE_MS;
-    return;
-  }
-  if (next <= 0) {
-    scheduleScroll.scrollTop = 0;
+  } else if (next <= 0) {
+    scrollPos = 0;
     scrollDirection = 1;
     scrollPauseUntil = now + SCROLL_PAUSE_MS;
-    return;
+  } else {
+    scrollPos = next;
   }
-  scheduleScroll.scrollTop = next;
+  scheduleScroll.scrollTop = Math.round(scrollPos);
 }
 
 function startAutoScroll() {
@@ -249,6 +258,8 @@ function startAutoScroll() {
   if (scrollRaf == null) {
     scrollRaf = requestAnimationFrame(tickAutoScroll);
   }
+  scrollPos = scheduleScroll.scrollTop;
+  scrollLastTick = null;
   scrollPauseUntil = performance.now() + SCROLL_PAUSE_MS;
   scrollDirection = 1;
 }
@@ -291,9 +302,9 @@ function renderSchedule(items) {
     )
     .join("");
 
-  if (scheduleScroll && !scrollUserPaused) {
+  if (scheduleScroll) {
     // Keep position across 1s refreshes so auto-scroll doesn't jump.
-    scheduleScroll.scrollTop = previousTop;
+    scheduleScroll.scrollTop = scrollUserPaused ? previousTop : Math.round(scrollPos);
   }
 }
 

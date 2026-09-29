@@ -42,3 +42,7 @@ Append-only. Newest entries at the bottom. Heading format:
 ## [2026-09-27] decision | Confirmed Roseville schedule and cancellation math
 - User confirmed Roseville's 4 races: Xcel, Lake Rebecca, Theodore Wirth (HS canceled), Cuyuna. Added `--canceled IYR:LEVEL` to separate confirmed cancellations from results not posted yet, and a "How canceled races count" section to the report.
 - Pages: [races/mca-2026-season](races/mca-2026-season.md), [concepts/mca-regulations](concepts/mca-regulations.md).
+
+## [2026-09-29] ingest | Board auto-scroll froze on 1x screens
+- The user reported the rider list never scrolls. Cause: a 0.47 px step per frame read back from `scrollTop` rounds to 0 on 1x displays. It now uses a time-based float position written as whole pixels. Also found that `sw.js` network-first fetches could return an old `kiosk.js` from the HTTP cache, so it now uses `cache: "no-cache"` (v67).
+- Pages: [features/kiosk-board](features/kiosk-board.md) (new).
