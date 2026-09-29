@@ -2594,6 +2594,27 @@ document.getElementById("runScenarioTest")?.addEventListener("click", async () =
   }
 });
 
+function describeDayData(dayData) {
+  if (!dayData) return "";
+  const parts = [];
+  if (dayData.seeded_scenario_label) {
+    parts.push(`Seeded ${dayData.riders_after} riders from ${dayData.seeded_scenario_label}`);
+  } else if (dayData.riders_after > 0) {
+    parts.push(`${dayData.riders_after} riders already on ${dayData.event_date}`);
+  } else {
+    parts.push(`No riders or scenario for ${dayData.event_date}`);
+  }
+  if (dayData.results_error) {
+    parts.push(`Results unavailable (${dayData.results_error})`);
+  } else if (dayData.results_sync) {
+    const s = dayData.results_sync;
+    parts.push(`Results ${s.matched}/${s.matched + s.unmatched + s.ambiguous} matched`);
+  } else if (dayData.results_present) {
+    parts.push("Results already loaded");
+  }
+  return ` · ${parts.join(" · ")}`;
+}
+
 document.getElementById("applyKioskClock")?.addEventListener("click", async () => {
   const value = document.getElementById("kioskSimDateTime")?.value;
   if (!value) {
@@ -2606,8 +2627,8 @@ document.getElementById("applyKioskClock")?.addEventListener("click", async () =
       headers: { "X-Admin-Pin": adminPin() },
       body: JSON.stringify({ simulated_now: value, running: true }),
     });
-    await loadKioskClockStatus();
-    setOutput(`Kiosk clock set to ${clock.kiosk_now} (running).`);
+    await Promise.all([loadKioskClockStatus(), loadParticipants(), loadRaceResults()]);
+    setOutput(`Kiosk clock set to ${clock.kiosk_now} (running).${describeDayData(clock.day_data)}`);
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }
@@ -2625,8 +2646,8 @@ document.getElementById("pauseKioskClock")?.addEventListener("click", async () =
       headers: { "X-Admin-Pin": adminPin() },
       body: JSON.stringify({ simulated_now: value, running: false }),
     });
-    await loadKioskClockStatus();
-    setOutput(`Kiosk clock paused at ${clock.kiosk_now}.`);
+    await Promise.all([loadKioskClockStatus(), loadParticipants(), loadRaceResults()]);
+    setOutput(`Kiosk clock paused at ${clock.kiosk_now}.${describeDayData(clock.day_data)}`);
   } catch (error) {
     setOutput(error instanceof Error ? error.message : String(error));
   }

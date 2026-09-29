@@ -10,7 +10,9 @@ from pathlib import Path
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.kiosk_clock import set_simulated_now
 from raspberry_pab.models import (
+    KioskDayData,
     ParticipantCreate,
+    RaceResultsSyncSummary,
     TestScenarioDefinition,
     TestScenarioRunResult,
     TestScenarioSummary,
@@ -138,8 +140,12 @@ def _staggered_start(first_start: time, stagger_minutes: int, index: int) -> tim
 def seed_scenario_participants(
     store: ScheduleStore,
     scenario: TestScenarioDefinition,
+    *,
+    dates: set[date] | None = None,
 ) -> int:
-    dates = {scenario.saturday, scenario.sunday}
+    """Replace the scenario's riders; *dates* limits which days are touched."""
+    if dates is None:
+        dates = {scenario.saturday, scenario.sunday}
     for event_date in dates:
         store.delete_participants_for_date(event_date)
     first_start = _parse_time(scenario.first_start_time)
@@ -147,6 +153,8 @@ def seed_scenario_participants(
     created = 0
     for rider in scenario.roster:
         event_date = scenario.saturday if rider.day == "saturday" else scenario.sunday
+        if event_date not in dates:
+            continue
         start_time = _staggered_start(
             first_start,
             scenario.stagger_minutes,
@@ -162,6 +170,61 @@ def seed_scenario_participants(
         )
         created += 1
     return created
+
+
+def find_scenario_for_date(day: date) -> TestScenarioDefinition | None:
+    """Return the first saved scenario whose race weekend includes *day*."""
+    for summary in list_scenarios():
+        if day in (summary.saturday, summary.sunday):
+            return load_scenario(summary.id)
+    return None
+
+
+def prepare_day_data(
+    store: ScheduleStore,
+    day: date,
+    *,
+    sync: RaceResultsSync,
+) -> KioskDayData:
+    """Fill gaps for the kiosk's simulated day.
+
+    Seeds riders from a matching scenario when the day has none, then syncs
+    race results when riders exist but none have results yet. A failed sync
+    (e.g. the Pi is offline) is reported, not raised.
+    """
+    riders_before = len(store.list_participants(day))
+    seeded: TestScenarioDefinition | None = None
+    if riders_before == 0:
+        seeded = find_scenario_for_date(day)
+        if seeded is not None:
+            seed_scenario_participants(store, seeded, dates={day})
+    riders_after = len(store.list_participants(day))
+    results_present = _has_results(store, day)
+    summary: RaceResultsSyncSummary | None = None
+    error: str | None = None
+    if riders_after > 0 and not results_present:
+        try:
+            summary = sync.sync_date(day)
+        except Exception as exc:  # noqa: BLE001 - offline kiosk must not fail
+            error = str(exc) or type(exc).__name__
+        results_present = _has_results(store, day)
+    return KioskDayData(
+        event_date=day,
+        riders_before=riders_before,
+        riders_after=riders_after,
+        seeded_scenario_id=seeded.id if seeded else None,
+        seeded_scenario_label=seeded.label if seeded else None,
+        results_present=results_present,
+        results_sync=summary,
+        results_error=error,
+    )
+
+
+def _has_results(store: ScheduleStore, day: date) -> bool:
+    return any(
+        record.match_method is not None
+        for record in store.list_participant_result_matches(day)
+    )
 
 
 class TestScenarioRunner:
