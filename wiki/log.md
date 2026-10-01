@@ -96,3 +96,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-09-30] ingest | Set Pi sim clock to 2026-09-13; fixed chip overflow
 - Set the Pi's simulated clock to 2026-09-13 09:00 (paused) via `PUT /api/admin/kiosk-clock`; it was 2026-09-26 running. The board showed High School cards as Today and Middle School (Sep 12) as Past race. Real names overflowed, so chips now shrink, the focus chip is fixed, and " HS"/" MS" is dropped (sw v71). Not yet deployed. Pages: [features/kiosk-board](features/kiosk-board.md), [features/test-lab-clock](features/test-lab-clock.md).
+
+## [2026-09-30] ingest | Deployed chip-overflow fix to kiosk Pi
+- Pushed `bc79e02` to PR #3 and copied `kiosk.css`, `kiosk.js`, `sw.js` (v71) to the Pi; served copies match. Backup: `~/Raspberry-PAB-web-backup-20260930-231508.tgz`. On the live page (sim clock 2026-09-13) no school names are cut and the focus chip ends at x=1838 of 1920. The Pi clock is still simulated at 2026-09-13. Pages: [features/kiosk-board](features/kiosk-board.md).
