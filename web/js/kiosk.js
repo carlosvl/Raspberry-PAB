@@ -334,7 +334,7 @@ function buildTeamCard(bucket) {
   const chip = (place, name, score, highlight) => `
     <span class="team-chip${highlight ? " team-chip--focus" : ""}">
       <span class="team-chip__place">${place}</span>
-      <span class="team-chip__name">${escapeHtml(name)}</span>
+      <span class="team-chip__name">${escapeHtml(String(name).replace(/\s+(HS|MS)$/, ""))}</span>
       <span class="team-chip__score">${score}</span>
     </span>`;
   const isToday = String(bucket.race_date) === displayDate;

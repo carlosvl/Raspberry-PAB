@@ -93,3 +93,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-09-30] ingest | Deployed all-days strip + matrix filter to kiosk Pi
 - Copied web (`kiosk.js`, `kiosk.css`, `sw.js` v70) and `team_standings_live.py` / `team_standings_scheduler.py` (both matched HEAD beforehand), then restarted `raspberry-pab`. Backup: `~/Raspberry-PAB-deploy-backup-20260930-092637.tgz`. The Pi runs a simulated clock (kiosk date 2026-09-25), so "today" there follows that date. After a restart the standings snapshot is empty until the first poll completes. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Set Pi sim clock to 2026-09-13; fixed chip overflow
+- Set the Pi's simulated clock to 2026-09-13 09:00 (paused) via `PUT /api/admin/kiosk-clock`; it was 2026-09-26 running. The board showed High School cards as Today and Middle School (Sep 12) as Past race. Real names overflowed, so chips now shrink, the focus chip is fixed, and " HS"/" MS" is dropped (sw v71). Not yet deployed. Pages: [features/kiosk-board](features/kiosk-board.md), [features/test-lab-clock](features/test-lab-clock.md).
