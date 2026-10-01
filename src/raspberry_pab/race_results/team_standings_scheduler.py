@@ -13,6 +13,7 @@ from raspberry_pab.matrix_controller import MatrixController
 from raspberry_pab.race_results.client import FetchText
 from raspberry_pab.race_results.team_standings_live import (
     LiveStandingsSnapshot,
+    format_matrix_messages,
     read_enabled,
     read_interval_minutes,
     read_series_url,
@@ -132,7 +133,12 @@ class TeamStandingsScheduler:
         if self._alerts_busy is not None and self._alerts_busy.is_set():
             logger.info("Skipping team standings matrix while alerts busy")
             return
-        messages = snapshot.matrix_messages
+        # The matrix only shows the current race day; the board shows all days.
+        messages = format_matrix_messages(
+            snapshot.buckets,
+            focus_team=snapshot.focus_team,
+            on_date=effective_now(self._store).date(),
+        )
         if not messages:
             return
         index = self._matrix_rotation % len(messages)

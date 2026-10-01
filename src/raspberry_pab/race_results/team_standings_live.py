@@ -183,11 +183,15 @@ def format_matrix_messages(
     buckets: list[BucketStanding],
     *,
     focus_team: str,
+    on_date: date | None = None,
 ) -> list[str]:
+    """Matrix lines for the focus team; ``on_date`` keeps only that race day."""
     messages: list[str] = []
     focus_abbr = abbreviate_team(focus_team)
     for bucket in buckets:
         if bucket.focus_place is None:
+            continue
+        if on_date is not None and bucket.race_date != on_date:
             continue
         others = [
             abbreviate_team(entry.team_name)

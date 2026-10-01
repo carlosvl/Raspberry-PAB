@@ -308,30 +308,93 @@ function renderSchedule(items) {
   }
 }
 
+const TEAM_STRIP_ROTATE_MS = 6000;
+let teamStripSignature = "";
+let teamStripTimer = null;
+
+function teamDivisionTitle(label) {
+  const [level, division] = String(label || "").split(" ");
+  const name = level === "HS" ? "High School" : level === "MS" ? "Middle School" : level;
+  return division ? `${name} ${division}` : name;
+}
+
+function teamRaceDate(value) {
+  const [y, m, d] = String(value || "").split("-").map(Number);
+  if (!y || !m || !d) return "";
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function buildTeamCard(bucket) {
+  const focus = String(bucket.focus_team || "").trim().toLowerCase();
+  const isFocus = (name) => String(name || "").trim().toLowerCase() === focus;
+  const chip = (place, name, score, highlight) => `
+    <span class="team-chip${highlight ? " team-chip--focus" : ""}">
+      <span class="team-chip__place">${place}</span>
+      <span class="team-chip__name">${escapeHtml(name)}</span>
+      <span class="team-chip__score">${score}</span>
+    </span>`;
+  const isToday = String(bucket.race_date) === displayDate;
+  const top = bucket.top3 || [];
+  const chips = top.map((entry) =>
+    chip(entry.place, entry.team_name, entry.score, isFocus(entry.team_name)),
+  );
+  const focusInTop = top.some((entry) => isFocus(entry.team_name));
+  if (!focusInTop && bucket.focus_place != null) {
+    chips.push('<span class="team-card__gap" aria-hidden="true">…</span>');
+    chips.push(
+      chip(bucket.focus_place, bucket.focus_team, bucket.focus_score ?? "", true),
+    );
+  }
+  return `
+    <div class="team-card ${isToday ? "team-card--today" : "team-card--past"}">
+      <h2 class="team-card__title">${escapeHtml(teamDivisionTitle(bucket.division_label))}<span class="team-card__date">${escapeHtml(teamRaceDate(bucket.race_date))}</span><span class="team-card__tag">${isToday ? "Today" : "Past race"}</span></h2>
+      <div class="team-card__chips">${chips.join("")}</div>
+    </div>`;
+}
+
 function renderTeamTicker(data) {
   const ticker = document.getElementById("kioskTicker");
-  const track = document.getElementById("kioskTickerTrack");
-  const textEl = document.getElementById("kioskTickerText");
-  if (!ticker || !track || !textEl) return;
-  const text =
-    data && data.enabled && data.ticker_text ? String(data.ticker_text).trim() : "";
-  if (!text) {
+  const host = document.getElementById("kioskTeams");
+  if (!ticker || !host) return;
+
+  // Every race day with results, current day first, then newest past races.
+  const buckets = ((data && data.enabled && data.buckets) || [])
+    .filter((bucket) => bucket.top3 && bucket.top3.length)
+    .sort(
+      (a, b) =>
+        (String(b.race_date) === displayDate) - (String(a.race_date) === displayDate) ||
+        String(b.race_date).localeCompare(String(a.race_date)) ||
+        String(a.division_label).localeCompare(String(b.division_label)),
+    );
+
+  const signature = JSON.stringify([displayDate, buckets]);
+  if (signature === teamStripSignature) return; // don't restart rotation on polls
+  teamStripSignature = signature;
+  if (teamStripTimer) {
+    clearInterval(teamStripTimer);
+    teamStripTimer = null;
+  }
+  if (!buckets.length) {
     ticker.hidden = true;
-    textEl.textContent = "";
-    track.innerHTML = "";
-    track.appendChild(textEl);
+    host.innerHTML = "";
     return;
   }
-  textEl.textContent = text;
-  // Duplicate span so CSS -50% marquee loops seamlessly.
-  track.innerHTML = "";
-  const first = textEl.cloneNode(true);
-  const second = textEl.cloneNode(true);
-  first.id = "kioskTickerText";
-  second.removeAttribute("id");
-  second.setAttribute("aria-hidden", "true");
-  track.appendChild(first);
-  track.appendChild(second);
+
+  host.innerHTML = buckets.map(buildTeamCard).join("");
+  const cards = [...host.querySelectorAll(".team-card")];
+  let active = 0;
+  cards.forEach((card, i) => card.classList.toggle("team-card--active", i === 0));
+  if (cards.length > 1) {
+    teamStripTimer = setInterval(() => {
+      cards[active].classList.remove("team-card--active");
+      active = (active + 1) % cards.length;
+      cards[active].classList.add("team-card--active");
+    }, TEAM_STRIP_ROTATE_MS);
+  }
   ticker.hidden = false;
 }
 

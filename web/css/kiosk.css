@@ -10,6 +10,7 @@
   --board-muted: #94a3b8;
   --board-dim: #64748b;
   --board-accent: #38bdf8;
+  --board-past: #c4b5fd;
   --board-panel: #111c33;
   --board-header: #152238;
   --board-name: #ffffff;
@@ -29,6 +30,7 @@ html[data-board-theme="daylight"] {
   --board-muted: #e5e5e5;
   --board-dim: #9ca3af;
   --board-accent: #f5c518;
+  --board-past: #ff9f43;
   --board-panel: #161616;
   --board-header: #1f1f1f;
   --board-name: #ffffff;
@@ -232,38 +234,132 @@ body.admin-page {
 
 .kiosk__ticker {
   flex-shrink: 0;
-  overflow: hidden;
   margin: 0.35rem 0 0;
-  padding: 0.35rem 0;
-  border-top: 1px solid color-mix(in srgb, var(--board-accent) 35%, transparent);
-  background: color-mix(in srgb, var(--board-accent) 8%, transparent);
+  padding: 0.5rem 0.75rem;
+  border-top: 2px solid var(--board-accent);
+  background: var(--board-panel);
 }
 
 .kiosk__ticker[hidden] {
   display: none;
 }
 
-.kiosk__ticker-track {
+.kiosk__teams {
+  display: grid;
+}
+
+.team-card {
+  grid-area: 1 / 1;
   display: flex;
-  width: max-content;
-  animation: kiosk-ticker-scroll 40s linear infinite;
+  flex-direction: column;
+  gap: 0.25rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s;
 }
 
-.kiosk__ticker-text {
-  padding-right: 4rem;
-  white-space: nowrap;
-  font-size: 0.95rem;
+.team-card--active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.team-card__title {
+  margin: 0;
+  font-size: calc(clamp(1.2rem, 2vw, 1.9rem) * var(--board-font-scale, 1));
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--card-accent, var(--board-accent));
+}
+
+.team-card--today {
+  --card-accent: var(--board-accent);
+}
+
+.team-card--past {
+  --card-accent: var(--board-past);
+}
+
+.team-card__tag {
+  margin-left: 0.75rem;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--card-accent);
+  color: var(--board-on-accent);
+  font-size: 0.7em;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.team-card__date {
+  margin-left: 0.75rem;
+  color: var(--board-muted);
   font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--board-accent);
+  text-transform: none;
 }
 
-@keyframes kiosk-ticker-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
+.team-card__chips {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.team-card__gap {
+  font-size: 2rem;
+  color: var(--board-dim);
+}
+
+.team-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.4rem 0.9rem;
+  border-radius: 0.6rem;
+  background: var(--board-header);
+  color: var(--board-text);
+  font-size: calc(clamp(1.3rem, 2.2vw, 2.2rem) * var(--board-font-scale, 1));
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.team-chip__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-chip__place {
+  font-weight: 800;
+  color: var(--card-accent, var(--board-accent));
+}
+
+.team-chip__place::before {
+  content: "#";
+}
+
+.team-chip__score {
+  font-size: 0.65em;
+  font-weight: 600;
+  color: var(--board-muted);
+}
+
+.team-chip--focus {
+  flex-shrink: 0;
+  background: var(--card-accent, var(--board-accent));
+  color: var(--board-on-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--card-accent, var(--board-accent)) 45%, transparent);
+}
+
+.team-chip--focus .team-chip__place,
+.team-chip--focus .team-chip__score {
+  color: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-card {
+    transition: none;
   }
 }
 

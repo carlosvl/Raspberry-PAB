@@ -78,3 +78,18 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-09-29] ingest | User confirmed the board scrolls
 - After one hard refresh, the user saw the rider list scrolling on `http://192.168.4.64:8080/`. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-29] ingest | Board team-competition strip
+- Replaced the small marquee with large rotating division cards (top 3 + highlighted Roseville chip), frontend only (`kiosk.js`, `kiosk.css`, `index.html`, sw cache v68). Not yet deployed to the Pi. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Race date on team strip
+- Each team card heading now shows the race date (`teamRaceDate` in `kiosk.js`, parsed as a local date so it doesn't shift a day). sw cache v69. Not yet deployed to the Pi. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Deployed team strip date to kiosk Pi
+- Copied `kiosk.js`, `kiosk.css`, `sw.js` (v69) to the Pi at 192.168.4.64; served copies match. Backup: `~/Raspberry-PAB-web-backup-20260930-090813.tgz`. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Team strip shows all race days; matrix current day only
+- Board shows every race day with two colors (today vs past) plus text tags; matrix scrolls only the current race day (`on_date` filter, test added). sw cache v70. Not yet deployed. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Deployed all-days strip + matrix filter to kiosk Pi
+- Copied web (`kiosk.js`, `kiosk.css`, `sw.js` v70) and `team_standings_live.py` / `team_standings_scheduler.py` (both matched HEAD beforehand), then restarted `raspberry-pab`. Backup: `~/Raspberry-PAB-deploy-backup-20260930-092637.tgz`. The Pi runs a simulated clock (kiosk date 2026-09-25), so "today" there follows that date. After a restart the standings snapshot is empty until the first poll completes. Pages: [features/kiosk-board](features/kiosk-board.md).
