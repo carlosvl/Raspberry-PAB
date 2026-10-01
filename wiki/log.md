@@ -78,3 +78,24 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-09-29] ingest | User confirmed the board scrolls
 - After one hard refresh, the user saw the rider list scrolling on `http://192.168.4.64:8080/`. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-29] ingest | Board team-competition strip
+- Replaced the small marquee with large rotating division cards (top 3 + highlighted Roseville chip), frontend only (`kiosk.js`, `kiosk.css`, `index.html`, sw cache v68). Not yet deployed to the Pi. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Race date on team strip
+- Each team card heading now shows the race date (`teamRaceDate` in `kiosk.js`, parsed as a local date so it doesn't shift a day). sw cache v69. Not yet deployed to the Pi. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Deployed team strip date to kiosk Pi
+- Copied `kiosk.js`, `kiosk.css`, `sw.js` (v69) to the Pi at 192.168.4.64; served copies match. Backup: `~/Raspberry-PAB-web-backup-20260930-090813.tgz`. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Team strip shows all race days; matrix current day only
+- Board shows every race day with two colors (today vs past) plus text tags; matrix scrolls only the current race day (`on_date` filter, test added). sw cache v70. Not yet deployed. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Deployed all-days strip + matrix filter to kiosk Pi
+- Copied web (`kiosk.js`, `kiosk.css`, `sw.js` v70) and `team_standings_live.py` / `team_standings_scheduler.py` (both matched HEAD beforehand), then restarted `raspberry-pab`. Backup: `~/Raspberry-PAB-deploy-backup-20260930-092637.tgz`. The Pi runs a simulated clock (kiosk date 2026-09-25), so "today" there follows that date. After a restart the standings snapshot is empty until the first poll completes. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-09-30] ingest | Set Pi sim clock to 2026-09-13; fixed chip overflow
+- Set the Pi's simulated clock to 2026-09-13 09:00 (paused) via `PUT /api/admin/kiosk-clock`; it was 2026-09-26 running. The board showed High School cards as Today and Middle School (Sep 12) as Past race. Real names overflowed, so chips now shrink, the focus chip is fixed, and " HS"/" MS" is dropped (sw v71). Not yet deployed. Pages: [features/kiosk-board](features/kiosk-board.md), [features/test-lab-clock](features/test-lab-clock.md).
+
+## [2026-09-30] ingest | Deployed chip-overflow fix to kiosk Pi
+- Pushed `bc79e02` to PR #3 and copied `kiosk.css`, `kiosk.js`, `sw.js` (v71) to the Pi; served copies match. Backup: `~/Raspberry-PAB-web-backup-20260930-231508.tgz`. On the live page (sim clock 2026-09-13) no school names are cut and the focus chip ends at x=1838 of 1920. The Pi clock is still simulated at 2026-09-13. Pages: [features/kiosk-board](features/kiosk-board.md).

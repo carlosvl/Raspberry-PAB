@@ -4,6 +4,9 @@ type: feature
 sources:
   - web/js/kiosk.js
   - web/sw.js
+  - web/css/kiosk.css
+  - src/raspberry_pab/race_results/team_standings_live.py
+  - src/raspberry_pab/race_results/team_standings_scheduler.py
   - src/raspberry_pab/server.py
   - roku/pab-channel/components/PabBoardScene.brs
   - user (2026-09-29)
@@ -20,6 +23,12 @@ The board (`/`, `web/index.html` + `web/js/kiosk.js`) re-renders the rider table
 - ~~Fixed 0.47 px step per frame, read back from `scrollTop`~~. That froze at the top on 1× screens (the Pi's TV), because Chromium rounds `scrollTop` to whole pixels, and it slowed down at low frame rates (fixed 2026-09-29, branch `fix/board-autoscroll`).
 - Now a float `scrollPos` advances by elapsed time (`dt` capped at 100 ms) and is written to `scrollTop` rounded to whole pixels. The 1 s re-render restores `Math.round(scrollPos)`.
 - Hidden or background tabs get no animation frames, so the list doesn't move there. That's expected, and it matters when testing in a hidden browser pane.
+
+## Team-competition strip
+
+The bottom strip (`#kioskTicker` / `#kioskTeams`) replaced the tiny sideways marquee (2026-09-29, branch `feature/board-team-strip`). `renderTeamTicker` in `kiosk.js` reads `buckets[]` from `/api/team-standings` (not `ticker_text`, which the matrix and admin still use). It shows **every race day with results** (2026-09-30), current day first then newest past races, one large card at a time, rotating every 6 s: "High School D1" / "Middle School D2" plus the race date (e.g. "Sun, Sep 27", from `race_date`), then chips for places 1-3 (`#n school points`). The focus team (Roseville) is a solid accent chip. If it is outside the top 3, a highlighted chip is appended after "…". The strip is rebuilt only when the data changes, so the 30 s poll doesn't restart the rotation. Cards for the board's date (`displayDate`, sim-clock aware) are accent-colored with a "Today" tag; other days use `--board-past` (violet, orange on the daylight theme) with a "Past race" tag. Chips shrink with "…" if a row is too wide, but the focus chip never shrinks, and a trailing " HS"/" MS" is dropped from school names (the card title already says the level). Found on the Pi (board font scale 1.3, long real names): before this, the Roseville chip ended at x=2449 on a 1920 px screen, i.e. off-screen. **The LED matrix only shows the current race day**: the scheduler filters with `format_matrix_messages(..., on_date=effective_now(store).date())`, so on a day without results nothing scrolls. `matrix_messages` in the API still lists all days. Roku is unchanged.
+
+Testing note: a browser pane that visited localhost earlier runs a **service worker**, and it can serve old CSS/JS. Unregister it and clear `caches` before judging a change.
 
 ## Stale JS after deploys
 

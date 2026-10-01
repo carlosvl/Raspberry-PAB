@@ -116,6 +116,35 @@ def test_ticker_and_matrix_include_focus_and_top3() -> None:
     assert snapshot.matrix_messages
 
 
+def test_matrix_messages_only_for_current_race_day() -> None:
+    def day(race_date: date, points: int) -> DayStandings:
+        return DayStandings(
+            race_date=race_date,
+            buckets={
+                StandingsBucket.HS_D1: [],
+                StandingsBucket.HS_D2: [_score(team="Roseville", points=points)],
+                StandingsBucket.MS_D1: [],
+                StandingsBucket.MS_D2: [],
+            },
+        )
+
+    buckets = buckets_from_standings(
+        [day(date(2026, 9, 13), 1000), day(date(2026, 9, 27), 2000)],
+        focus_team="Roseville",
+    )
+    assert len(format_matrix_messages(buckets, focus_team="Roseville")) == 2
+    today = format_matrix_messages(
+        buckets, focus_team="Roseville", on_date=date(2026, 9, 27)
+    )
+    assert len(today) == 1
+    assert (
+        format_matrix_messages(
+            buckets, focus_team="Roseville", on_date=date(2026, 9, 20)
+        )
+        == []
+    )
+
+
 def test_team_standings_api_smoke(tmp_path: Path) -> None:
     settings = Settings(
         data_dir=tmp_path,
