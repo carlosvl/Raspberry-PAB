@@ -102,3 +102,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-02] ingest | Spotify Jam QR on the board
 - Branch `feature/spotify-enhancements`. Spotify has no Jam API, so the admin pastes the link; the board shows its QR beside the team strip (`spotify_jam.py`, routes, admin card, `kiosk.js`). New dependency `segno`. Pages: [features/spotify-jam](features/spotify-jam.md), [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-10-02] ingest | Deployed Spotify Jam QR to kiosk Pi
+- Committed `22065fc` on `feature/spotify-enhancements`. On the Pi: `pip install segno` (1.6.6), copied the Python, web and docs files (all matched the base first), restarted `raspberry-pab`. Backup: `~/Raspberry-PAB-deploy-backup-20261002-115104.tgz`. Checked `GET /api/spotify/jam` (inactive) and 401 without a PIN. No QR was shown on the live kiosk during the check. Pages: [features/spotify-jam](features/spotify-jam.md).
