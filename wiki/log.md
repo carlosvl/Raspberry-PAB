@@ -114,3 +114,7 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-02] decision | Buzzer removed
 - Branch `chore/deprecate-buzzer` (from main after PR #5): deleted the buzzer controller, route, settings, rule fields, Admin controls, buzzer-only sketches and scripts, and updated docs. Matrix port no longer falls back to `PAB_BUZZER_PORT`. Firmware and old DB columns untouched. Pages: [ops/buzzer-removed](ops/buzzer-removed.md).
+
+## [2026-10-02] ingest | Deployed buzzer removal to kiosk Pi; found IYR 403
+- PR #6. Copied the runtime and docs files (32 matched `main` first; tests and wiki aren't on the Pi), deleted the retired buzzer files, restarted. Backup: `~/Raspberry-PAB-deploy-backup-20261002-142406.tgz`. Matrix keeps scrolling via `PAB_MATRIX_PORT`; `/api/admin/buzzer/test` is 404; Jam QR and rules fine.
+- After the restart, standings stayed empty: ITS YOUR RACE returns 403 to `chrome131` but 200 to `chrome124` (Pi). Unrelated to this change, not fixed. Pages: [ops/buzzer-removed](ops/buzzer-removed.md), [features/team-standings](features/team-standings.md).
