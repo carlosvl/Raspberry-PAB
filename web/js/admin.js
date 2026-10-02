@@ -108,12 +108,6 @@ function populateRuleForm(rule) {
     setFieldValue("ruleLedDuration", String(rule.led_flash_duration_seconds ?? 10));
     setFieldValue("ruleLedChaseDuration", String(rule.led_chase_duration_seconds ?? 10));
     setFieldValue("ruleMatrixEffect", rule.matrix_effect || "solid");
-    setFieldChecked("ruleBuzzerEnabled", rule.buzzer_enabled);
-    setFieldValue("ruleBuzzerPitch", String(rule.buzzer_pitch_hz ?? 2500));
-    setFieldValue("ruleBuzzerVolume", String(rule.buzzer_volume ?? 80));
-    setFieldValue("ruleBuzzerCount", String(rule.buzzer_count ?? 3));
-    setFieldValue("ruleBuzzerBeepMs", String(rule.buzzer_beep_ms ?? 200));
-    setFieldValue("ruleBuzzerGapMs", String(rule.buzzer_gap_ms ?? 150));
     setFieldChecked("ruleSoundEnabled", rule.sound_enabled);
     fillRuleSoundSelect(rule.sound_id ? String(rule.sound_id) : "");
     setFieldValue("ruleSoundVolume", String(rule.sound_volume ?? 80));
@@ -147,18 +141,6 @@ function readRuleLedSettings() {
   };
 }
 
-function readRuleBuzzerSettings() {
-  const buzzerEnabledEl = document.getElementById("ruleBuzzerEnabled");
-  return {
-    buzzer_enabled: buzzerEnabledEl.checked,
-    buzzer_pitch_hz: readRuleNumber("ruleBuzzerPitch", 2500),
-    buzzer_volume: readRuleNumber("ruleBuzzerVolume", 80),
-    buzzer_count: readRuleNumber("ruleBuzzerCount", 3),
-    buzzer_beep_ms: readRuleNumber("ruleBuzzerBeepMs", 200),
-    buzzer_gap_ms: readRuleNumber("ruleBuzzerGapMs", 150),
-  };
-}
-
 function readRuleSoundSettings() {
   const soundIdRaw = document.getElementById("ruleSoundId")?.value || "";
   return {
@@ -166,13 +148,6 @@ function readRuleSoundSettings() {
     sound_id: soundIdRaw ? Number(soundIdRaw) : null,
     sound_volume: readRuleNumber("ruleSoundVolume", 80),
   };
-}
-
-function ruleBuzzerSummary(rule) {
-  if (!rule.buzzer_enabled) {
-    return "";
-  }
-  return ` · Buzzer ${rule.buzzer_count}x @ ${rule.buzzer_pitch_hz}Hz`;
 }
 
 function ruleSoundSummary(rule) {
@@ -463,12 +438,6 @@ function clearRuleForm() {
   document.getElementById("ruleLedChaseDuration").value = "10";
   const matrixEffectEl = document.getElementById("ruleMatrixEffect");
   if (matrixEffectEl) matrixEffectEl.value = "solid";
-  document.getElementById("ruleBuzzerEnabled").checked = false;
-  document.getElementById("ruleBuzzerPitch").value = "2500";
-  document.getElementById("ruleBuzzerVolume").value = "80";
-  document.getElementById("ruleBuzzerCount").value = "3";
-  document.getElementById("ruleBuzzerBeepMs").value = "200";
-  document.getElementById("ruleBuzzerGapMs").value = "150";
   const soundEnabledEl = document.getElementById("ruleSoundEnabled");
   if (soundEnabledEl) soundEnabledEl.checked = false;
   const soundIdEl = document.getElementById("ruleSoundId");
@@ -548,7 +517,7 @@ async function loadRules() {
         <div class="admin__item">
           <div class="admin__item-main">
             <strong>${swatch}${escapeHtml(rule.offset_minutes)} min: ${escapeHtml(rule.message_template)}</strong>
-            <span>${rule.repeat_every_minutes ? `Repeats every ${escapeHtml(rule.repeat_every_minutes)} min` : "One time"} · ${rule.enabled ? "Enabled" : "Disabled"}${escapeHtml(ruleLedSummary(rule))}${escapeHtml(ruleBuzzerSummary(rule))}${escapeHtml(ruleSoundSummary(rule))}</span>
+            <span>${rule.repeat_every_minutes ? `Repeats every ${escapeHtml(rule.repeat_every_minutes)} min` : "One time"} · ${rule.enabled ? "Enabled" : "Disabled"}${escapeHtml(ruleLedSummary(rule))}${escapeHtml(ruleSoundSummary(rule))}</span>
           </div>
           <button data-edit-rule="${rule.id}" type="button">Edit</button>
           <button data-delete-rule="${rule.id}" type="button">Delete</button>
@@ -2183,7 +2152,6 @@ ruleForm?.addEventListener("submit", async (event) => {
     enabled: document.getElementById("ruleEnabled").checked,
     sort_order: 0,
     ...readRuleLedSettings(),
-    ...readRuleBuzzerSettings(),
     ...readRuleSoundSettings(),
   };
   try {
@@ -2320,28 +2288,6 @@ document.querySelectorAll(".color-preset").forEach((button) => {
     if (color && colorInput) colorInput.value = color;
   });
 });
-document.getElementById("testRuleBuzzer")?.addEventListener("click", async () => {
-  let buzzerSettings;
-  try {
-    buzzerSettings = readRuleBuzzerSettings();
-  } catch (error) {
-    setOutput(error instanceof Error ? error.message : String(error));
-    return;
-  }
-  setOutput("Testing buzzer...");
-  try {
-    await api("/api/admin/buzzer/test", {
-      method: "POST",
-      body: JSON.stringify(buzzerSettings),
-    });
-    setOutput(
-      `Buzzer test started (${buzzerSettings.buzzer_count} beeps @ ${buzzerSettings.buzzer_pitch_hz}Hz)`,
-    );
-  } catch (error) {
-    setOutput(error instanceof Error ? error.message : String(error));
-  }
-});
-
 document.getElementById("testRuleSound")?.addEventListener("click", async () => {
   const soundSettings = readRuleSoundSettings();
   if (!soundSettings.sound_id) {
@@ -2887,8 +2833,6 @@ async function loadHardwareStatus() {
       headers: { "X-Admin-Pin": adminPin() },
     });
     const issues = [];
-    if (!hw.buzzer_enabled) issues.push("Buzzer disabled (PAB_BUZZER_ENABLED)");
-    else if (!hw.buzzer_port) issues.push("Buzzer port not set (PAB_BUZZER_PORT)");
     if (!hw.led_enabled) issues.push("BLE LED disabled (PAB_LED_ENABLED)");
     else if (!hw.led_address) issues.push("BLE LED address not set (PAB_LED_ADDRESS)");
     if (!hw.matrix_enabled) issues.push("Matrix disabled (PAB_MATRIX_ENABLED)");

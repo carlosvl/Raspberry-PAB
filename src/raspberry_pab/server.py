@@ -24,7 +24,6 @@ from raspberry_pab.branding import (
     effective_display_title,
     logo_url,
 )
-from raspberry_pab.buzzer_controller import BuzzerController
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
 from raspberry_pab.kiosk_clock import get_clock_state
@@ -38,7 +37,6 @@ from raspberry_pab.routes.alerts import router as alerts_router
 from raspberry_pab.routes.bluetooth import router as bluetooth_router
 from raspberry_pab.routes.bluetooth import try_reconnect_saved_speaker
 from raspberry_pab.routes.branding import router as branding_router
-from raspberry_pab.routes.buzzer import router as buzzer_router
 from raspberry_pab.routes.kiosk import router as kiosk_router
 from raspberry_pab.routes.kiosk_clock import router as kiosk_clock_router
 from raspberry_pab.routes.led import apply_persisted_led_config
@@ -87,7 +85,6 @@ async def play_alert_groups(
     store: ScheduleStore,
     led_controller: LedController,
     matrix_controller: MatrixController,
-    buzzer_controller: BuzzerController,
     sound_controller: SoundController,
     alerts_busy: asyncio.Event | None = None,
     spotify_controller: SpotifyController | None = None,
@@ -115,12 +112,6 @@ async def play_alert_groups(
             except Exception:
                 logger.exception(
                     "LED listener failed for alert group rule %s", rule.id
-                )
-            try:
-                await buzzer_controller.beep(rule)
-            except Exception:
-                logger.exception(
-                    "Buzzer listener failed for alert group rule %s", rule.id
                 )
             try:
                 await sound_controller.play(rule)
@@ -158,10 +149,6 @@ def create_app(settings: Settings) -> FastAPI:
     led_controller = LedController(settings)
     hardware_lock = HARDWARE_SERIAL_LOCK
     alerts_busy = asyncio.Event()
-    buzzer_controller = BuzzerController(
-        settings,
-        hardware_lock=hardware_lock,
-    )
     matrix_controller = MatrixController(
         settings,
         hardware_lock=hardware_lock,
@@ -223,7 +210,6 @@ def create_app(settings: Settings) -> FastAPI:
                         store=store,
                         led_controller=led_controller,
                         matrix_controller=matrix_controller,
-                        buzzer_controller=buzzer_controller,
                         sound_controller=sound_controller,
                         alerts_busy=alerts_busy,
                         spotify_controller=spotify_controller,
@@ -256,7 +242,6 @@ def create_app(settings: Settings) -> FastAPI:
             await team_standings_scheduler.stop()
             await led_controller.shutdown()
             await matrix_controller.shutdown()
-            await buzzer_controller.shutdown()
             await sound_controller.shutdown()
             await results_scheduler.stop()
             await scheduler.stop()
@@ -273,7 +258,6 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.reminder_scheduler = scheduler
     app.state.led_controller = led_controller
     app.state.matrix_controller = matrix_controller
-    app.state.buzzer_controller = buzzer_controller
     app.state.sound_controller = sound_controller
     app.state.spotify_controller = spotify_controller
     app.state.now_playing_ticker = now_playing_ticker
@@ -344,7 +328,6 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(alerts_router)
     app.include_router(kiosk_router)
     app.include_router(led_router)
-    app.include_router(buzzer_router)
     app.include_router(matrix_router)
     app.include_router(sounds_router)
     app.include_router(spotify_router)

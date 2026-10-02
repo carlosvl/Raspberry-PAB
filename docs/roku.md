@@ -47,7 +47,7 @@ Manual **Admin → TVs → Show board** still works even with HDMI plugged in (c
 4. The channel shows **Connecting…**, then the live board (polls `GET /api/tv-board` every ~2s): title, logo, schedule table, countdown, results, reminder overlay. **Admin → Branding → Board colors** selects Classic vs Daylight (high-contrast for bright rooms); re-sideload channel build ≥ 4 for theme support.
 5. Manage the schedule from the phone: `http://<pi-ip>:8080/admin`
 
-ESP32 matrix / buzzer keep working; they never needed HDMI.
+ESP32 matrix keeps working; they never needed HDMI.
 
 ## HDMI kiosk (unchanged)
 

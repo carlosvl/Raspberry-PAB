@@ -26,7 +26,7 @@ Raspberry-PAB/
 │   ├── app.py                 # uvicorn server entry
 │   └── config.py              # Env-based settings
 ├── hardware/
-│   ├── esp32/                 # Production MCU: 3-panel matrix + buzzer
+│   ├── esp32/                 # Production MCU: 3-panel matrix
 │   ├── arduino/               # Legacy Nano (2 panels)
 │   ├── power/                 # Mobile power + buck converter setup
 │   └── sound-reactive-24v-strip/  # Standalone 24V neon + mic (ESP32)
@@ -92,9 +92,9 @@ When the Pi has no HDMI monitor, it can auto-launch a sideloaded **Raspberry-PAB
 
 Sideload once at home; the install survives TV power cycles (not factory reset). On race day use **Admin → TVs**, or let auto-cast run with HDMI unplugged. See [docs/roku.md](docs/roku.md).
 
-## ESP32 buzzer + LED matrix (production)
+## ESP32 LED matrix (production)
 
-Three daisy-chained **8×32 WS2812** panels (768 LEDs) plus an active buzzer run on a **38-pin ESP32-WROOM** (CP2102 USB) over one serial port to the Pi.
+Three daisy-chained **8×32 WS2812** panels (768 LEDs) run on a **38-pin ESP32-WROOM** (CP2102 USB) over one serial port to the Pi. The firmware still has a buzzer pin, but the app no longer drives it.
 
 | Doc | Purpose |
 |-----|---------|
@@ -105,11 +105,11 @@ Three daisy-chained **8×32 WS2812** panels (768 LEDs) plus an active buzzer run
 Flash firmware (Mac or Pi with `arduino-cli`):
 
 ```bash
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # wiring check
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh     # production
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # wiring check
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh     # production
 ```
 
-Set in `.env`: `PAB_BUZZER_ENABLED=true`, `PAB_MATRIX_ENABLED=true`, `PAB_MATRIX_WIDTH=96`, and `PAB_BUZZER_PORT` to the CP2102 by-id path. Test from **Admin → Test buzzer** / **Test matrix**.
+Set in `.env`: `PAB_MATRIX_ENABLED=true`, `PAB_MATRIX_WIDTH=96`, and `PAB_MATRIX_PORT` to the CP2102 by-id path. Test from **Admin → Test matrix**.
 
 Legacy **Arduino Nano** (two panels, 512 LEDs): [hardware/arduino/](hardware/arduino/).
 
@@ -196,12 +196,8 @@ To score **team** places from an IYR series URL using 2026 MCA Chapter 11 + Appe
 | `PAB_ADMIN_PIN`         | `1234`                         | PIN for admin writes                         |
 | `PAB_HOTSPOT_SSID`     | `Raspberry-PAB`                | Fallback hotspot name                        |
 | `PAB_HOTSPOT_PASSWORD` | `RaspberryPAB123`              | Fallback hotspot password                    |
-| `PAB_BUZZER_ENABLED`   | `false`                        | Enable buzzer on reminder alerts (ESP32 combined board) |
-| `PAB_BUZZER_PORT`      | *(empty)*                      | Serial port for ESP32 (CP2102) / legacy Nano    |
-| `PAB_BUZZER_MODE`      | `active`                       | `active` or `passive` buzzer module          |
-| `PAB_BUZZER_BAUD`      | `115200`                       | Serial baud rate                             |
 | `PAB_MATRIX_ENABLED`   | `false`                        | Enable WS2812 matrix on reminder alerts      |
-| `PAB_MATRIX_PORT`      | *(empty)*                      | Serial port; defaults to `PAB_BUZZER_PORT`   |
+| `PAB_MATRIX_PORT`      | *(empty)*                      | Serial port for the ESP32 (CP2102)           |
 | `PAB_MATRIX_WIDTH`     | `96`                           | Matrix width (three 8×32 panels daisy-chained) |
 | `PAB_MATRIX_HEIGHT`    | `8`                            | Matrix height in pixels                      |
 | `PAB_MATRIX_BRIGHTNESS`| `64`                           | Max matrix brightness (0–255; field ≤128)  |

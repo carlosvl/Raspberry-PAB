@@ -21,9 +21,7 @@ class SerialPort(Protocol):
 
 
 def effective_matrix_port(settings: Settings) -> str:
-    if settings.matrix_port:
-        return settings.matrix_port
-    return settings.buzzer_port
+    return settings.matrix_port
 
 
 def open_serial_port(settings: Settings, *, port: str) -> SerialPort:

@@ -191,34 +191,31 @@ PAB_LED_NAME="MELKL-OT21 CB"
 .venv/bin/python scripts/test-lotus-lamp.py
 ```
 
-## 6.2 ESP32 buzzer + WS2812 matrix
+## 6.2 ESP32 + WS2812 matrix
 
-Production hardware is a **combined ESP32 board** (buzzer GPIO **4**, matrix DIN GPIO **16**, **768** LEDs = three 8×32 panels). Wiring: [hardware/esp32/WIRING.md](../hardware/esp32/WIRING.md). Field power: [hardware/power/MOBILE-POWER.md](../hardware/power/MOBILE-POWER.md).
+Production hardware is a **combined ESP32 board** (matrix DIN GPIO **16**, **768** LEDs = three 8×32 panels). Wiring: [hardware/esp32/WIRING.md](../hardware/esp32/WIRING.md). Field power: [hardware/power/MOBILE-POWER.md](../hardware/power/MOBILE-POWER.md).
 
 1. Add to `.env` on the Pi:
 
 ```bash
-PAB_BUZZER_ENABLED=true
-PAB_BUZZER_PORT=/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0
 PAB_MATRIX_ENABLED=true
+PAB_MATRIX_PORT=/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0
 PAB_MATRIX_WIDTH=96
 PAB_MATRIX_BRIGHTNESS=64
 ```
-
-(`PAB_MATRIX_PORT` can stay empty — it uses the buzzer port.)
 
 2. Flash firmware (stop the service first on the Pi):
 
 ```bash
 sudo systemctl stop raspberry-pab
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # optional wiring check
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # optional wiring check
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh
 sudo systemctl start raspberry-pab
 ```
 
 On a Mac, use `/dev/cu.usbserial-*` or run `./scripts/detect-buzzer-port.sh`. The Pi needs internet for `arduino-cli` on first flash; otherwise flash from the Mac and plug the ESP32 back into the Pi.
 
-3. Confirm boot line on serial: `READY PIXELS 768`. Use **Admin → Test buzzer** and **Test matrix**.
+3. Confirm boot line on serial: `READY PIXELS 768`. Use **Admin → Test matrix**.
 
 Legacy Nano (two panels): [hardware/arduino/README.md](../hardware/arduino/README.md).
 
@@ -239,8 +236,6 @@ Legacy Nano (two panels): [hardware/arduino/README.md](../hardware/arduino/READM
 | `PAB_LED_ENABLED` | `false` | Enable BLE LED flashing on alerts |
 | `PAB_LED_ADDRESS` | *(empty)* | BLE MAC address of the LED controller |
 | `PAB_LED_NAME` | `MELKL-OT21 CB` | BLE advertised device name |
-| `PAB_BUZZER_ENABLED` | `false` | Enable ESP32/Nano buzzer on alerts |
-| `PAB_BUZZER_PORT` | *(empty)* | Serial port (CP2102 on ESP32) |
 | `PAB_MATRIX_ENABLED` | `false` | Enable WS2812 matrix scroll on alerts |
 | `PAB_MATRIX_WIDTH` | `96` | Matrix width (three 8×32 panels) |
 | `PAB_MATRIX_BRIGHTNESS` | `64` | Matrix max brightness (field ≤128) |
@@ -253,7 +248,7 @@ Legacy Nano (two panels): [hardware/arduino/README.md](../hardware/arduino/READM
 
 ### Alert sounds (HDMI or Bluetooth)
 
-Reminder rules can play an uploaded WAV/MP3/OGG **once** over the active PipeWire sink when they fire (independent of the ESP32 buzzer). When a Bluetooth speaker is connected, that A2DP sink is preferred over HDMI.
+Reminder rules can play an uploaded WAV/MP3/OGG **once** over the active PipeWire sink when they fire. When a Bluetooth speaker is connected, that A2DP sink is preferred over HDMI.
 
 1. Open **Admin → Sounds** and upload a file (max 8 MB).
 2. Optional: pair a speaker under **Bluetooth speaker** (see [bluetooth-audio.md](bluetooth-audio.md)).

@@ -135,7 +135,7 @@ def test_show_skips_when_globally_disabled() -> None:
             return serial
 
         controller = MatrixController(
-            Settings(matrix_enabled=False, buzzer_port="/dev/ttyUSB0"),
+            Settings(matrix_enabled=False, matrix_port="/dev/ttyUSB0"),
             serial_factory=factory,
         )
         await controller.show(_enabled_rule(), "Warm Up Ada")
@@ -155,7 +155,7 @@ def test_show_sends_bright_and_scroll() -> None:
         controller = MatrixController(
             Settings(
                 matrix_enabled=True,
-                buzzer_port="/dev/ttyUSB0",
+                matrix_port="/dev/ttyUSB0",
                 matrix_brightness=64,
             ),
             serial_factory=factory,
@@ -213,7 +213,7 @@ def test_rainbow_pulse_cycles_until_stop() -> None:
         controller = MatrixController(
             Settings(
                 matrix_enabled=True,
-                buzzer_port="/dev/ttyUSB0",
+                matrix_port="/dev/ttyUSB0",
                 matrix_brightness=64,
             ),
             serial_factory=factory,

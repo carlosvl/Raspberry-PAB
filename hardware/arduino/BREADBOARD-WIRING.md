@@ -225,7 +225,7 @@ Pi USB = serial control only. Matrix power = **PSU** on **+ rail**.
 sudo systemctl stop raspberry-pab
 export PATH="$HOME/.local/bin:$PATH"
 cd ~/Raspberry-PAB
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-matrix-test.sh
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-matrix-test.sh
 ```
 
 4. **Expected:** red → green → blue wipe, then rainbow.
@@ -233,11 +233,11 @@ PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-matrix-test.sh
 5. Combined firmware:
 
 ```bash
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-hardware.sh
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-hardware.sh
 sudo systemctl start raspberry-pab
 ```
 
-6. Open **http://\<pi-ip\>:8080/admin** → **Test matrix** and **Test buzzer**.
+6. Open **http://\<pi-ip\>:8080/admin** → **Test matrix**.
 
 ---
 

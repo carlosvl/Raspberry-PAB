@@ -156,7 +156,7 @@ def test_show_sequence_scrolls_each_message() -> None:
         controller = MatrixController(
             Settings(
                 matrix_enabled=True,
-                buzzer_port="/dev/ttyUSB0",
+                matrix_port="/dev/ttyUSB0",
                 matrix_brightness=64,
             ),
             serial_factory=factory,
@@ -230,9 +230,6 @@ def test_play_alert_groups_effects_once_matrix_sequence() -> None:
             async def flash(self, _rule: ReminderRule) -> None:
                 self.calls += 1
 
-            async def beep(self, _rule: ReminderRule) -> None:
-                self.calls += 1
-
             async def play(self, _rule: ReminderRule) -> None:
                 self.calls += 1
 
@@ -246,7 +243,6 @@ def test_play_alert_groups_effects_once_matrix_sequence() -> None:
                 self.sequences.append(messages)
 
         led = Counter()
-        buzzer = Counter()
         sound = Counter()
         matrix = FakeMatrix()
         await play_alert_groups(
@@ -254,11 +250,9 @@ def test_play_alert_groups_effects_once_matrix_sequence() -> None:
             store=FakeStore(),  # type: ignore[arg-type]
             led_controller=led,  # type: ignore[arg-type]
             matrix_controller=matrix,  # type: ignore[arg-type]
-            buzzer_controller=buzzer,  # type: ignore[arg-type]
             sound_controller=sound,  # type: ignore[arg-type]
         )
         assert led.calls == 1
-        assert buzzer.calls == 1
         assert sound.calls == 1
         assert matrix.sequences == [["Warm Up Ada", "Warm Up Bea"]]
 

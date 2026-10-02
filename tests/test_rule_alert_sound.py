@@ -33,9 +33,6 @@ class _Noop:
     async def flash(self, _rule: ReminderRule) -> None:
         return None
 
-    async def beep(self, _rule: ReminderRule) -> None:
-        return None
-
     async def show_sequence(self, _rule: ReminderRule, _messages: list[str]) -> None:
         return None
 
@@ -93,7 +90,6 @@ def test_rule_sound_plays_when_rule_fires(
             store=Store(),  # type: ignore[arg-type]
             led_controller=_Noop(),  # type: ignore[arg-type]
             matrix_controller=_Noop(),  # type: ignore[arg-type]
-            buzzer_controller=_Noop(),  # type: ignore[arg-type]
             sound_controller=sounds,
         )
         await asyncio.sleep(0.05)

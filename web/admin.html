@@ -655,40 +655,6 @@
                 </p>
               </div>
             </details>
-
-            <details class="admin-section">
-              <summary>Reminder buzzer</summary>
-              <div class="form">
-                <label class="checkbox">
-                  <input id="ruleBuzzerEnabled" type="checkbox" />
-                  Play buzzer
-                </label>
-                <label>
-                  Buzzer pitch (Hz)
-                  <input id="ruleBuzzerPitch" min="100" max="10000" step="50" type="number" value="2500" />
-                </label>
-                <label>
-                  Buzzer volume (0-100)
-                  <input id="ruleBuzzerVolume" min="0" max="100" type="number" value="80" />
-                </label>
-                <label>
-                  Buzzer count
-                  <input id="ruleBuzzerCount" min="1" max="50" type="number" value="3" />
-                </label>
-                <label>
-                  Beep length (ms)
-                  <input id="ruleBuzzerBeepMs" min="10" max="5000" type="number" value="200" />
-                </label>
-                <label>
-                  Gap between beeps (ms)
-                  <input id="ruleBuzzerGapMs" min="0" max="5000" type="number" value="150" />
-                </label>
-                <p class="branding__hint">Pitch applies to passive piezo buzzers. Active modules use fixed tone; volume and count still apply.</p>
-                <div class="button-row">
-                  <button id="testRuleBuzzer" type="button">Test buzzer</button>
-                </div>
-              </div>
-            </details>
           </form>
 
           <details class="admin-section">
@@ -736,7 +702,7 @@
         <article class="panel" id="testLabPanel">
           <h2>Test Lab</h2>
           <p class="branding__hint">
-            Pick a scenario, run it, then open the kiosk to test LED/buzzer reminders.
+            Pick a scenario, run it, then open the kiosk to test LED and sound reminders.
           </p>
           <p class="hardware-status" id="hardwareStatus" hidden></p>
 

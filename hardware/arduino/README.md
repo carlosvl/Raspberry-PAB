@@ -2,6 +2,8 @@
 
 > **Production (3 panels):** use the **ESP32** combined board — see [`../esp32/WIRING.md`](../esp32/WIRING.md) and `scripts/upload-esp32-hardware.sh`.  
 > This folder is the **legacy Nano** path: **two** 8×32 panels (512 LEDs), buzzer **D3**, matrix **D6**.
+>
+> **Buzzer:** the app no longer sends buzzer commands (removed 2026-10-02). The sketches keep the buzzer protocol, so nothing needs reflashing.
 
 Hardware sketches for a **low-level-trigger** active buzzer on **D3** and **two daisy-chained 8×32 WS2812B** panels on **D6** (one **8×64** display, 512 LEDs).
 
@@ -76,7 +78,7 @@ Board settings for this USB-serial Nano clone:
 Upload the standalone matrix test sketch (temporarily replaces buzzer firmware):
 
 ```bash
-PAB_BUZZER_PORT=/dev/cu.usbserial-110 ./scripts/upload-matrix-test.sh
+PAB_MATRIX_PORT=/dev/cu.usbserial-110 ./scripts/upload-matrix-test.sh
 ```
 
 Expect: red → green → blue wipe on boot, then a slow rainbow. Serial monitor prints `READY` at 115200 baud.
@@ -90,7 +92,7 @@ Sketch: `hardware/arduino/raspberry_pab_hardware/raspberry_pab_hardware.ino`
 Upload:
 
 ```bash
-PAB_BUZZER_PORT=/dev/cu.usbserial-110 ./scripts/upload-hardware.sh
+PAB_MATRIX_PORT=/dev/cu.usbserial-110 ./scripts/upload-hardware.sh
 ```
 
 ### Serial protocol (115200 baud)
@@ -128,17 +130,11 @@ If scrolled text looks mirrored, upside-down, or scrambled, edit the
 Set in `.env`:
 
 ```bash
-PAB_BUZZER_ENABLED=true
-PAB_BUZZER_PORT=/dev/serial/by-id/usb-Serial_*-if00
-PAB_BUZZER_BAUD=115200
-
 PAB_MATRIX_ENABLED=true
-PAB_MATRIX_PORT=
+PAB_MATRIX_PORT=/dev/serial/by-id/usb-Serial_*-if00
 PAB_MATRIX_BRIGHTNESS=64
 PAB_MATRIX_BAUD=115200
 ```
-
-`PAB_MATRIX_PORT` can stay empty when the matrix shares the buzzer’s USB port.
 
 Ensure the `pi` user is in the `dialout` group.
 
@@ -147,23 +143,3 @@ Ensure the `pi` user is in the `dialout` group.
 In `/admin`, enable **Flash LED on reminder** on a rule. When `PAB_MATRIX_ENABLED=true`, the matrix uses that rule’s color, flash interval, flash duration, and chase duration.
 
 Use **Test matrix** in the admin UI to verify without waiting for a reminder.
-
-## Buzzer-only firmware
-
-If you only need the buzzer (no matrix), use `hardware/arduino/raspberry_pab_buzzer/`:
-
-```bash
-PAB_BUZZER_PORT=/dev/cu.usbserial-110 ./scripts/upload-buzzer.sh
-```
-
-### Buzzer wiring notes
-
-**Active module (low-level trigger):**
-
-| Buzzer | Nano |
-|--------|------|
-| VCC | 5V |
-| GND | GND |
-| I/O | D3 |
-
-**Passive piezo:** + to D3, − to GND. Set `PAB_BUZZER_MODE=passive` for pitch control.
