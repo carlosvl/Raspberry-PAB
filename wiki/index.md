@@ -24,4 +24,5 @@ commands, see `CLAUDE.md`. For step-by-step setup, see `docs/`.
 
 - [CI checks](ops/ci.md) — what CI runs, tool-version parity, pytest path, sqlite3.Row `in` gotcha
 - [Music breaks removed](ops/music-breaks-removed.md) — what was deleted, why rule sounds are unaffected, leftover rainbow code
+- [ITS YOUR RACE fingerprint](ops/itsyourrace-blocking.md) — chrome131 got 403, chrome124 works; how to diagnose if it breaks again
 - [Wiki workflow](ops/wiki-workflow.md) — how this wiki is maintained and linted

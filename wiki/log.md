@@ -111,3 +111,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-02] ingest | Deployed music-break removal to kiosk Pi
 - PR #5. Copied the changed Python, web and docs files (all matched `main` first), deleted `music_break_scheduler.py`, `music_breaks.py` and `routes/music_breaks.py` on the Pi, restarted. Backup: `~/Raspberry-PAB-deploy-backup-20261002-135219.tgz`. `/api/admin/music-breaks` is now 404; Jam QR and standings still work. The old process needed the full 90 s `stop-sigterm` timeout before systemd killed it (graceful shutdown hung on one task), so the restart took about 90 s. The Pi clock is still simulated at 2026-09-13 09:00. Pages: [ops/music-breaks-removed](ops/music-breaks-removed.md).
+
+## [2026-10-02] ingest | Standings fetch switched to chrome124
+- Branch `fix/iyr-chrome124`: `DEFAULT_IMPERSONATE` is now `chrome124` after IYR returned 403 to `chrome131` (verified on the Pi with the app's client: chrome131 403, chrome124 OK, twice each). Test added. Not yet deployed. Pages: [ops/itsyourrace-blocking](ops/itsyourrace-blocking.md).

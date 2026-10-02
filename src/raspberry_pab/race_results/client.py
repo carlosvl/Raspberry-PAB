@@ -8,7 +8,9 @@ from collections.abc import Callable
 DEFAULT_USER_AGENT = "Raspberry-PAB/0.1 (+https://github.com/carlosvl/Raspberry-PAB)"
 DEFAULT_TIMEOUT = 30.0
 DEFAULT_MIN_INTERVAL = 1.0
-DEFAULT_IMPERSONATE = "chrome131"
+# chrome131 got HTTP 403 from itsyourrace.com on 2026-10-02 while chrome124 worked
+# (same URL, same Pi). If this starts failing again, try another fingerprint.
+DEFAULT_IMPERSONATE = "chrome124"
 
 
 class RaceResultsClient:
