@@ -262,19 +262,7 @@ Reminder rules can play an uploaded WAV/MP3/OGG **once** over the active PipeWir
 
 Override with `PAB_SOUND_SINK` if needed. The systemd service sets `XDG_RUNTIME_DIR` so the server can talk to the desktop PipeWire session.
 
-### Music breaks
-
-**Admin → Music Breaks** plays a playlist on an interval with BLE LED rainbow + matrix “MUSIC BREAK” scroll (when those hardware pieces are enabled).
-
-The matrix **repeats** a rainbow scroll of “MUSIC BREAK” then a full-panel rainbow fill for the **full track**. Admin **Test** may only show one cycle when the clip is short (~10s).
-
-| Piece | How to enable |
-|-------|----------------|
-| Audio | Same sink as alerts (Bluetooth preferred when connected) |
-| BLE LED lamp | **Admin →** LED config (saved in SQLite; reloads on service start) |
-| WS2812 matrix | `.env`: `PAB_MATRIX_ENABLED=true` and port (or share `PAB_BUZZER_PORT`) — see §6.2 |
-
-**Test** starts a short session in the background (does not block Admin). **Stop** ends audio and animations immediately. Reminder alerts also interrupt an active music break.
+Music breaks (timed playlists) were removed in favor of Spotify; see [spotify.md](spotify.md). Sounds attached to reminder rules (above) are unchanged.
 
 See also [pi-wifi.md](pi-wifi.md) for hotspot + Wi-Fi changes, [bluetooth-audio.md](bluetooth-audio.md) for speakers, and [pi-set-time.md](pi-set-time.md) to set the system clock over SSH.
 

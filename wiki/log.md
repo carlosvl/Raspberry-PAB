@@ -105,3 +105,9 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-02] ingest | Deployed Spotify Jam QR to kiosk Pi
 - Committed `22065fc` on `feature/spotify-enhancements`. On the Pi: `pip install segno` (1.6.6), copied the Python, web and docs files (all matched the base first), restarted `raspberry-pab`. Backup: `~/Raspberry-PAB-deploy-backup-20261002-115104.tgz`. Checked `GET /api/spotify/jam` (inactive) and 401 without a PIN. No QR was shown on the live kiosk during the check. Pages: [features/spotify-jam](features/spotify-jam.md).
+
+## [2026-10-02] decision | Music breaks removed
+- Branch `chore/deprecate-music-breaks` (from main): deleted the scheduler, routes, models, Admin tab and tests. Rule alert sounds are unchanged (`sound_controller.play(rule)` in `play_alert_groups`). Docs updated. Pages: [ops/music-breaks-removed](ops/music-breaks-removed.md).
+
+## [2026-10-02] ingest | Deployed music-break removal to kiosk Pi
+- PR #5. Copied the changed Python, web and docs files (all matched `main` first), deleted `music_break_scheduler.py`, `music_breaks.py` and `routes/music_breaks.py` on the Pi, restarted. Backup: `~/Raspberry-PAB-deploy-backup-20261002-135219.tgz`. `/api/admin/music-breaks` is now 404; Jam QR and standings still work. The old process needed the full 90 s `stop-sigterm` timeout before systemd killed it (graceful shutdown hung on one task), so the restart took about 90 s. The Pi clock is still simulated at 2026-09-13 09:00. Pages: [ops/music-breaks-removed](ops/music-breaks-removed.md).

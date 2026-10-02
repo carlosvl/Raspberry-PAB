@@ -1,4 +1,4 @@
-const CACHE_NAME = "raspberry-pab-shell-v72";
+const CACHE_NAME = "raspberry-pab-shell-v73";
 const APP_SHELL = [
   "/",
   "/admin",
