@@ -77,6 +77,16 @@ One-time setup:
 
 The server keeps a refresh token in the `app_settings` table (`spotify_refresh_token`), so this is needed once. **Disconnect** deletes it. Browsing needs internet; playback of saved playlists doesn't need the Web API at all.
 
+## Jam QR on the board
+
+Guests can add songs by joining a Spotify **Jam**. Spotify's public API has no Jam feature and go-librespot doesn't report one, so the Pi can't see when you start a Jam. You paste its link instead:
+
+1. In the Spotify app, start a Jam, then **Invite → Copy link**. Send it to your phone's clipboard if you start it on another device.
+2. Admin → Spotify → **Jam QR**: paste the link and tap **Show QR on board**. A white QR panel ("Scan to add songs") appears at the bottom right of the board within about 10 seconds. The team strip shrinks its text a little to make room.
+3. After the event, tap **Hide QR**.
+
+Only `https` links on Spotify hosts (`spotify.com`, `spotify.link`, `spotify.app.link`) are accepted, because the board is public. The QR is generated on the Pi with the `segno` package (`pip install segno` in the Pi's venv after pulling this feature). The board reads `GET /api/spotify/jam` (no PIN); the admin writes it with `PUT`/`DELETE /api/admin/spotify/jam`.
+
 ## Matrix "NOW PLAYING"
 
 While Spotify plays, the LED matrix loops `NOW PLAYING <song> - <artist>` (first artist only; extras like `(feat. …)`, `[Live]` and ` - Remastered 2011` are dropped, and accents become plain letters).

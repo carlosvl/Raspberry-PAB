@@ -10,6 +10,8 @@ from fastapi.responses import HTMLResponse
 from raspberry_pab.config import Settings
 from raspberry_pab.models import (
     SpotifyConfigUpdate,
+    SpotifyJam,
+    SpotifyJamUpdate,
     SpotifyPlaylist,
     SpotifyPlaylistsUpdate,
     SpotifyPlayRequest,
@@ -22,6 +24,13 @@ from raspberry_pab.models import (
 )
 from raspberry_pab.routes.schedule import get_store, require_admin_pin
 from raspberry_pab.spotify_controller import SpotifyController
+from raspberry_pab.spotify_jam import (
+    clear_jam_url,
+    load_jam_url,
+    normalize_jam_url,
+    qr_svg,
+    save_jam_url,
+)
 from raspberry_pab.spotify_library import (
     load_matrix_config,
     load_max_volume,
@@ -328,3 +337,51 @@ async def web_search(
         return await get_spotify_web(request).search(q)
     except SpotifyWebError as exc:
         raise _web_error(exc) from exc
+
+
+def _jam_response(request: Request) -> SpotifyJam:
+    url = load_jam_url(get_store(request))
+    if url is None:
+        return SpotifyJam(active=False)
+    return SpotifyJam(active=True, url=url, svg=qr_svg(url))
+
+
+@router.get("/spotify/jam", response_model=SpotifyJam)
+def read_jam_public(request: Request) -> SpotifyJam:
+    """Kiosk board: the Jam QR to show, if any. No PIN, read-only."""
+    return _jam_response(request)
+
+
+@router.get(
+    "/admin/spotify/jam",
+    response_model=SpotifyJam,
+    dependencies=[Depends(require_admin_pin)],
+)
+def read_jam(request: Request) -> SpotifyJam:
+    return _jam_response(request)
+
+
+@router.put(
+    "/admin/spotify/jam",
+    response_model=SpotifyJam,
+    dependencies=[Depends(require_admin_pin)],
+)
+def set_jam(request: Request, body: SpotifyJamUpdate) -> SpotifyJam:
+    try:
+        url = normalize_jam_url(body.url)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+    save_jam_url(get_store(request), url)
+    return _jam_response(request)
+
+
+@router.delete(
+    "/admin/spotify/jam",
+    response_model=SpotifyJam,
+    dependencies=[Depends(require_admin_pin)],
+)
+def delete_jam(request: Request) -> SpotifyJam:
+    clear_jam_url(get_store(request))
+    return _jam_response(request)

@@ -362,6 +362,16 @@ class SpotifyWebItem(BaseModel):
     image_url: str | None = None
 
 
+class SpotifyJamUpdate(BaseModel):
+    url: str = Field(min_length=1, max_length=500)
+
+
+class SpotifyJam(BaseModel):
+    active: bool
+    url: str | None = None
+    svg: str | None = None
+
+
 class BuzzerTest(BaseModel):
     buzzer_pitch_hz: int = Field(default=2500, ge=100, le=10000)
     buzzer_volume: int = Field(default=80, ge=0, le=100)

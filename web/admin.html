@@ -335,6 +335,28 @@
             </div>
           </details>
           <details class="admin-section" open>
+            <summary>Jam QR</summary>
+            <div class="form">
+              <p class="branding__hint" id="spotifyJamStatus">QR hidden.</p>
+              <label>
+                Jam link
+                <input
+                  id="spotifyJamUrl"
+                  placeholder="https://spotify.link/…"
+                  type="text"
+                />
+                <span class="branding__hint"
+                  >Start the Jam in the Spotify app, then Invite → Copy link.
+                  Paste it here to show a QR on the board.</span
+                >
+              </label>
+              <div class="button-row">
+                <button id="spotifyJamShow" type="button">Show QR on board</button>
+                <button id="spotifyJamHide" type="button">Hide QR</button>
+              </div>
+            </div>
+          </details>
+          <details class="admin-section" open>
             <summary>Playlists</summary>
             <div class="form">
               <div class="admin__list" id="spotifyPlaylists"></div>

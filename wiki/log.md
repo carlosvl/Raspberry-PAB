@@ -99,3 +99,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-09-30] ingest | Deployed chip-overflow fix to kiosk Pi
 - Pushed `bc79e02` to PR #3 and copied `kiosk.css`, `kiosk.js`, `sw.js` (v71) to the Pi; served copies match. Backup: `~/Raspberry-PAB-web-backup-20260930-231508.tgz`. On the live page (sim clock 2026-09-13) no school names are cut and the focus chip ends at x=1838 of 1920. The Pi clock is still simulated at 2026-09-13. Pages: [features/kiosk-board](features/kiosk-board.md).
+
+## [2026-10-02] ingest | Spotify Jam QR on the board
+- Branch `feature/spotify-enhancements`. Spotify has no Jam API, so the admin pastes the link; the board shows its QR beside the team strip (`spotify_jam.py`, routes, admin card, `kiosk.js`). New dependency `segno`. Pages: [features/spotify-jam](features/spotify-jam.md), [features/kiosk-board](features/kiosk-board.md).
