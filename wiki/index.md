@@ -23,4 +23,5 @@ commands, see `CLAUDE.md`. For step-by-step setup, see `docs/`.
 ## Ops
 
 - [CI checks](ops/ci.md) — what CI runs, tool-version parity, pytest path, sqlite3.Row `in` gotcha
+- [Music breaks removed](ops/music-breaks-removed.md) — what was deleted, why rule sounds are unaffected, leftover rainbow code
 - [Wiki workflow](ops/wiki-workflow.md) — how this wiki is maintained and linted

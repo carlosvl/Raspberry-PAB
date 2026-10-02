@@ -5,7 +5,7 @@ The Pi can play Spotify music on the same speaker as alerts (Bluetooth first, th
 ## Requirements
 
 - **Spotify Premium.** Spotify Connect receivers only work with Premium accounts.
-- **Internet.** Spotify streams, so it can't play offline or on the fallback hotspot. When Spotify is offline, the local **music breaks** play as before.
+- **Internet.** Spotify streams, so it can't play offline or on the fallback hotspot. When Spotify is offline there is no background music, but reminder alert sounds still play (they use local files).
 - To see **PAB Board** in the Spotify app, your phone must be on the same Wi-Fi as the Pi.
 
 ## Install (once, on the Pi)
@@ -56,7 +56,7 @@ Turn it on from **Admin → Spotify → Settings**, or with `PAB_SPOTIFY_ENABLED
 
 - **Online** means Spotify is enabled, go-librespot answers, and it is logged in. The status is re-checked about every 10 seconds.
 - **Alerts:** if Spotify is playing when a reminder fires, it pauses, the alert plays, and Spotify resumes afterward. If it was already paused, it stays paused.
-- **Music breaks** only play when Spotify is **offline**. While Spotify is online, each break slot is skipped (and never plays late).
+- **Music breaks were removed** (2026-10-02). Spotify replaces them. Sounds attached to reminder rules still play when the rule fires.
 - **Speaker:** go-librespot plays to PipeWire's default output. While it plays, the server moves its stream to the same output alerts use (saved Bluetooth speaker, then HDMI), if that output exists.
 
 ## Browse and search (Spotify Web API)

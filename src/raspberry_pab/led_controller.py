@@ -20,6 +20,33 @@ CHASE_SWAP_SECONDS = 2.0
 DEFAULT_CHASE_SPEED = 50
 
 
+def hsv_to_rgb(
+    hue: float, saturation: float = 1.0, value: float = 1.0
+) -> tuple[int, int, int]:
+    """Convert HSV (hue 0-360) to 8-bit RGB."""
+    hue = hue % 360.0
+    chroma = value * saturation
+    x = chroma * (1 - abs((hue / 60.0) % 2 - 1))
+    m = value - chroma
+    if hue < 60:
+        r, g, b = chroma, x, 0.0
+    elif hue < 120:
+        r, g, b = x, chroma, 0.0
+    elif hue < 180:
+        r, g, b = 0.0, chroma, x
+    elif hue < 240:
+        r, g, b = 0.0, x, chroma
+    elif hue < 300:
+        r, g, b = x, 0.0, chroma
+    else:
+        r, g, b = chroma, 0.0, x
+    return (
+        int(round((r + m) * 255)),
+        int(round((g + m) * 255)),
+        int(round((b + m) * 255)),
+    )
+
+
 class _LampProtocol(Protocol):
     async def connect(self) -> None: ...
 
@@ -98,7 +125,7 @@ class LedController:
         pulse_ms: int = 500,
         stop_event: asyncio.Event,
     ) -> None:
-        """Cycle hue on the strip until stop_event is set (music-break mode)."""
+        """Cycle hue on the strip until stop_event is set (rainbow mode)."""
         if not self._settings.led_enabled or not self._settings.led_address:
             return
         await self.stop()
@@ -209,8 +236,6 @@ class LedController:
         pulse_ms: int,
         stop_event: asyncio.Event,
     ) -> None:
-        from raspberry_pab.music_breaks import hsv_to_rgb
-
         async with self._lock:
             lamp: _LampProtocol | None = None
             try:

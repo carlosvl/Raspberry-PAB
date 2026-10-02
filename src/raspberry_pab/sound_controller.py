@@ -85,7 +85,7 @@ def build_play_command(
 
 
 class SoundController:
-    """Plays uploaded sound files once for reminder alerts and music breaks."""
+    """Plays uploaded sound files once for reminder alerts and the sound test."""
 
     def __init__(
         self,

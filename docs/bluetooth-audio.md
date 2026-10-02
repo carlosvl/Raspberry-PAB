@@ -1,14 +1,12 @@
 # Bluetooth speaker audio
 
-Raspberry-PAB can play reminder alerts and music breaks on a Bluetooth A2DP speaker. Pair once from **Admin → Sounds → Bluetooth speaker** (PIN required; works from a phone over Wi‑Fi, including Roku-only field kits with no HDMI).
+Raspberry-PAB can play reminder alerts on a Bluetooth A2DP speaker. Pair once from **Admin → Sounds → Bluetooth speaker** (PIN required; works from a phone over Wi‑Fi, including Roku-only field kits with no HDMI).
 
 ## Playback preference
 
 1. `PAB_SOUND_SINK` — if set, always use that PipeWire/Pulse sink
 2. Connected BlueZ sink (`bluez_output.*`) — preferred when a speaker is connected
 3. HDMI sink — fallback (current auto-detect)
-
-Music breaks use the same `SoundController` path, so they follow the same sink.
 
 ## Pair once (Admin)
 

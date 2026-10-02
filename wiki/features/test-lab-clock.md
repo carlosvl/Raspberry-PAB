@@ -13,7 +13,7 @@ updated: 2026-09-29
 
 # Test Lab simulated clock
 
-Admin → Test Lab → Simulated Clock sets a fake "now" for the kiosk. It's stored in the `app_settings` keys `kiosk_simulated_*`. `effective_now()` feeds the scheduler, music breaks, schedule, race results and the TV board, and the board follows `display_date`. **Set Pi clock** (the system clock) clears the simulation.
+Admin → Test Lab → Simulated Clock sets a fake "now" for the kiosk. It's stored in the `app_settings` keys `kiosk_simulated_*`. `effective_now()` feeds the scheduler, schedule, race results and the TV board, and the board follows `display_date`. **Set Pi clock** (the system clock) clears the simulation.
 
 ## Setting the clock loads that day's data (2026-09-29, branch `feature/sim-clock-day-data`)
 

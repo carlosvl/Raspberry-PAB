@@ -1,4 +1,4 @@
-"""Tests for the go-librespot controller, alert pause/resume, and music-break skip."""
+"""Tests for the go-librespot controller and alert pause/resume."""
 
 from __future__ import annotations
 
@@ -12,9 +12,7 @@ import httpx
 
 from raspberry_pab.config import Settings
 from raspberry_pab.db import ScheduleStore
-from raspberry_pab.models import Alert, MusicBreakConfig, ReminderRule
-from raspberry_pab.music_break_scheduler import MusicBreakScheduler
-from raspberry_pab.music_breaks import save_config, was_slot_fired
+from raspberry_pab.models import Alert, ReminderRule
 from raspberry_pab.server import play_alert_groups
 from raspberry_pab.spotify_controller import (
     ONLINE_CACHE_SECONDS,
@@ -302,48 +300,3 @@ def _group_alert() -> Alert:
         message="Warm Up Ada",
         created_at=datetime(2026, 8, 29, 11, 30),
     )
-
-
-def test_music_break_skipped_while_spotify_online(tmp_path: Path) -> None:
-    async def run() -> None:
-        store = ScheduleStore(tmp_path / "music.db")
-        store.initialize()
-        save_config(
-            store,
-            MusicBreakConfig(
-                enabled=True,
-                sound_ids=[1],
-                interval_minutes=15,
-                start_time="09:00",
-            ),
-        )
-        online = [True]
-
-        async def skip_when() -> bool:
-            return online[0]
-
-        class Idle:
-            async def stop(self) -> None:
-                return None
-
-        scheduler = MusicBreakScheduler(
-            store,
-            sound_controller=Idle(),  # type: ignore[arg-type]
-            led_controller=Idle(),  # type: ignore[arg-type]
-            matrix_controller=Idle(),  # type: ignore[arg-type]
-            sound_path_resolver=lambda _id: None,
-            skip_when=skip_when,
-        )
-        slot_time = datetime(2026, 8, 29, 9, 15)
-        assert await scheduler.tick(slot_time) is False
-        assert was_slot_fired(store, slot_time.date(), 1)
-        assert scheduler._session_task is None
-
-        online[0] = False
-        # Same slot stays skipped (no late play); the next slot plays.
-        assert await scheduler.tick(slot_time) is False
-        started = await scheduler.tick(datetime(2026, 8, 29, 9, 30))
-        assert started is True
-        await scheduler.interrupt()
-
-    asyncio.run(run())
