@@ -23,7 +23,7 @@ def test_matrix_test_requires_admin_pin(tmp_path: Path) -> None:
         data_dir=tmp_path / "data",
         web_dir=make_web_dir(tmp_path),
         matrix_enabled=True,
-        buzzer_port="/dev/ttyUSB0",
+        matrix_port="/dev/ttyUSB0",
     )
     with TestClient(create_app(settings)) as client:
         response = client.post(

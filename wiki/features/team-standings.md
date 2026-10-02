@@ -43,6 +43,8 @@ the Appendix A point grid. There are two entry points that share one engine:
 - **Results change while Unofficial.** Rescraping 17320 on 2026-09-27 shifted a
   few non-Roseville MS scores, and HS D2 went from 29 to 30 teams.
 
+- **IYR can 403 the scraper (2026-10-02).** The live fetch uses `curl_cffi` with `impersonate=chrome131` (see `client.py`). On 2026-10-02 the Pi got **HTTP 403** with `chrome131` but **200** with `chrome124` for the same URL, and the kiosk strip stayed empty across polls (it had worked a few hours earlier). Plain `urllib` from a Mac also gets 403. ~~Not fixed yet~~ Fixed 2026-10-02: the default is now `chrome124` (PR #7); see [ITS YOUR RACE fingerprint](../ops/itsyourrace-blocking.md). The board hides the strip when there are no buckets.
+
 ## Validation
 
 - **Checked against official sheets (2026-09-27):** Race 2 HS D2 from IYR

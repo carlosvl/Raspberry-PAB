@@ -256,7 +256,6 @@ def _alert_fakes(log: _Log, *, sound_fails: bool = False) -> dict[str, Any]:
         "store": FakeStore(),
         "led_controller": Effect("led"),
         "matrix_controller": Effect("matrix"),
-        "buzzer_controller": Effect("buzzer"),
         "sound_controller": Effect("sound"),
     }
 

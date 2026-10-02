@@ -56,13 +56,11 @@ Add **1000 µF ≥16 V** across 5V/GND near each panel inject (+ to 5 V, − to 
 
 ## Serial / Pi `.env`
 
-Same USB port for buzzer + matrix (combined firmware):
+The matrix uses one USB serial port (the firmware also has a buzzer pin that the app no longer drives):
 
 ```bash
-PAB_BUZZER_ENABLED=true
-PAB_BUZZER_PORT=/dev/serial/by-id/usb-Silicon_Labs_CP210*-if00-port0   # or auto-detect
 PAB_MATRIX_ENABLED=true
-PAB_MATRIX_PORT=          # empty → uses buzzer port
+PAB_MATRIX_PORT=/dev/serial/by-id/usb-Silicon_Labs_CP210*-if00-port0   # or auto-detect
 PAB_MATRIX_WIDTH=96
 PAB_MATRIX_BRIGHTNESS=64  # field: keep ≤128
 ```
@@ -70,8 +68,8 @@ PAB_MATRIX_BRIGHTNESS=64  # field: keep ≤128
 Upload:
 
 ```bash
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # wiring check
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh      # production
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # wiring check
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh      # production
 ```
 
 Expect boot: `READY PIXELS 768 FREE <large>`.
@@ -90,6 +88,8 @@ ESP32 GPIO is **3.3 V**. Short DIN wire + 330 Ω usually works. If panels stay d
 
 ## Buzzer note
 
+The app no longer sends buzzer commands (removed 2026-10-02); the wiring below only matters if you keep the module connected.
+
 Active **low-level** modules: I/O LOW = on. ESP32 GPIO 4 at 3.3 V LOW is usually enough. If the buzzer never sounds, drive I/O with an NPN/MOSFET to pull the module input to GND while keeping VCC at 5 V.
 
 ---
@@ -102,4 +102,4 @@ Active **low-level** modules: I/O LOW = on. ESP32 GPIO 4 at 3.3 V LOW is usually
 - [ ] ESP32 GND ↔ LED rail GND
 - [ ] Matrix **not** powered from ESP32 `5V`
 - [ ] `matrix_test` lights panels 1→2→3; production `PIXELS 768`
-- [ ] Admin Test matrix + Test buzzer on the same USB-C port
+- [ ] Admin Test matrix works on the USB-C port
