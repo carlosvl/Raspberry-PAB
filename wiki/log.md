@@ -114,3 +114,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-02] ingest | Standings fetch switched to chrome124
 - Branch `fix/iyr-chrome124`: `DEFAULT_IMPERSONATE` is now `chrome124` after IYR returned 403 to `chrome131` (verified on the Pi with the app's client: chrome131 403, chrome124 OK, twice each). Test added. Not yet deployed. Pages: [ops/itsyourrace-blocking](ops/itsyourrace-blocking.md).
+
+## [2026-10-02] ingest | Deployed chrome124 fetch to kiosk Pi
+- PR #7. Copied `client.py` (it matched `main` first), restarted `raspberry-pab`. Backup: `~/Raspberry-PAB-deploy-backup-20261002-154411.tgz`. About 66 s after the restart `/api/team-standings` returned 4 buckets (HS D1/D2 2026-09-13, MS D1/D2 2026-09-12) with no error, so the 403 is fixed. Pages: [ops/itsyourrace-blocking](ops/itsyourrace-blocking.md).
