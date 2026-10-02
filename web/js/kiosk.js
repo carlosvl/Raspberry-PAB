@@ -398,6 +398,27 @@ function renderTeamTicker(data) {
   ticker.hidden = false;
 }
 
+let jamSignature = "";
+
+async function loadSpotifyJam() {
+  try {
+    const response = await fetch("/api/spotify/jam");
+    if (!response.ok) throw new Error("jam request failed");
+    const jam = await response.json();
+    const panel = document.getElementById("jamPanel");
+    const qr = document.getElementById("jamQr");
+    if (!panel || !qr) return;
+    const signature = jam.active ? String(jam.url) : "";
+    if (signature === jamSignature) return;
+    jamSignature = signature;
+    qr.innerHTML = jam.active ? jam.svg || "" : "";
+    panel.hidden = !jam.active;
+    panel.parentElement?.classList.toggle("kiosk__footer--jam", Boolean(jam.active));
+  } catch {
+    // Keep the last state on transient errors.
+  }
+}
+
 async function loadTeamStandings() {
   try {
     const response = await fetch("/api/team-standings");
@@ -696,6 +717,7 @@ loadAppConfig().then(() => {
 updateClock();
 loadNetworkInfo();
 loadTeamStandings();
+loadSpotifyJam();
 connectAlertStream();
 setInterval(async () => {
   await loadAppConfig();
@@ -705,3 +727,4 @@ setInterval(async () => {
 setInterval(loadNetworkInfo, 60000);
 setInterval(loadSchedule, 1000);
 setInterval(loadTeamStandings, 30000);
+setInterval(loadSpotifyJam, 10000);

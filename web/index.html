@@ -47,8 +47,17 @@
             </tbody>
           </table>
         </div>
-        <div class="kiosk__ticker" id="kioskTicker" hidden>
-          <div class="kiosk__teams" id="kioskTeams"></div>
+        <div class="kiosk__footer">
+          <div class="kiosk__ticker" id="kioskTicker" hidden>
+            <div class="kiosk__teams" id="kioskTeams"></div>
+          </div>
+          <aside class="jam" id="jamPanel" aria-label="Spotify Jam" hidden>
+            <div class="jam__text">
+              <strong class="jam__title">Scan to add songs</strong>
+              <span class="jam__sub">Spotify Jam</span>
+            </div>
+            <div class="jam__qr" id="jamQr" role="img" aria-label="QR code to join the Spotify Jam"></div>
+          </aside>
         </div>
         <p class="kiosk__status" id="status">Connecting…</p>
         <p class="kiosk__remote" id="remoteInfo">Remote access checking…</p>

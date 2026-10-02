@@ -1039,6 +1039,45 @@ async function loadSpotify() {
   renderSpotify(await api("/api/admin/spotify"));
 }
 
+function renderSpotifyJam(jam) {
+  const status = document.getElementById("spotifyJamStatus");
+  const input = document.getElementById("spotifyJamUrl");
+  if (status) status.textContent = jam.active ? "QR is showing on the board." : "QR hidden.";
+  if (input && jam.active && document.activeElement !== input) input.value = jam.url || "";
+}
+
+async function loadSpotifyJam() {
+  renderSpotifyJam(await api("/api/admin/spotify/jam"));
+}
+
+async function spotifyJamRequest(options, message) {
+  try {
+    renderSpotifyJam(await api("/api/admin/spotify/jam", options));
+    setOutput(message);
+  } catch (error) {
+    setOutput(error instanceof Error ? error.message : String(error));
+  }
+}
+
+function configureSpotifyJam() {
+  document.getElementById("spotifyJamShow")?.addEventListener("click", () => {
+    const url = document.getElementById("spotifyJamUrl")?.value.trim() || "";
+    if (!url) {
+      setOutput("Paste the Jam link first.");
+      return;
+    }
+    spotifyJamRequest(
+      { method: "PUT", body: JSON.stringify({ url }) },
+      "Jam QR is showing on the board.",
+    );
+  });
+  document.getElementById("spotifyJamHide")?.addEventListener("click", async () => {
+    await spotifyJamRequest({ method: "DELETE" }, "Jam QR hidden.");
+    const input = document.getElementById("spotifyJamUrl");
+    if (input) input.value = "";
+  });
+}
+
 async function spotifyRequest(path, options, message) {
   try {
     renderSpotify(await api(path, options));
@@ -1443,6 +1482,7 @@ async function loadAll() {
       loadBluetoothPanel(),
       loadMusicBreaks(),
       loadSpotify(),
+      loadSpotifyJam(),
       loadSpotifyWeb(),
       loadRules(),
       loadRaceResults(),
@@ -2392,6 +2432,7 @@ if (gamepadSensitivity && gamepadSensitivityRange) {
 initTouchSteppers();
 configureMusicBreaks();
 configureSpotify();
+configureSpotifyJam();
 configureSpotifyWeb();
 document.getElementById("uploadLogo")?.addEventListener("click", uploadLogoFile);
 document.getElementById("uploadSound")?.addEventListener("click", uploadSoundFile);
