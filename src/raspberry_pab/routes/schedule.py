@@ -69,8 +69,6 @@ def verify_admin_pin() -> dict[str, bool]:
 def hardware_status(request: Request) -> dict[str, object]:
     settings = get_settings(request)
     return {
-        "buzzer_enabled": settings.buzzer_enabled,
-        "buzzer_port": settings.buzzer_port or "",
         "led_enabled": settings.led_enabled,
         "led_address": settings.led_address or "",
         "matrix_enabled": settings.matrix_enabled,

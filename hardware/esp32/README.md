@@ -1,6 +1,6 @@
 # ESP32 hardware (Raspberry-PAB)
 
-Production MCU: **38-pin ESP32-WROOM** (USB-C / CP2102) with screw-terminal breakout — combined **buzzer + 3-panel WS2812 matrix**.
+Production MCU: **38-pin ESP32-WROOM** (USB-C / CP2102) with screw-terminal breakout — **3-panel WS2812 matrix** (the firmware still has a buzzer pin; the app no longer uses it).
 
 | Doc / sketch | Role |
 |--------------|------|
@@ -12,8 +12,8 @@ Upload from Mac or Pi (requires `arduino-cli` + `esp32:esp32` core):
 
 ```bash
 ./scripts/detect-buzzer-port.sh
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # wiring smoke test
-PAB_BUZZER_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh      # production
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-matrix-test.sh   # wiring smoke test
+PAB_MATRIX_PORT=/dev/ttyUSB0 ./scripts/upload-esp32-hardware.sh      # production
 ```
 
 On macOS the port is usually `/dev/cu.usbserial-*`. On the Pi, prefer the `/dev/serial/by-id/usb-Silicon_Labs_CP2102_*` path. If the Pi has no internet, flash from the Mac and reconnect USB to the Pi.

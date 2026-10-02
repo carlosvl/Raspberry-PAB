@@ -172,7 +172,6 @@ class ScheduleStore:
                 """
             )
             self._migrate_rule_led_columns(conn)
-            self._migrate_rule_buzzer_columns(conn)
             self._migrate_rule_matrix_columns(conn)
             self._migrate_rule_sound_columns(conn)
             self._migrate_participant_columns(conn)
@@ -289,8 +288,6 @@ class ScheduleStore:
                    enabled, sort_order, led_enabled, led_red, led_green, led_blue,
                    led_flash_interval_ms, led_flash_duration_seconds,
                    led_chase_duration_seconds, matrix_effect,
-                   buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
-                   buzzer_count, buzzer_beep_ms, buzzer_gap_ms,
                    sound_enabled, sound_id, sound_volume
             FROM reminder_rules
         """
@@ -309,8 +306,6 @@ class ScheduleStore:
                        enabled, sort_order, led_enabled, led_red, led_green, led_blue,
                        led_flash_interval_ms, led_flash_duration_seconds,
                    led_chase_duration_seconds, matrix_effect,
-                   buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
-                   buzzer_count, buzzer_beep_ms, buzzer_gap_ms,
                    sound_enabled, sound_id, sound_volume
                 FROM reminder_rules
                 WHERE id = ?
@@ -391,36 +386,6 @@ class ScheduleStore:
                 if update.matrix_effect is not None
                 else existing.matrix_effect
             ),
-            buzzer_enabled=(
-                update.buzzer_enabled
-                if update.buzzer_enabled is not None
-                else existing.buzzer_enabled
-            ),
-            buzzer_pitch_hz=(
-                update.buzzer_pitch_hz
-                if update.buzzer_pitch_hz is not None
-                else existing.buzzer_pitch_hz
-            ),
-            buzzer_volume=(
-                update.buzzer_volume
-                if update.buzzer_volume is not None
-                else existing.buzzer_volume
-            ),
-            buzzer_count=(
-                update.buzzer_count
-                if update.buzzer_count is not None
-                else existing.buzzer_count
-            ),
-            buzzer_beep_ms=(
-                update.buzzer_beep_ms
-                if update.buzzer_beep_ms is not None
-                else existing.buzzer_beep_ms
-            ),
-            buzzer_gap_ms=(
-                update.buzzer_gap_ms
-                if update.buzzer_gap_ms is not None
-                else existing.buzzer_gap_ms
-            ),
             sound_enabled=(
                 update.sound_enabled
                 if update.sound_enabled is not None
@@ -446,8 +411,6 @@ class ScheduleStore:
                     led_enabled = ?, led_red = ?, led_green = ?, led_blue = ?,
                     led_flash_interval_ms = ?, led_flash_duration_seconds = ?,
                     led_chase_duration_seconds = ?, matrix_effect = ?,
-                    buzzer_enabled = ?, buzzer_pitch_hz = ?, buzzer_volume = ?,
-                    buzzer_count = ?, buzzer_beep_ms = ?, buzzer_gap_ms = ?,
                     sound_enabled = ?, sound_id = ?, sound_volume = ?
                 WHERE id = ?
                 """,
@@ -465,12 +428,6 @@ class ScheduleStore:
                     merged.led_flash_duration_seconds,
                     merged.led_chase_duration_seconds,
                     merged.matrix_effect,
-                    int(merged.buzzer_enabled),
-                    merged.buzzer_pitch_hz,
-                    merged.buzzer_volume,
-                    merged.buzzer_count,
-                    merged.buzzer_beep_ms,
-                    merged.buzzer_gap_ms,
                     int(merged.sound_enabled),
                     merged.sound_id,
                     merged.sound_volume,
@@ -539,12 +496,6 @@ class ScheduleStore:
                 led_flash_duration_seconds=rule.led_flash_duration_seconds,
                 led_chase_duration_seconds=rule.led_chase_duration_seconds,
                 matrix_effect=rule.matrix_effect,
-                buzzer_enabled=rule.buzzer_enabled,
-                buzzer_pitch_hz=rule.buzzer_pitch_hz,
-                buzzer_volume=rule.buzzer_volume,
-                buzzer_count=rule.buzzer_count,
-                buzzer_beep_ms=rule.buzzer_beep_ms,
-                buzzer_gap_ms=rule.buzzer_gap_ms,
                 sound_enabled=rule.sound_enabled,
                 sound_id=rule.sound_id,
                 sound_volume=rule.sound_volume,
@@ -931,22 +882,6 @@ class ScheduleStore:
                 continue
 
     @staticmethod
-    def _migrate_rule_buzzer_columns(conn: sqlite3.Connection) -> None:
-        columns = (
-            ("buzzer_enabled", "INTEGER NOT NULL DEFAULT 0"),
-            ("buzzer_pitch_hz", "INTEGER NOT NULL DEFAULT 2500"),
-            ("buzzer_volume", "INTEGER NOT NULL DEFAULT 80"),
-            ("buzzer_count", "INTEGER NOT NULL DEFAULT 3"),
-            ("buzzer_beep_ms", "INTEGER NOT NULL DEFAULT 200"),
-            ("buzzer_gap_ms", "INTEGER NOT NULL DEFAULT 150"),
-        )
-        for name, spec in columns:
-            try:
-                conn.execute(f"ALTER TABLE reminder_rules ADD COLUMN {name} {spec}")
-            except sqlite3.OperationalError:
-                continue
-
-    @staticmethod
     def _migrate_rule_matrix_columns(conn: sqlite3.Connection) -> None:
         with suppress(sqlite3.OperationalError):
             conn.execute(
@@ -1066,11 +1001,9 @@ class ScheduleStore:
                      enabled, sort_order, led_enabled, led_red, led_green, led_blue,
                      led_flash_interval_ms, led_flash_duration_seconds,
                      led_chase_duration_seconds, matrix_effect,
-                     buzzer_enabled, buzzer_pitch_hz, buzzer_volume,
-                     buzzer_count, buzzer_beep_ms, buzzer_gap_ms,
                      sound_enabled, sound_id, sound_volume)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ?, ?, ?, ?, ?)
                 """,
                 (
                     rule.offset_minutes,
@@ -1086,12 +1019,6 @@ class ScheduleStore:
                     rule.led_flash_duration_seconds,
                     rule.led_chase_duration_seconds,
                     rule.matrix_effect,
-                    int(rule.buzzer_enabled),
-                    rule.buzzer_pitch_hz,
-                    rule.buzzer_volume,
-                    rule.buzzer_count,
-                    rule.buzzer_beep_ms,
-                    rule.buzzer_gap_ms,
                     int(rule.sound_enabled),
                     rule.sound_id,
                     rule.sound_volume,
@@ -1168,12 +1095,6 @@ class ScheduleStore:
             led_flash_duration_seconds=int(row["led_flash_duration_seconds"]),
             led_chase_duration_seconds=int(row["led_chase_duration_seconds"]),
             matrix_effect=matrix_effect,
-            buzzer_enabled=bool(row["buzzer_enabled"]),
-            buzzer_pitch_hz=int(row["buzzer_pitch_hz"]),
-            buzzer_volume=int(row["buzzer_volume"]),
-            buzzer_count=int(row["buzzer_count"]),
-            buzzer_beep_ms=int(row["buzzer_beep_ms"]),
-            buzzer_gap_ms=int(row["buzzer_gap_ms"]),
             sound_enabled=(
                 bool(row["sound_enabled"]) if "sound_enabled" in keys else False
             ),

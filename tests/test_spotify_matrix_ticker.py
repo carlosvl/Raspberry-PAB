@@ -230,7 +230,6 @@ def test_play_alert_groups_pauses_and_resumes_ticker() -> None:
             store=Store(),  # type: ignore[arg-type]
             led_controller=Any,  # type: ignore[arg-type]
             matrix_controller=Any,  # type: ignore[arg-type]
-            buzzer_controller=Any,  # type: ignore[arg-type]
             sound_controller=Any,  # type: ignore[arg-type]
             now_playing_ticker=Ticker(),  # type: ignore[arg-type]
         )

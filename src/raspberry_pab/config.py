@@ -42,10 +42,6 @@ class Settings:
     led_enabled: bool = False
     led_address: str = ""
     led_name: str = "MELK-OT21   CB"
-    buzzer_enabled: bool = False
-    buzzer_port: str = ""
-    buzzer_mode: str = "active"
-    buzzer_baud: int = 115200
     matrix_enabled: bool = False
     matrix_port: str = ""
     matrix_width: int = 96  # three daisy-chained 8x32 panels (ESP32)
@@ -104,10 +100,6 @@ class Settings:
             led_enabled=_env_bool("PAB_LED_ENABLED", cls.led_enabled),
             led_address=os.getenv("PAB_LED_ADDRESS", cls.led_address),
             led_name=os.getenv("PAB_LED_NAME", cls.led_name),
-            buzzer_enabled=_env_bool("PAB_BUZZER_ENABLED", cls.buzzer_enabled),
-            buzzer_port=os.getenv("PAB_BUZZER_PORT", cls.buzzer_port),
-            buzzer_mode=os.getenv("PAB_BUZZER_MODE", cls.buzzer_mode),
-            buzzer_baud=int(os.getenv("PAB_BUZZER_BAUD", str(cls.buzzer_baud))),
             matrix_enabled=_env_bool("PAB_MATRIX_ENABLED", cls.matrix_enabled),
             matrix_port=os.getenv("PAB_MATRIX_PORT", cls.matrix_port),
             matrix_width=int(os.getenv("PAB_MATRIX_WIDTH", str(cls.matrix_width))),

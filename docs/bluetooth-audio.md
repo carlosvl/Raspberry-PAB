@@ -58,4 +58,4 @@ List sinks: `pactl list short sinks`.
 | Script / 502 from Admin | Re-run install for sudoers; `sudo -n ~/bin/manage-pi-bluetooth.sh status --json` |
 | Service cannot see PipeWire | systemd unit must set `XDG_RUNTIME_DIR=/run/user/<uid>` (installer does this) |
 
-ESP32 buzzer / matrix audio is separate from this PipeWire path. Tapping kiosk playback into a standalone beat-reactive strip: [hardware/sound-reactive-24v-strip/README.md](../hardware/sound-reactive-24v-strip/README.md#tap-raspberry-pab-audio-instead-of-a-room-mic).
+The ESP32 matrix is separate from this PipeWire path. Tapping kiosk playback into a standalone beat-reactive strip: [hardware/sound-reactive-24v-strip/README.md](../hardware/sound-reactive-24v-strip/README.md#tap-raspberry-pab-audio-instead-of-a-room-mic).

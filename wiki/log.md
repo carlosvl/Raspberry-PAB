@@ -111,3 +111,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-02] ingest | Deployed music-break removal to kiosk Pi
 - PR #5. Copied the changed Python, web and docs files (all matched `main` first), deleted `music_break_scheduler.py`, `music_breaks.py` and `routes/music_breaks.py` on the Pi, restarted. Backup: `~/Raspberry-PAB-deploy-backup-20261002-135219.tgz`. `/api/admin/music-breaks` is now 404; Jam QR and standings still work. The old process needed the full 90 s `stop-sigterm` timeout before systemd killed it (graceful shutdown hung on one task), so the restart took about 90 s. The Pi clock is still simulated at 2026-09-13 09:00. Pages: [ops/music-breaks-removed](ops/music-breaks-removed.md).
+
+## [2026-10-02] decision | Buzzer removed
+- Branch `chore/deprecate-buzzer` (from main after PR #5): deleted the buzzer controller, route, settings, rule fields, Admin controls, buzzer-only sketches and scripts, and updated docs. Matrix port no longer falls back to `PAB_BUZZER_PORT`. Firmware and old DB columns untouched. Pages: [ops/buzzer-removed](ops/buzzer-removed.md).
