@@ -190,8 +190,10 @@ def _new_race(label: str, entries: list[RaceEntry], *, preliminary: bool) -> New
 def _cell_text(rider: RiderSeason) -> str:
     parts = []
     for cell in rider.cells:
-        if cell.kind in ("bye", "not_held"):
-            text = "–" if cell.kind == "bye" else "✕"
+        if cell.kind == "bye":
+            continue  # team not scheduled: not part of this rider's season
+        if cell.kind == "not_held":
+            text = "✕"
         elif cell.kind == "upgrade":
             text = "NA"
         elif cell.kind == "dnf":
@@ -325,7 +327,14 @@ def render_report(
                     parts.append(
                         f"{_level_short(level)} no results yet (left out until posted)"
                     )
-            lines.append(f"  - {race.label}: {'; '.join(parts)} — {source}")
+            there = any(
+                normalize_team(entry.team) == normalize_team(team)
+                for entry in race.entries
+            )
+            attendance = f"{team} raced" if there else f"{team}: **bye**, not counted"
+            lines.append(
+                f"  - {race.label}: {'; '.join(parts)} — {source} — {attendance}"
+            )
     if skipped_events:
         lines.append(f"- **No results yet:** {', '.join(skipped_events)}")
     if state_events:
@@ -340,7 +349,8 @@ def render_report(
     )
     lines += [
         "",
-        "Cells: points · `–` bye · `✕` canceled / not held (not counted) · `NA` "
+        "Races column: only races the rider's team was scheduled for (byes are "
+        "omitted). Points · `0` missed · `✕` canceled (not counted) · `NA` "
         "before a category upgrade · `*` preliminary.",
         "",
         "| Status | Athlete | Category | Rank | Avg | #100 avg | Projection | Races |",

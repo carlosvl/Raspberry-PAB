@@ -15,6 +15,20 @@ _TITLE = re.compile(
     r"\s*-\s*(?P<level>High School|Middle School)\s*-\s*as of\s+(?P<as_of>[\d/]+)",
     re.IGNORECASE,
 )
+# From Race 5 on the title spans two lines, and "through Race N <date>" sits on
+# either one: "2026 MCA Individual Points through Race 5 10/1/2026" +
+# "Middle School", or "2026 MCA Individual Points" +
+# "High School Through Race 5 9/30/2026".
+_THROUGH = (
+    r"(?:\s+through Race\s+(?P<through>\d+[AB]?)"
+    r"\s+(?P<as_of>\d{1,2}/\d{1,2}/\d{4}))?"
+)
+_TITLE_V2 = re.compile(
+    rf"^(?P<season>\d{{4}})\s+MCA\s+Individual Points{_THROUGH}$", re.IGNORECASE
+)
+_LEVEL_LINE = re.compile(
+    rf"^(?P<level>High School|Middle School){_THROUGH}$", re.IGNORECASE
+)
 _HEADER_RACE = re.compile(r"Race\s+(\d+[AB]?)\s+(.+?)(?=\s{2,}Race\s+\d|\s*$)")
 _CATEGORY = r"(?:\d+th Grade|Freshman|JV2|JV3|Varsity) (?:Boys|Girls)(?: D[12])?"
 _ROW = re.compile(
@@ -119,6 +133,17 @@ def parse_standings_text(text: str) -> StandingsTable:
             level = title.group("level")
             through = title.group("through").upper()
             as_of = datetime.strptime(title.group("as_of"), "%m/%d/%Y").date()
+            continue
+        title = _TITLE_V2.match(stripped) or _LEVEL_LINE.match(stripped)
+        if title is not None:
+            fields = title.groupdict()
+            if fields.get("season"):
+                season = int(fields["season"])
+            if fields.get("level"):
+                level = fields["level"].title()
+            if fields["through"]:
+                through = fields["through"].upper()
+                as_of = datetime.strptime(fields["as_of"], "%m/%d/%Y").date()
             continue
         if stripped.startswith("Rider Plate"):
             columns = columns or _parse_header(stripped)

@@ -39,6 +39,7 @@ Use the admin page to enter participants and reminder rules, or import `data/sch
 | Bluetooth speaker audio | `scripts/manage-pi-bluetooth.sh` + [bluetooth-audio.md](bluetooth-audio.md) |
 | Roku TV board (no HDMI) | `roku/pab-channel/` + `docs/roku.md` + Admin → TVs |
 | MCA team standings scrape (laptop) | `scripts/mca-team-results.py` + [mca-team-scoring.md](mca-team-scoring.md) |
+| MCA State qualification + call-ups (laptop) | `scripts/mca-state-qualification.py` + [mca-state-qualification.md](mca-state-qualification.md), [mca-state-callups.md](mca-state-callups.md) |
 | Standalone 24V beat-reactive strip | [hardware/sound-reactive-24v-strip/README.md](../hardware/sound-reactive-24v-strip/README.md) |
 
 ## GPIO / hardware (optional)

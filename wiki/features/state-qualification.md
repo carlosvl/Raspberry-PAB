@@ -10,7 +10,7 @@ sources:
   - .claude/skills/mca-state-qualification/SKILL.md
   - tests/test_mca_state_qualification.py
   - https://minnesotacycling.org/results-archive/
-updated: 2026-09-27
+updated: 2026-09-28
 ---
 
 # State Championship qualification
@@ -33,6 +33,9 @@ and writes `docs/mca-state-qualification.md`.
      raced but the rider didn't, and `NA (Upgrade)` marks a race before a
      category change.
    - The HS PDF has no header row, so it borrows the MS race columns.
+   - **Title layout changed at Race 5 (2026-10-02):** it's now two lines, with
+     "through Race N <date>" on either the title or the level line (MS and HS
+     differ). The parser accepts both old and new layouts; rows were unchanged.
 2. **Races after the snapshot:**
    - The official "Individual Results" PDF (Precision Race layout), matched
      by venue.
@@ -59,6 +62,13 @@ and writes `docs/mca-state-qualification.md`.
     `mca_scoring.is_dnf` counts as DNF: 0 laps, the 2:00:00 placeholder, a
     time of 10h or more, or fewer laps than the winner. On Race 2 every
     short-lap IYR row was an official DNF.
+
+## Report display
+
+- The Races column lists only the races a rider's team was scheduled for;
+  byes are hidden, so they don't look like counted races. Each merged race
+  says whether the team raced it or had a bye. Gamehaven 9/26 was a Roseville
+  bye (user, 2026-09-28) and never counted in any Roseville average.
 
 ## Status and projection
 
@@ -87,6 +97,14 @@ and writes `docs/mca-state-qualification.md`.
   1721 7th).
 
 ## Open
+
+- **Plate changes ~~aren't joined~~ fixed 2026-10-04:** a rider whose IYR bib differs from the
+  standings plate (Clara Walz 4568 → 3585, 6 riders at Cuyuna) is scored as
+  missing the race. `merge_race` now falls back to name + team when exactly
+  one standings row fits, and flags the rider.
+- **Partly posted level:** if one category of a held level isn't posted yet
+  (e.g. JV2 Boys D2 at Cuyuna 10/4), its riders show as missed (0) until it
+  posts. Re-run after all categories are up.
 
 - **Existing team scoring counted DNFs:** ~~open~~ fixed 2026-09-27;
   `riders_from_sessions` now drops `is_dnf` rows.

@@ -18,6 +18,7 @@ from raspberry_pab.race_results.mca_scoring import (
     points_for_place,
 )
 from raspberry_pab.race_results.mca_standings import RaceColumn, StandingsTable
+from raspberry_pab.race_results.names import names_match
 
 CellKind = Literal["race", "missed", "dnf", "bye", "upgrade", "not_held"]
 Status = Literal["ON TRACK", "BUBBLE", "OFF TRACK", "NEEDS RACES"]
@@ -146,8 +147,33 @@ def merge_race(riders: list[RiderSeason], race: NewRace) -> list[RiderSeason]:
     prior_labels = [cell.label for cell in riders[0].cells] if riders else []
     known = {rider.plate for rider in riders}
 
+    # Riders sometimes race on a new plate (e.g. after moving up a level);
+    # match those by name + team when exactly one standings row fits.
+    renumbered: dict[str, RaceEntry] = {}
+    matched: set[str] = set()
+    for new_plate in race.entries:
+        if new_plate.plate in known:
+            continue
+        candidates = [
+            rider
+            for rider in riders
+            if rider.plate not in by_plate
+            and rider.plate not in renumbered
+            and normalize_team(rider.team) == normalize_team(new_plate.team)
+            and names_match(new_plate.name, rider.name)
+        ]
+        if len(candidates) == 1:
+            renumbered[candidates[0].plate] = new_plate
+            matched.add(new_plate.plate)
+
     for rider in riders:
         entry = by_plate.get(rider.plate)
+        if entry is None and rider.plate in renumbered:
+            entry = renumbered[rider.plate]
+            rider.flags.append(
+                f"raced {race.label} on plate {entry.plate} (standings: "
+                f"{rider.plate}) — matched by name"
+            )
         if rider.level not in race.held_levels:
             # Canceled for this level: uses a race slot only for teams that were
             # there (they appear at the other level); everyone else had a bye.
@@ -170,7 +196,7 @@ def merge_race(riders: list[RiderSeason], race: NewRace) -> list[RiderSeason]:
         rider.cells.append(cell)
 
     for entry in race.entries:
-        if entry.plate in known:
+        if entry.plate in known or entry.plate in matched:
             continue
         cells = [SeasonCell(label, "bye", None) for label in prior_labels]
         kind = "dnf" if entry.dnf else "race"

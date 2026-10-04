@@ -124,3 +124,19 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-02] ingest | Deployed chrome124 fetch to kiosk Pi
 - PR #7. Copied `client.py` (it matched `main` first), restarted `raspberry-pab`. Backup: `~/Raspberry-PAB-deploy-backup-20261002-154411.tgz`. About 66 s after the restart `/api/team-standings` returned 4 buckets (HS D1/D2 2026-09-13, MS D1/D2 2026-09-12) with no error, so the 403 is fixed. Pages: [ops/itsyourrace-blocking](ops/itsyourrace-blocking.md).
+
+## [2026-10-02] ingest | Race 6 Cuyuna call-ups loaded; state projection through Race 5
+- Loaded 24 Roseville riders (14 MS Sat 10/3, 10 HS Sun 10/4) onto the kiosk at 192.168.4.64 from the Race-8-Cuyuna V2 call-up PDFs; start times reused from earlier weekends (PDFs list none). Not called up: Max Finney, Jacob Walczak, Drew Wright.
+- MCA posted "through Race 5" standings (MS 10/1, HS 9/30) with a new two-line title; fixed `mca_standings.py` to parse it (test added). Gamehaven = 5A, Theodore Wirth = 5B, Cuyuna = 6. Theo MS team re-score unchanged (3rd, 1776). Pages: [races/mca-2026-season](races/mca-2026-season.md), [features/state-qualification](features/state-qualification.md).
+
+## [2026-10-04] ingest | Cuyuna MS team score + MS state final
+- Roseville MS D2 5th/35 at Cuyuna 10/3 (1766, IYR 17335, Unofficial). MS state projection final: 12 in top 100; Elliot Freeman #104. Report: `docs/mca-team-results-17335.md`, `docs/mca-state-qualification.md`. Pages: [races/mca-2026-season](races/mca-2026-season.md).
+
+## [2026-10-04] ingest | Cuyuna HS partial team score
+- 12:49: HS D2 Roseville 4th, 1770 (BBBG), with 4 HS categories not yet posted (incl. JV3 Girls, JV2 Boys D2). State re-run failed after 2 retries (IYR 403/500); MS state unchanged from the morning run. Pages: [races/mca-2026-season](races/mca-2026-season.md).
+
+## [2026-10-04] ingest | Projected State call-ups doc
+- Wrote `docs/mca-state-callups.md`: call-up position for each Roseville State qualifier by average finish place (method reproduces MCA's Cuyuna call-up calcs). Found plate changes (e.g. Clara Walz 4568 → 3585) that the state-qualification merge doesn't join, so it scores them as missing Cuyuna; matched by name in the one-off run only. Pages: [races/mca-2026-season](races/mca-2026-season.md), [features/state-qualification](features/state-qualification.md).
+
+## [2026-10-04] ingest | Fixed plate-change join in state qualification
+- `merge_race` matches a new IYR plate to a standings row by name + team (test added). Clara Walz now #9/85 Freshman Girls with Cuyuna counted (was scored as missed). Pages: [features/state-qualification](features/state-qualification.md).

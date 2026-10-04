@@ -110,6 +110,32 @@ def test_standings_rejects_rows_that_fail_the_average_check() -> None:
         parse_standings_text(bad)
 
 
+def test_standings_race5_title_layout() -> None:
+    text = (
+        "      2026 MCA Individual Points through Race 5 10/1/2026\n"
+        "            Middle School\n"
+        "Rider Plate   Name   Team Name   Team Division   Category   Rank"
+        "   Season Score   Race 1 Schindler's Way   Race 2 Xcel Energy\n"
+        "   6555   NORA WALZ   Roseville   2 6th Grade Girls   2   495"
+        "   490   500\n"
+    )
+    table = parse_standings_text(text)
+    assert (table.season, table.through_race) == (2026, "5")
+    assert table.as_of == date(2026, 10, 1)
+    assert table.level == "Middle School"
+    assert table.rows[0].name == "NORA WALZ"
+    assert table.rows[0].team == "Roseville"
+
+    hs = parse_standings_text(
+        text.replace(
+            "2026 MCA Individual Points through Race 5 10/1/2026",
+            "2026 MCA Individual Points",
+        ).replace("Middle School", "High School Through Race 5 9/30/2026")
+    )
+    assert (hs.through_race, hs.as_of) == ("5", date(2026, 9, 30))
+    assert hs.level == "High School"
+
+
 def test_split_name_team_boundary() -> None:
     assert split_name_team("JANE DOE  St Cloud") == ("JANE DOE", "St Cloud")
     assert split_name_team("JO O'NEILLSt Croix") == ("JO O'NEILL", "St Croix")
@@ -208,6 +234,30 @@ def test_merge_race_dnf_scores_zero_but_counts_as_start() -> None:
     merge_race(riders, race)
     assert riders[0].cells[-1].kind == "dnf"
     assert (riders[0].average, riders[0].starts) == (200, 2)
+
+
+def test_merge_race_matches_new_plate_by_name_and_team() -> None:
+    clara = RiderSeason(
+        "4568",
+        "CLARA WALZ",
+        "Roseville",
+        "Freshman Girls",
+        [SeasonCell("2", "race", 472), SeasonCell("3A", "race", 456)],
+    )
+    other = RiderSeason(
+        "4600", "CLARA WALZ", "Edina", "Freshman Girls", [SeasonCell("2", "bye", None)]
+    )
+    race = NewRace(
+        "Cuyuna 10/3",
+        [RaceEntry("3585", "Clara Walz", "Roseville", "Freshman Girls", 7)],
+        frozenset({"high_school"}),
+        preliminary=True,
+    )
+    riders = merge_race([clara, other], race)
+    assert len(riders) == 2  # no duplicate "new rider" row for plate 3585
+    assert (clara.cells[-1].kind, clara.cells[-1].points) == ("race", 448)
+    assert any("plate 3585" in flag for flag in clara.flags)
+    assert other.cells[-1].kind == "bye"
 
 
 def test_competition_ranks_share_ties() -> None:

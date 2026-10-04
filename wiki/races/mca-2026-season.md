@@ -10,7 +10,7 @@ sources:
   - https://minnesotacycling.org/results-archive/
   - https://www.precisionrace.com/mca
   - user (2026-09-27)
-updated: 2026-09-27
+updated: 2026-10-02
 ---
 
 # MCA 2026 season
@@ -37,9 +37,9 @@ IYR number the same events 1–9.
 | 3A | 3 | 17320 | Lake Rebecca, Rockford | Sep 12/13 | raced | |
 | 3B | 4 | 17323 | Whitetail Ridge, River Falls | Sep 12/13 | bye | |
 | 4 | 5 | 17324 | Brophy Park, Alexandria | Sep 19/20 | bye | |
-| 5? | 6 | 17325 | Gamehaven, Rochester | Sep 26/27 | bye | MCA label not published yet |
-| 5? | 7 | 17333 | Theodore Wirth, Minneapolis | Sep 26/27 | raced MS | **HS canceled 9/27** (user) |
-| 6? | 8 | 17335 | Cuyuna, Crosby | Oct 3/4 | **to race** | Roseville's last regular-season race (user) |
+| 5A | 6 | 17325 | Gamehaven, Rochester | Sep 26/27 | bye | ~~label not published~~ 5A per MCA through-Race-5 PDFs (2026-10-02) |
+| 5B | 7 | 17333 | Theodore Wirth, Minneapolis | Sep 26/27 | raced MS | **HS canceled 9/27** (user); 5B per MCA |
+| 6 | 8 | 17335 | Cuyuna, Crosby | Oct 3/4 | **to race** | Roseville's last regular-season race (user). Call-ups: 14 MS + 10 HS loaded on the kiosk 2026-10-02 |
 | State | 9 | 17339 | Redhead, Chisholm | Oct 10/11 | State | **State Championship**, not a qualifying race (user) |
 
 - **Race numbering fix:** ~~17319 = Race 1~~ 17319 is **MCA Race 2**; it was
@@ -66,6 +66,8 @@ As of 2026-09-27, the results are **Unofficial** unless noted.
 | 3A | MS D2 | 3 / 31 | 1869 | BBBG |
 | 3A | HS D2 | 4 / 30 | 1946 | BBGG |
 | 7 (Theo) | MS D2 | 3 / 25 | 1776 | BBGG |
+| 6 (Cuyuna) | HS D2 | 6 (partial) | 1808 | Latest 10/4 run, with JV2 Boys D1/D2 not posted; ~~4th 1770 at 12:49~~ |
+| 6 (Cuyuna) | MS D2 | 5 / 35 | 1766 | BBGG (Nora Walz, Dixon, Ilene Shaffner, Warner); 1 ahead of Tioga |
 
 - ~~Race 2 had no MS results~~: IYR never posted them; the official PDF has
   them (2026-09-27).
@@ -76,8 +78,21 @@ As of 2026-09-27, the results are **Unofficial** unless noted.
 
 ## State qualification snapshot
 
-As of 2026-09-27: MCA standings through Race 4 (9/23), plus preliminary
-Gamehaven/Theodore MS results. Each team is projected with its own races
+**MS final regular season (2026-10-04, Cuyuna preliminary from IYR):** 12
+Roseville MS riders in the top 100. Elliot Freeman is #104 (just out), Silas
+Leary #116, Jacob Walczak #127 (missed Cuyuna), Abraham Sakhitab #143. Clara
+Donahue's Cuyuna finish gave her the 2nd start (#57/72). Boulton moved up to
+#87. HS isn't final until the 10/4 results post. Projected State call-ups:
+[docs/mca-state-callups.md](../../docs/mca-state-callups.md).
+
+As of 2026-10-02: official MCA standings through Race 5 (MS 10/1, HS 9/30),
+which now include Gamehaven (5A) and Theodore Wirth (5B). Ranks barely moved
+from the 9/27 run (Boulton #97 → #96). Not on the Race 6 Cuyuna call-ups:
+Jacob Walczak (bubble, needed ≈22nd, so a 0 likely drops him out), Max Finney
+(safe even with a 0), Drew Wright. Clara Donahue and Stefan Eastman-Loupe are
+called up and need a finish for their 2nd start. ~~As of 2026-09-27: MCA
+standings through Race 4 (9/23), plus preliminary Gamehaven/Theodore MS
+results.~~ Each team is projected with its own races
 left. Full table: [report](../../docs/mca-state-qualification.md).
 
 - **On track:** 17 athletes, including Nora Walz #2/72, Kokotovich #6, Clara
