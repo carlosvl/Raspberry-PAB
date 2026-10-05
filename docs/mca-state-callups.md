@@ -1,8 +1,9 @@
 # MCA State Championship call-ups — Roseville (projected)
 
 - **Event:** State Championship, Redhead (Chisholm), Oct 10/11 2026 (IYR 17339)
-- **Generated:** 2026-10-04 14:40, from MCA's official standings through Race 5
-  (MS 10/1, HS 9/30) plus the Cuyuna results on ITS YOUR RACE (**preliminary**)
+- **Generated:** 2026-10-05 10:05, after all regular-season races, from MCA's
+  official standings through Race 5 (MS 10/1, HS 9/30) plus the Cuyuna results
+  on ITS YOUR RACE (**preliminary**)
 - **This is a projection.** MCA publishes the real call-up sheet before State;
   use that one on race day.
 
@@ -49,10 +50,10 @@ first.
 | Freshman Boys D2 | Owen Bianchet | 29 / 101 | 16.67 | 10, 12, 28 | 27 / 175 |
 | Freshman & JV2 Girls | Clara Walz (Freshman) | 20 / 162 | 5.67 | 4, 6, 7 | 9 / 85 |
 | Freshman & JV2 Girls | Fern Shaffner (JV2) | 96 / 162 | 23.67 | 30, 17, 24 | 42 / 107 |
-| Varsity Boys | Bennett Schmaltz | 22 / 92 | 14.33 | 18, 7, 18 | 20 / 103 |
-| Varsity Boys | Henry Loe | 69 / 92 | 33.00 | 26, 40 | 60 / 103 |
+| Varsity Boys | Bennett Schmaltz | 21 / 92 | 14.33 | 18, 7, 18 | 20 / 103 |
+| Varsity Boys | Henry Loe | 70 / 92 | 33.00 | 26, 40 | 61 / 103 |
 | JV3 Girls | Allison Claydon | 26 / 48 | 12.67 | 9, 10, 19 | 25 / 53 |
-| JV2 Boys D2 | Stefan Eastman-Loupe | *pending* | — | 8 + Cuyuna | — |
+| JV2 Boys D2 | Stefan Eastman-Loupe | **12** / 101 | 8.50 | 8, 9 | 80 / 194 |
 
 ## Not qualified
 
@@ -63,19 +64,15 @@ first.
 
 ## Caveats
 
-- **Stefan Eastman-Loupe:** JV2 Boys D2 results from Cuyuna (10/4) aren't posted
-  yet. He has one earlier finish (8th at Lake Rebecca), so a Cuyuna finish gives him the 2
-  races he needs. Re-run once the results are up.
 - **Henry Loe:** he moved up to Varsity after Race 2, and only his Varsity
   finishes are counted here. MCA's Cuyuna sheet gave him 22.5, which suggests
   MCA still counts his Race 2 JV3 finish. If MCA does the same at State, his
-  call-up will be better than 69.
+  call-up will be better than 70.
 - **Ties** (same average) are broken by MCA; the order shown for T-47 is
   arbitrary.
 - **Preliminary results:** Cuyuna results are unofficial, so places can still
   change. Riders from other teams who decline State move everyone up.
 - **Plate changes:** six riders raced Cuyuna on a different plate than the one
   in MCA's standings (including Clara Walz: 4568 → 3585). They're matched by
-  name and team here. The State qualification report
-  ([mca-state-qualification.md](mca-state-qualification.md)) doesn't do this
-  yet, so it would show Clara as having missed Cuyuna.
+  name and team here and in the State qualification report
+  ([mca-state-qualification.md](mca-state-qualification.md)).

@@ -140,3 +140,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-04] ingest | Fixed plate-change join in state qualification
 - `merge_race` matches a new IYR plate to a standings row by name + team (test added). Clara Walz now #9/85 Freshman Girls with Cuyuna counted (was scored as missed). Pages: [features/state-qualification](features/state-qualification.md).
+
+## [2026-10-05] ingest | Final State qualifier list (all races done)
+- Re-ran `scripts/mca-state-qualification.py --refresh` after JV2 Boys D2 posted for Cuyuna. 20 Roseville qualifiers (12 MS, 8 HS). Stefan Eastman-Loupe now qualifies (#80/194, 9th at Cuyuna, call-up 12/101). Henry Loe #61; Schmaltz call-up 21, Loe 70. Updated `docs/mca-state-callups.md` and the season page.

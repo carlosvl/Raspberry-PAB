@@ -1,6 +1,6 @@
 # MCA State Championship qualification — Roseville
 
-- **Generated:** 2026-10-04T14:40-05:00
+- **Generated:** 2026-10-05T10:05-05:00
 - **Rule:** top 100 per category (D1/D2 split categories separately) by season average; ≥2 registered races (2026 Sporting Regulations, Ch. 11).
 - **Official standings:**
   - [Individual Scores MS through Race 5](https://minnesotacycling.org/wp-content/uploads/2026/10/Individual-Scores-MS-through-Race-5-100126.pdf) — through Race 5, as of 2026-10-01
@@ -16,14 +16,13 @@ Races column: only races the rider's team was scheduled for (byes are omitted). 
 | --- | --- | --- | ---: | ---: | ---: | --- | --- |
 | BUBBLE | Elliot Freeman | 8th Grade Boys D2 | 104/178 | 243.8 | 251.5 | no races left: #104 (BUBBLE) | 2: 344; 3A: 0; 5B: 314; Cuyuna 10/3: 317* |
 | NEEDS RACES | Ben Freeman | 8th Grade Boys D2 | 165/178 | 68.5 | 251.5 | no races left: #165 (NEEDS RACES) | 2: 274; 3A: 0; 5B: 0; Cuyuna 10/3: 0* |
-| NEEDS RACES | Gavin Devries | Freshman Boys D2 | 161/175 | 84.0 | 276.0 | no races left: #161 (NEEDS RACES) | 2: 0; 3A: 0; Cuyuna 10/3: 252* |
-| NEEDS RACES | Stefan Eastman-Loupe | JV2 Boys D2 | 141/194 | 147.0 | 204.3 | no races left: #142 (NEEDS RACES) | 2: 0; 3A: 441; Cuyuna 10/3: 0* |
-| NEEDS RACES | Miles Neumann | JV2 Boys D2 | 176/194 | 0.0 | 204.3 | no races left: #176 (NEEDS RACES) | 2: 0; 3A: 0; Cuyuna 10/3: 0* |
-| NEEDS RACES | Drew Wright | JV2 Boys D2 | 176/194 | 0.0 | 204.3 | no races left: #176 (NEEDS RACES) | 2: 0; 3A: 0; Cuyuna 10/3: 0* |
+| NEEDS RACES | Gavin Devries | Freshman Boys D2 | 161/175 | 84.7 | 276.0 | no races left: #161 (NEEDS RACES) | 2: 0; 3A: 0; Cuyuna 10/3: 254* |
+| NEEDS RACES | Miles Neumann | JV2 Boys D2 | 178/194 | 0.0 | 280.7 | no races left: #178 (NEEDS RACES) | 2: 0; 3A: 0; Cuyuna 10/3: 0* |
+| NEEDS RACES | Drew Wright | JV2 Boys D2 | 178/194 | 0.0 | 280.7 | no races left: #178 (NEEDS RACES) | 2: 0; 3A: 0; Cuyuna 10/3: 0* |
 | OFF TRACK | Silas Leary | 8th Grade Boys D2 | 116/178 | 216.8 | 251.5 | no races left: #116 (OFF TRACK) | 2: 283; 3A: 300; 5B: 0; Cuyuna 10/3: 284* |
 | OFF TRACK | Jacob Walczak | 8th Grade Boys D2 | 127/178 | 180.0 | 251.5 | no races left: #127 (OFF TRACK) | 2: 340; 3A: 0; 5B: 380; Cuyuna 10/3: 0* |
-| OFF TRACK | Abraham Sakhitab | 8th Grade Boys D2 | 143/178 | 138.2 | 251.5 | no races left: #143 (OFF TRACK) | 2: 0; 3A: 288; 5B: 0; Cuyuna 10/3: 265* |
-| OFF TRACK | Carlos Mateo Villalpando | JV3 Boys | 126/196 | 310.0 | 327.3 | no races left: #126 (OFF TRACK) | 2: 314; 3A: 302; Cuyuna 10/3: 314* |
+| OFF TRACK | Abraham Sakhitab | 8th Grade Boys D2 | 142/178 | 138.2 | 251.5 | no races left: #142 (OFF TRACK) | 2: 0; 3A: 288; 5B: 0; Cuyuna 10/3: 265* |
+| OFF TRACK | Carlos Mateo Villalpando | JV3 Boys | 128/196 | 309.3 | 327.7 | no races left: #128 (OFF TRACK) | 2: 314; 3A: 302; Cuyuna 10/3: 312* |
 | ON TRACK | Logan Vargas | 6th Grade Boys D2 | 23/114 | 371.2 | 87.0 | no races left: #23 (ON TRACK) | 2: 340; 3A: 385; 5B: 375; Cuyuna 10/3: 385* |
 | ON TRACK | Lucas Herrera Vasquez | 6th Grade Boys D2 | 25/114 | 366.0 | 87.0 | no races left: #25 (ON TRACK) | 2: 370; 3A: 352; 5B: 352; Cuyuna 10/3: 390* |
 | ON TRACK | Max Finney | 6th Grade Boys D2 | 79/114 | 182.5 | 87.0 | no races left: #79 (ON TRACK) | 2: 0; 3A: 365; 5B: 365; Cuyuna 10/3: 0* |
@@ -39,10 +38,11 @@ Races column: only races the rider's team was scheduled for (byes are omitted). 
 | ON TRACK | Ryan Kokotovich | Freshman Boys D2 | 4/175 | 484.7 | 276.0 | no races left: #4 (ON TRACK) | 2: 464; 3A: 500; Cuyuna 10/3: 490* |
 | ON TRACK | Owen Bianchet | Freshman Boys D2 | 27/175 | 392.3 | 276.0 | no races left: #27 (ON TRACK) | 2: 427; 3A: 414; Cuyuna 10/3: 336* |
 | ON TRACK | Clara Walz | Freshman Girls | 9/85 | 458.7 | all in | no races left: #9 (ON TRACK) | 2: 472; 3A: 456; Cuyuna 10/3: 448* |
+| ON TRACK | Stefan Eastman-Loupe | JV2 Boys D2 | 80/194 | 291.7 | 280.7 | no races left: #80 (ON TRACK) | 2: 0; 3A: 441; Cuyuna 10/3: 434* |
 | ON TRACK | Fern Shaffner | JV2 Girls | 42/107 | 355.3 | 0.0 | no races left: #42 (ON TRACK) | 2: 329; 3A: 385; Cuyuna 10/3: 352* |
 | ON TRACK | Allison Claydon | JV3 Girls | 25/53 | 452.0 | all in | no races left: #25 (ON TRACK) | 2: 474; 3A: 467; Cuyuna 10/3: 415* |
 | ON TRACK | Bennett Schmaltz | Varsity Boys | 20/103 | 477.7 | 0.0 | no races left: #20 (ON TRACK) | 2: 455; 3A: 523; Cuyuna 10/3: 455* |
-| ON TRACK | Henry Loe | Varsity Boys | 60/103 | 398.0 | 0.0 | no races left: #60 (ON TRACK) | 2: NA; 3A: 419; Cuyuna 10/3: 377* |
+| ON TRACK | Henry Loe | Varsity Boys | 61/103 | 398.0 | 0.0 | no races left: #61 (ON TRACK) | 2: NA; 3A: 419; Cuyuna 10/3: 377* |
 
 ## How canceled races count
 

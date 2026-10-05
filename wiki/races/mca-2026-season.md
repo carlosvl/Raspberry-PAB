@@ -78,11 +78,17 @@ As of 2026-09-27, the results are **Unofficial** unless noted.
 
 ## State qualification snapshot
 
+**Final regular season, all categories (2026-10-05, Cuyuna preliminary from
+IYR):** 20 Roseville State qualifiers, 12 MS + 8 HS. JV2 Boys D2 posted:
+Stefan Eastman-Loupe finished 9th, which gave him the 2nd start (#80/194,
+call-up 12/101). Henry Loe #61. HS not qualified: Carlos Mateo Villalpando
+(JV3 Boys #128), Gavin Devries, Drew Wright, Miles Neumann (fewer than 2 races).
+
 **MS final regular season (2026-10-04, Cuyuna preliminary from IYR):** 12
 Roseville MS riders in the top 100. Elliot Freeman is #104 (just out), Silas
 Leary #116, Jacob Walczak #127 (missed Cuyuna), Abraham Sakhitab #143. Clara
 Donahue's Cuyuna finish gave her the 2nd start (#57/72). Boulton moved up to
-#87. HS isn't final until the 10/4 results post. Projected State call-ups:
+#87. Projected State call-ups:
 [docs/mca-state-callups.md](../../docs/mca-state-callups.md).
 
 As of 2026-10-02: official MCA standings through Race 5 (MS 10/1, HS 9/30),
