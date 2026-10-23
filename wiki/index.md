@@ -27,3 +27,4 @@ commands, see `CLAUDE.md`. For step-by-step setup, see `docs/`.
 - [Buzzer removed](ops/buzzer-removed.md) — what was deleted, matrix port now `PAB_MATRIX_PORT` only, firmware and DB columns left alone
 - [ITS YOUR RACE fingerprint](ops/itsyourrace-blocking.md) — chrome131 got 403, chrome124 works; how to diagnose if it breaks again
 - [Wiki workflow](ops/wiki-workflow.md) — how this wiki is maintained and linted
+- [Claude account setup](ops/claude-account-setup.md) — account skills and the weekly CI scheduled task saved in `claude/` for an account move; what-if code not yet pushed

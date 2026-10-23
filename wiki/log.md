@@ -143,3 +143,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-05] ingest | Final State qualifier list (all races done)
 - Re-ran `scripts/mca-state-qualification.py --refresh` after JV2 Boys D2 posted for Cuyuna. 20 Roseville qualifiers (12 MS, 8 HS). Stefan Eastman-Loupe now qualifies (#80/194, 9th at Cuyuna, call-up 12/101). Henry Loe #61; Schmaltz call-up 21, Loe 70. Updated `docs/mca-state-callups.md` and the season page.
+
+## [2026-10-23] ingest | Claude account items saved to claude/
+- User is moving to a new Claude account. Saved the two account skills (`mca-state-qualifiers`, `mca-state-whatif`) and the Weekly CI health check scheduled task under `claude/`. Found the what-if script and repo skill aren't on `main` yet (Mac only). Pages: [ops/claude-account-setup](ops/claude-account-setup.md).
