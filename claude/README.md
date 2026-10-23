@@ -5,8 +5,8 @@ survive a move to a new Claude account (copied 2026-10-23).
 
 | What | Where | How to restore |
 |------|-------|----------------|
-| `mca-state-qualifiers` skill | [skills/mca-state-qualifiers/SKILL.md](skills/mca-state-qualifiers/SKILL.md) | Claude settings → Skills → upload the folder (zip it first) |
-| `mca-state-whatif` skill | [skills/mca-state-whatif/SKILL.md](skills/mca-state-whatif/SKILL.md) | Same as above |
+| `mca-state-qualifiers` skill | [skills/mca-state-qualifiers/SKILL.md](skills/mca-state-qualifiers/SKILL.md) | Zip the folder, then Customize → Skills → **+** → Create skill → Upload a skill |
+| `mca-state-whatif` skill | [skills/mca-state-whatif/SKILL.md](skills/mca-state-whatif/SKILL.md) | Same as above (ready-made ZIPs are in the private `claude-backup` repo) |
 | Weekly CI health check | [scheduled-tasks/weekly-ci-health-check.md](scheduled-tasks/weekly-ci-health-check.md) | Ask Claude to create a scheduled task from that file |
 
 These are the **account-level** skills, which point a Claude chat at this repo on
