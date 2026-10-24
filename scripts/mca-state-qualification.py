@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime
 from pathlib import Path
 
@@ -392,9 +392,21 @@ def render_report(
     return "\n".join(lines) + "\n"
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    client = RaceResultsClient()
+@dataclass
+class Season:
+    """MCA standings snapshot with every later race merged in."""
+
+    tables: list[StandingsTable]
+    standings_docs: list[ArchiveDoc]
+    riders: list[RiderSeason]
+    new_races: list[NewRace]
+    race_series: dict[str, str]  # merged race label -> IYR series id
+    skipped: list[str]
+    state_events: list[str]
+
+
+def load_season(args: argparse.Namespace, client: RaceResultsClient) -> Season | None:
+    """Official standings + merged newer races (shared with the what-if script)."""
     archive_html = client.fetch_text(ARCHIVE_URL)
     docs = parse_results_archive(archive_html, season=args.season)
 
@@ -409,7 +421,7 @@ def main(argv: list[str] | None = None) -> int:
         standings_docs.append(doc)
         tables.append(parse_standings_text(text))
     if not tables:
-        return 1
+        return None
     labels = column_labels(tables)
     tables = [
         replace(table, columns=labels) if not table.columns else table
@@ -428,6 +440,7 @@ def main(argv: list[str] | None = None) -> int:
         if event.season_year == args.season and event.date_saturday > snapshot
     ]
     new_races: list[NewRace] = []
+    race_series: dict[str, str] = {}
     skipped: list[str] = []
     state_events: list[str] = []
     canceled = parse_canceled(args.canceled)
@@ -449,8 +462,21 @@ def main(argv: list[str] | None = None) -> int:
                 canceled_levels=canceled_here,
             )
         new_races.append(race)
+        race_series[race.label] = event.iyr_series_id.strip()
         riders = merge_race(riders, race)
 
+    return Season(
+        tables, standings_docs, riders, new_races, race_series, skipped, state_events
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    client = RaceResultsClient()
+    season = load_season(args, client)
+    if season is None:
+        return 1
+    riders = season.riders
     team_key = normalize_team(args.team)
     remaining = remaining_by_team(riders, max_races=args.max_races)
     if args.remaining_races is not None:
@@ -468,11 +494,11 @@ def main(argv: list[str] | None = None) -> int:
     report = render_report(
         team=args.team,
         selected=selected,
-        tables=tables,
-        standings_docs=standings_docs,
-        new_races=new_races,
-        skipped_events=skipped,
-        state_events=state_events,
+        tables=season.tables,
+        standings_docs=season.standings_docs,
+        new_races=season.new_races,
+        skipped_events=season.skipped,
+        state_events=season.state_events,
         team_remaining=remaining.get(team_key, args.max_races),
         max_races=args.max_races,
         generated=datetime.now(UTC).astimezone(),

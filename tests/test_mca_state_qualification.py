@@ -136,6 +136,37 @@ def test_standings_race5_title_layout() -> None:
     assert hs.level == "High School"
 
 
+def test_standings_race6_layout_without_plates() -> None:
+    ms = parse_standings_text(_read("standings_ms_race6_excerpt.txt"))
+    assert (ms.season, ms.level, ms.through_race) == (2026, "Middle School", "6")
+    assert ms.as_of == date(2026, 10, 6)
+    assert [c.label for c in ms.columns][-3:] == ["5A", "5B", "6"]
+    by_name = {row.name: row for row in ms.rows}
+    nora = by_name["NORA WALZ"]
+    assert nora.plate == "nora walz|roseville"
+    assert (nora.team, nora.rank, nora.season_score) == ("Roseville", 3, 492.5)
+    assert by_name["ELLIOT FREEMAN"].cells[2] == 0  # missed Lake Rebecca
+
+    hs = parse_standings_text(_read("standings_hs_race6_excerpt.txt"))
+    assert (hs.level, hs.through_race, len(hs.columns)) == ("High School", "6", 8)
+    by_name = {row.name: row for row in hs.rows}
+    loe = by_name["HENRY LOE"]
+    assert loe.upgrade_columns == frozenset({1})
+    assert loe.cells[-1] == 377
+    carlos = by_name["CARLOS MATEO VILLALPANDO"]
+    assert (carlos.rank, carlos.season_score) == (127, 309.3333333)
+
+
+def test_standings_race6_v16_header_layout() -> None:
+    text = _read("standings_hs_race6_excerpt.txt").splitlines()
+    text[0] = "2026 MCA Individual Points through Race 6"
+    text[1] = "High School 10/6/2026 as of 15:00"
+    table = parse_standings_text("\n".join(text))
+    assert (table.season, table.level, table.through_race) == (2026, "High School", "6")
+    assert table.as_of == date(2026, 10, 6)
+    assert len(table.rows) > 0
+
+
 def test_split_name_team_boundary() -> None:
     assert split_name_team("JANE DOE  St Cloud") == ("JANE DOE", "St Cloud")
     assert split_name_team("JO O'NEILLSt Croix") == ("JO O'NEILL", "St Croix")
