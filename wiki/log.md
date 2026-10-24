@@ -170,3 +170,6 @@ Append-only. Newest entries at the bottom. Heading format:
 
 ## [2026-10-23] ingest | Claude account items saved to claude/
 - User is moving to a new Claude account. Saved the two account skills (`mca-state-qualifiers`, `mca-state-whatif`) and the Weekly CI health check scheduled task under `claude/`. Found the what-if script and repo skill aren't on `main` yet (Mac only). Pages: [ops/claude-account-setup](ops/claude-account-setup.md).
+
+## [2026-10-24] ingest | Mac-only MCA work committed and pushed
+- Committed the uncommitted what-if, top-finishers, team-contacts and Race 6 standings work (plus a ruff-format-only commit) on `claude/project-thread-p93cag` and opened a PR to `main`. Left untracked: `tmp/`, `.claude/launch.json`, ESP32 `build-export/` binaries. Pages: [ops/claude-account-setup](ops/claude-account-setup.md).
