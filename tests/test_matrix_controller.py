@@ -250,9 +250,7 @@ def test_rainbow_pulse_cycles_until_stop() -> None:
         scroll_count = sum(
             1 for write in serial.writes if write.startswith(b"SCROLLONCE")
         )
-        fill_count = sum(
-            1 for write in serial.writes if write.startswith(b"RAINBOW")
-        )
+        fill_count = sum(1 for write in serial.writes if write.startswith(b"RAINBOW"))
         assert scroll_count >= 3
         assert fill_count >= 2
         assert any(write == b"STOP\n" for write in serial.writes)
