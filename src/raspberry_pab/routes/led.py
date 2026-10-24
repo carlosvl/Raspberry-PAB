@@ -187,8 +187,7 @@ async def test_led_strip(request: Request, body: LedStripTest) -> dict[str, obje
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             detail=(
-                f"LED test timed out after {timeout}s — "
-                "BLE device may be unreachable"
+                f"LED test timed out after {timeout}s — BLE device may be unreachable"
             ),
         ) from exc
     except Exception as exc:

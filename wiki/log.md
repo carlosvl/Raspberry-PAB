@@ -144,5 +144,32 @@ Append-only. Newest entries at the bottom. Heading format:
 ## [2026-10-05] ingest | Final State qualifier list (all races done)
 - Re-ran `scripts/mca-state-qualification.py --refresh` after JV2 Boys D2 posted for Cuyuna. 20 Roseville qualifiers (12 MS, 8 HS). Stefan Eastman-Loupe now qualifies (#80/194, 9th at Cuyuna, call-up 12/101). Henry Loe #61; Schmaltz call-up 21, Loe 70. Updated `docs/mca-state-callups.md` and the season page.
 
+## [2026-10-05] ingest | State qualification what-if (category move)
+- Added `scripts/mca-state-whatif.py` + `state_whatif.move_category` + `/mca-state-whatif` skill; extracted `load_season` from `scripts/mca-state-qualification.py` (behavior unchanged). Carlos Mateo Villalpando in Varsity Boys instead of JV3: #79/104, avg 367.0, qualifies (Roseville 20 → 21). Pages: [features/state-whatif](features/state-whatif.md).
+
+## [2026-10-05] ingest | State qualifier re-check (no change)
+- Re-ran `scripts/mca-state-qualification.py --refresh` at 22:04: still through-Race-5 standings, Cuyuna still IYR preliminary (no official PDF). Report identical to the earlier Oct 5 run apart from the Generated line; 20 Roseville qualifiers. Pages: [races/mca-2026-season](races/mca-2026-season.md).
+
+## [2026-10-06] ingest | Official through-Race-6 standings + Cuyuna team scores
+- MCA posted the MS + HS standings through Race 6 (10/6), the official Cuyuna results and team scores. `scripts/mca-state-qualification.py --refresh` fails with `StandingsParseError` because the plate column was dropped. Not fixed; the call-up and what-if reruns are blocked too.
+- Read Roseville rows straight from the PDFs: all 20 qualifiers match the Oct 5 list. Carlos Mateo is #127 (was #128). Official Cuyuna team: HS D2 6th/38 1827, MS D2 5th/38 1766. No State call-up sheets posted. Pages: [races/mca-2026-season](races/mca-2026-season.md), [features/state-qualification](features/state-qualification.md).
+
+## [2026-10-06] ingest | Parser fixed for through-Race-6 layout; State rerun on official data
+- `mca_standings.py` parses the plate-less Race 6 layout (synthetic `name|team` key, new title/level lines, `Name` header); test + 2 fixtures. Qualification rerun: Cuyuna is column 6 with no IYR merge, and it matches the hand-read PDF numbers. Still 20 qualifiers; Carlos Mateo #127.
+- Regenerated `docs/mca-state-callups.md` from official standings (places from points; Nora T-2, Donahue T-32, Herrera Vasquez/Finney T-46, Kokotovich T-4, Claydon T-25). What-if unchanged: #79/104 Varsity, avg 367.0. Pages: [features/state-qualification](features/state-qualification.md), [features/state-whatif](features/state-whatif.md), [races/mca-2026-season](races/mca-2026-season.md).
+
+## [2026-10-10] ingest | State (Redhead) call-ups prepped for kiosk
+- Built `/tmp/race9/` import files from MCA's Race 9 Redhead call-ups **V2** (posted 10/9 4 PM; user sent V1, only Finney/Herrera Vasquez shifted one spot). Sat 10/10: 15 riders (all MS + Freshman); Sun 10/11: 5 (JV2, JV3, Varsity). Start times from the IYR 17339 event schedule. Loaded 8:42 AM onto the kiosk at 10.67.76.253:8080 (both days verified; kiosk clock on real time).
+
+## [2026-10-12] ingest | Top-15 finishers per category
+- Added `scripts/mca-top-finishers.py` + `top_finishers.py` + tests; output `docs/mca-top-finishers.md` (State race and season standings, 10 lists each, Strava/Google search links).
+- MCA re-posted the Race 6 standings (V16) with a new header; `mca_standings.py` header regexes extended (user-approved). Pages: [features/top-finishers](features/top-finishers.md), [features/state-qualification](features/state-qualification.md).
+
+## [2026-10-13] ingest | Team contacts for top-finishers
+- Added `team_contacts.py` (school -> MCA Team Finder site/email) and a Team contact column in `docs/mca-top-finishers.md`. Pages: [features/top-finishers](features/top-finishers.md).
+
 ## [2026-10-23] ingest | Claude account items saved to claude/
 - User is moving to a new Claude account. Saved the two account skills (`mca-state-qualifiers`, `mca-state-whatif`) and the Weekly CI health check scheduled task under `claude/`. Found the what-if script and repo skill aren't on `main` yet (Mac only). Pages: [ops/claude-account-setup](ops/claude-account-setup.md).
+
+## [2026-10-24] ingest | Mac-only MCA work committed and pushed
+- Committed the uncommitted what-if, top-finishers, team-contacts and Race 6 standings work (plus a ruff-format-only commit) on `claude/project-thread-p93cag` and opened a PR to `main`. Left untracked: `tmp/`, `.claude/launch.json`, ESP32 `build-export/` binaries. Pages: [ops/claude-account-setup](ops/claude-account-setup.md).

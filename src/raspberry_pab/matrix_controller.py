@@ -312,13 +312,9 @@ class MatrixController:
                     port.write(scroll_cmd.encode("ascii"))
                     port.flush()
                     timeout = max(pass_ms / 1000.0 * 2.0 + 5.0, 20.0)
-                    ok = await asyncio.to_thread(
-                        wait_for_ok, port, timeout=timeout
-                    )
+                    ok = await asyncio.to_thread(wait_for_ok, port, timeout=timeout)
                     if not ok:
-                        raise RuntimeError(
-                            "Arduino did not finish SCROLLONCE command"
-                        )
+                        raise RuntimeError("Arduino did not finish SCROLLONCE command")
                 finally:
                     self._session_port = None
                     with contextlib.suppress(Exception):
@@ -384,9 +380,7 @@ class MatrixController:
             except asyncio.CancelledError:
                 raise
             except Exception:
-                logger.exception(
-                    "Matrix show sequence failed for rule %s", rule.id
-                )
+                logger.exception("Matrix show sequence failed for rule %s", rule.id)
 
     async def _run_rainbow_scroll(
         self,
@@ -416,9 +410,7 @@ class MatrixController:
                         except asyncio.CancelledError:
                             raise
                         except Exception:
-                            logger.exception(
-                                "Matrix music-break scroll phase failed"
-                            )
+                            logger.exception("Matrix music-break scroll phase failed")
                             with contextlib.suppress(Exception):
                                 await asyncio.to_thread(
                                     self._prepare_music_break_port, port
@@ -434,9 +426,7 @@ class MatrixController:
                         except asyncio.CancelledError:
                             raise
                         except Exception:
-                            logger.exception(
-                                "Matrix music-break fill phase failed"
-                            )
+                            logger.exception("Matrix music-break fill phase failed")
                             with contextlib.suppress(Exception):
                                 await asyncio.to_thread(
                                     self._prepare_music_break_port, port

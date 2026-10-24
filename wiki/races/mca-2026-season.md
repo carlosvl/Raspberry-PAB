@@ -10,7 +10,7 @@ sources:
   - https://minnesotacycling.org/results-archive/
   - https://www.precisionrace.com/mca
   - user (2026-09-27)
-updated: 2026-10-02
+updated: 2026-10-06
 ---
 
 # MCA 2026 season
@@ -66,8 +66,8 @@ As of 2026-09-27, the results are **Unofficial** unless noted.
 | 3A | MS D2 | 3 / 31 | 1869 | BBBG |
 | 3A | HS D2 | 4 / 30 | 1946 | BBGG |
 | 7 (Theo) | MS D2 | 3 / 25 | 1776 | BBGG |
-| 6 (Cuyuna) | HS D2 | 6 (partial) | 1808 | Latest 10/4 run, with JV2 Boys D1/D2 not posted; ~~4th 1770 at 12:49~~ |
-| 6 (Cuyuna) | MS D2 | 5 / 35 | 1766 | BBGG (Nora Walz, Dixon, Ilene Shaffner, Warner); 1 ahead of Tioga |
+| 6 (Cuyuna) | HS D2 | **6 / 38** | **1827** | Official sheet (2026-10-06): Kokotovich 490, Schmaltz 455, Clara Walz 448, Eastman-Loupe 434 (BBGB). ~~6 (partial) 1808~~; ~~4th 1770 at 12:49~~ |
+| 6 (Cuyuna) | MS D2 | **5 / 38** | **1766** | Official sheet (2026-10-06), 1 ahead of Tioga. 4th scorer is Lucas Herrera Vasquez (390), ~~Warner~~ (also 390) on the IYR run |
 
 - ~~Race 2 had no MS results~~: IYR never posted them; the official PDF has
   them (2026-09-27).
@@ -77,6 +77,24 @@ As of 2026-09-27, the results are **Unofficial** unless noted.
   Joaquin Villalpando and Lucas Herrera Vasquez also scored at least once.
 
 ## State qualification snapshot
+
+**Official through Race 6 Cuyuna (MS + HS, as of 2026-10-06):** MCA posted the
+final regular-season standings, the official Cuyuna Individual Results
+(`MCA_8_Cuyuna_Official_Results_v1.pdf`) and the Cuyuna team scores. After the
+parser fix, `scripts/mca-state-qualification.py --refresh` reads Cuyuna as
+standings column `6` with no IYR merge. Every Roseville rider's points,
+average and rank match the Oct 5 preliminary list, so there are still **20
+qualifiers (12 MS + 8 HS)**. The only rank change is Carlos Mateo
+Villalpando, now #127/196 JV3 Boys (was #128; the cutoff is 327.67). The JV3
+Girls field is 52 (was 53). Call-ups
+([docs/mca-state-callups.md](../../docs/mca-state-callups.md)) moved by at most
+one place, because a few fields shrank by one. No official State call-up
+sheets were posted as of 2026-10-06.
+
+**Re-check 2026-10-05 22:04 (`--refresh`):** no change. No official Cuyuna
+Individual Results PDF yet (Cuyuna still IYR preliminary); standings still
+through Race 5 (MS 10/1, HS 9/30). 20 qualifiers, same ranks; Elliot Freeman
+#104 is the only BUBBLE.
 
 **Final regular season, all categories (2026-10-05, Cuyuna preliminary from
 IYR):** 20 Roseville State qualifiers, 12 MS + 8 HS. JV2 Boys D2 posted:

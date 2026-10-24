@@ -10,7 +10,7 @@ sources:
   - .claude/skills/mca-state-qualification/SKILL.md
   - tests/test_mca_state_qualification.py
   - https://minnesotacycling.org/results-archive/
-updated: 2026-09-28
+updated: 2026-10-06
 ---
 
 # State Championship qualification
@@ -36,6 +36,11 @@ and writes `docs/mca-state-qualification.md`.
    - **Title layout changed at Race 5 (2026-10-02):** it's now two lines, with
      "through Race N <date>" on either the title or the level line (MS and HS
      differ). The parser accepts both old and new layouts; rows were unchanged.
+   - **Race 6 layout (2026-10-06):** title "through Race 6 Cuyuna" + "<level>
+     as of M/D/YYYY", header starts with `Name`, **no plate column**, and
+     season scores are unrounded. Plate-less rows get a synthetic key
+     `name|team` (`synthetic_plate`), so merges by IYR bib fall back to the
+     name + team match.
 2. **Races after the snapshot:**
    - The official "Individual Results" PDF (Precision Race layout), matched
      by venue.
@@ -98,6 +103,11 @@ and writes `docs/mca-state-qualification.md`.
 
 ## Open
 
+- **Through-Race-6 layout ~~breaks the parser~~ fixed 2026-10-06:** the MS
+  and HS "through Race 6 100626" PDFs dropped the plate column and raised
+  `StandingsParseError`. `mca_standings.py` now parses both layouts (test +
+  fixtures `standings_*_race6_excerpt.txt`).
+
 - **Plate changes ~~aren't joined~~ fixed 2026-10-04:** a rider whose IYR bib differs from the
   standings plate (Clara Walz 4568 → 3585, 6 riders at Cuyuna) is scored as
   missing the race. `merge_race` now falls back to name + team when exactly
@@ -113,3 +123,7 @@ and writes `docs/mca-state-qualification.md`.
   the official PDF shows it.
 
 Season data: [MCA 2026 season](../races/mca-2026-season.md).
+
+Top finishers list: [top finishers](top-finishers.md). V16 Race 6 header (venue-less title, date-first level line) is accepted since 2026-10-12.
+
+What-if scenarios (another category): [state qualification what-if](state-whatif.md).

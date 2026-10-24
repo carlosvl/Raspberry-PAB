@@ -29,10 +29,30 @@ _TITLE_V2 = re.compile(
 _LEVEL_LINE = re.compile(
     rf"^(?P<level>High School|Middle School){_THROUGH}$", re.IGNORECASE
 )
+# Race 6 (2026-10-06) layout: "2026 MCA Individual Points through Race 6 Cuyuna"
+# + "Middle School as of 10/6/2026", and rows no longer carry a plate. The V16
+# re-post (2026-10-12) drops the venue and writes "Middle School 10/6/2026 as of
+# 15:00".
+_TITLE_V3 = re.compile(
+    r"^(?P<season>\d{4})\s+MCA\s+Individual Points\s+through Race\s+"
+    r"(?P<through>\d+[AB]?)(?:\s+(?P<venue>\D.*))?$",
+    re.IGNORECASE,
+)
+_LEVEL_AS_OF = re.compile(
+    r"^(?P<level>High School|Middle School)\s+(?:as of\s+"
+    r"(?P<as_of>\d{1,2}/\d{1,2}/\d{4})|"
+    r"(?P<as_of_first>\d{1,2}/\d{1,2}/\d{4})\s+as of\s+\S+)$",
+    re.IGNORECASE,
+)
 _HEADER_RACE = re.compile(r"Race\s+(\d+[AB]?)\s+(.+?)(?=\s{2,}Race\s+\d|\s*$)")
 _CATEGORY = r"(?:\d+th Grade|Freshman|JV2|JV3|Varsity) (?:Boys|Girls)(?: D[12])?"
 _ROW = re.compile(
     r"^\s*(?P<plate>\d{1,5})\s+(?P<who>.+?)\s+(?P<div>[12])\s+"
+    rf"(?P<cat>{_CATEGORY})\s+(?P<rank>\d+)\s+(?P<score>\d+(?:\.\d+)?)"
+    r"\s+(?P<cells>\S.*?)\s*$"
+)
+_ROW_NO_PLATE = re.compile(
+    r"^\s*(?P<who>\D.*?)\s+(?P<div>[12])\s+"
     rf"(?P<cat>{_CATEGORY})\s+(?P<rank>\d+)\s+(?P<score>\d+(?:\.\d+)?)"
     r"\s+(?P<cells>\S.*?)\s*$"
 )
@@ -101,6 +121,11 @@ def parse_cells(text: str) -> tuple[list[Cell], set[int]]:
     return cells, upgrades
 
 
+def synthetic_plate(name: str, team: str) -> str:
+    """Stable key for rows without a plate (through-Race-6 layout on)."""
+    return f"{' '.join(name.lower().split())}|{' '.join(team.lower().split())}"
+
+
 def season_average(cells: tuple[Cell, ...] | list[Cell]) -> float:
     counted = [cell for cell in cells if cell is not None]
     return sum(counted) / len(counted) if counted else 0.0
@@ -134,6 +159,17 @@ def parse_standings_text(text: str) -> StandingsTable:
             through = title.group("through").upper()
             as_of = datetime.strptime(title.group("as_of"), "%m/%d/%Y").date()
             continue
+        title = _TITLE_V3.match(stripped) or _LEVEL_AS_OF.match(stripped)
+        if title is not None:
+            fields = title.groupdict()
+            if fields.get("season"):
+                season = int(fields["season"])
+                through = fields["through"].upper()
+            if fields.get("level"):
+                level = fields["level"].title()
+                as_of_text = fields.get("as_of") or fields["as_of_first"]
+                as_of = datetime.strptime(as_of_text, "%m/%d/%Y").date()
+            continue
         title = _TITLE_V2.match(stripped) or _LEVEL_LINE.match(stripped)
         if title is not None:
             fields = title.groupdict()
@@ -145,10 +181,10 @@ def parse_standings_text(text: str) -> StandingsTable:
                 through = fields["through"].upper()
                 as_of = datetime.strptime(fields["as_of"], "%m/%d/%Y").date()
             continue
-        if stripped.startswith("Rider Plate"):
+        if stripped.startswith(("Rider Plate", "Name ")):
             columns = columns or _parse_header(stripped)
             continue
-        match = _ROW.match(line)
+        match = _ROW.match(line) or _ROW_NO_PLATE.match(line)
         if match is None:
             errors.append(f"unparsed: {stripped[:100]}")
             continue
@@ -162,9 +198,10 @@ def parse_standings_text(text: str) -> StandingsTable:
         if abs(season_average(cells) - score) > 0.01:
             errors.append(f"score mismatch ({score} vs cells): {stripped[:100]}")
             continue
+        plate = match.groupdict().get("plate") or synthetic_plate(name, team)
         rows.append(
             StandingsRow(
-                plate=match.group("plate"),
+                plate=plate,
                 name=name,
                 team=team,
                 team_division=int(match.group("div")),

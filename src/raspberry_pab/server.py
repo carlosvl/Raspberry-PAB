@@ -110,9 +110,7 @@ async def play_alert_groups(
             try:
                 await led_controller.flash(rule)
             except Exception:
-                logger.exception(
-                    "LED listener failed for alert group rule %s", rule.id
-                )
+                logger.exception("LED listener failed for alert group rule %s", rule.id)
             try:
                 await sound_controller.play(rule)
             except Exception:

@@ -95,7 +95,7 @@ def test_parse_device_and_apps_xml() -> None:
     </apps>
     """
     assert parse_apps_xml(apps, "dev") is True
-    assert parse_apps_xml("<apps><app id=\"12\">Netflix</app></apps>", "dev") is False
+    assert parse_apps_xml('<apps><app id="12">Netflix</app></apps>', "dev") is False
     app_id, app_name = parse_active_app_xml(
         '<active-app><app id="dev">Raspberry-PAB</app></active-app>'
     )

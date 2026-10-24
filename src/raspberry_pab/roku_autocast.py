@@ -71,9 +71,7 @@ class RokuAutocastWatcher:
             return True
         # hdmi-fallback
         connected = (
-            hdmi_is_connected
-            if hdmi_is_connected is not None
-            else hdmi_connected()
+            hdmi_is_connected if hdmi_is_connected is not None else hdmi_connected()
         )
         return not connected
 

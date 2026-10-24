@@ -13,10 +13,10 @@ from raspberry_pab.race_results.precision_race import parse_precision_race_mca_h
 
 def test_parse_precision_race_mca_index() -> None:
     html = load_fixture("precision_race_mca.html")
-    events = parse_precision_race_mca_html(html, source_url="https://www.precisionrace.com/mca")
-    pine_valley = next(
-        event for event in events if event.iyr_series_id == "16915"
+    events = parse_precision_race_mca_html(
+        html, source_url="https://www.precisionrace.com/mca"
     )
+    pine_valley = next(event for event in events if event.iyr_series_id == "16915")
     assert pine_valley.season_year == 2025
     assert pine_valley.race_number == "8"
     assert "Pine Valley" in pine_valley.venue_label
@@ -43,9 +43,7 @@ def test_parse_iyr_results_page_finds_carlos() -> None:
     )
     assert session.category_label == "Freshman Boys D2"
     assert session.race_date == date(2025, 10, 5)
-    carlos = next(
-        row for row in session.rows if "Villalpando" in row.raw_name
-    )
+    carlos = next(row for row in session.rows if "Villalpando" in row.raw_name)
     assert carlos.place == 15
     assert carlos.bib == "3766"
     assert carlos.team_name == "Roseville"

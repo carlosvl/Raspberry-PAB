@@ -21,7 +21,9 @@ def test_names_match_handles_middle_name() -> None:
 
 def test_find_race_event_for_pine_valley_sunday() -> None:
     html = load_fixture("precision_race_mca.html")
-    events = parse_precision_race_mca_html(html, source_url="https://www.precisionrace.com/mca")
+    events = parse_precision_race_mca_html(
+        html, source_url="https://www.precisionrace.com/mca"
+    )
     candidates = find_race_events_for_date(events, date(2025, 10, 5))
     assert len(candidates) == 1
     assert candidates[0].event.iyr_series_id == "16915"

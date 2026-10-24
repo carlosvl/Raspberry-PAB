@@ -7,7 +7,7 @@ sources:
   - claude/skills/mca-state-whatif/SKILL.md
   - claude/scheduled-tasks/weekly-ci-health-check.md
   - user (2026-10-23)
-updated: 2026-10-23
+updated: 2026-10-24
 ---
 
 # Claude account setup
@@ -25,6 +25,8 @@ restore from.
   pytest with the latest tools, and opens a `ci-health-fix` PR only for small fixes.
   See [CI checks](ci.md).
 
-> ⚠ Conflict: the `mca-state-whatif` account skill names `scripts/mca-state-whatif.py`
-> and `.claude/skills/mca-state-whatif/`, which are not on `main` as of 2026-10-23
-> (they exist only in the Mac working copy). Resolve by pushing them.
+~~The `mca-state-whatif` account skill names `scripts/mca-state-whatif.py`
+and `.claude/skills/mca-state-whatif/`, which are not on `main` as of 2026-10-23
+(they exist only in the Mac working copy).~~ Committed on branch
+`claude/project-thread-p93cag` with a PR to `main` (2026-10-24); on `main` once
+that merges.
